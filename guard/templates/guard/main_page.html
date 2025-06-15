@@ -1,0 +1,1416 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>СУД ОТ</title>
+    <!-- Подключение Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'guard/css/style.css' %}">    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <script type="text/javascript" src="{% static 'guard/js/jq.js' %}" defer></script>
+    <!-- Подключение Bootstrap JS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            defer></script>
+    <script src="
+            https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"
+            defer></script>
+    <script type="text/javascript" src="{% static 'guard/js/helper.js' %}" defer></script>
+    <script type="text/javascript" src="{% static 'guard/js/script.js' %}" defer></script>
+    <script type="text/javascript" src="{% static 'guard/js/add-worker-form.js' %}" defer></script>
+    <script type="text/javascript" src="{% static 'guard/js/edit-worker-form.js' %}" defer></script>
+    <script type="text/javascript" src="{% static 'guard/js/del-worker-form.js' %}" defer></script>
+    <script type="text/javascript" src="{% static 'guard/js/add-med-form.js' %}" defer></script>
+    <script type="text/javascript" src="{% static 'guard/js/edit-med-form.js' %}" defer></script>
+    <script type="text/javascript" src="{% static 'guard/js/naprav-form.js' %}" defer></script>
+    <script type="text/javascript" src="{% static 'guard/js/add-edu-form.js' %}" defer></script>
+    <script type="text/javascript" src="{% static 'guard/js/edit-edu-form.js' %}" defer></script>
+    <script type="text/javascript" src="{% static 'guard/js/del-edu-form.js' %}" defer></script>
+    <script type="text/javascript" src="{% static 'guard/js/del-med-form.js' %}" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+</head>
+
+<body>
+<!-- MODAL ADD WORKER-->
+<div class="modal fade" id="addWorkerModal" tabindex="-1" aria-hidden="true" data-focus="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    Добавление нового сотрудника
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="employee-form">
+                    <form id="employeeAddForm" method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="employeeFullName" class="form-label">ФИО*</label>
+                            <input type="text" class="form-control" id="employeeFullName" 
+                                   placeholder="Введите фамилию, имя и отчество" 
+                                   maxlength="100" required>
+                            <div class="d-flex justify-content-between">
+                                <div class="invalid-feedback" id="fullNameFeedback">
+                                    Пожалуйста, введите корректное ФИО (2-3 слова, каждое с заглавной буквы)
+                                </div>
+                                <div class="length-counter">
+                                    <span>Кол-во символов: </span> <span id="fullNameCounter">0</span>/100
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Пол*</label>
+                                <div class="d-flex gap-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="employeeGender" id="employeeGenderMale" value="M" checked>
+                                        <label class="form-check-label" for="employeeGenderMale">Мужской</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="employeeGender" id="employeeGenderFemale" value="F">
+                                        <label class="form-check-label" for="employeeGenderFemale">Женский</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="employeeBirthDate" class="form-label">Дата рождения*</label>
+                                <input type="date" class="form-control" id="employeeBirthDate" required>
+                                <div class="invalid-feedback" id="birthDateFeedback">
+                                    Пожалуйста, укажите корректную дату рождения
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="employeePosition" class="form-label">Должность*</label>
+                            <input type="text" class="form-control" id="employeePosition" 
+                                   placeholder="Введите должность" 
+                                   maxlength="50" required>
+                            <div class="d-flex justify-content-between">
+                                <div class="invalid-feedback">
+                                    Пожалуйста, укажите должность
+                                </div>
+                                <div class="length-counter">
+                                    <span>Кол-во символов: </span><span id="positionCounter">0</span>/50
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="employeeStruct" class="form-label">Структурное подразделение</label>
+                            <textarea class="form-control" id="employeeStruct" 
+                                   placeholder="Введите структурное подразделение"
+                                   rows="2" maxlength="1000"></textarea>
+                            <div class="d-flex justify-content-between">                                
+                                <div class="length-counter">
+                                    <span>Кол-во символов: </span><span id="structCounter">0</span>/1000
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><b>Медицинские полисы</b></label>
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label for="employeeOMS" class="form-label">ОМС</label>
+                                    <input type="text" class="form-control" id="employeeOMS" 
+                                        placeholder="Номер полиса ОМС"
+                                        maxlength="16">
+                                    <div class="invalid-feedback" id="omsFeedback"></div>
+                                    <div class="length-counter">
+                                        <span>Кол-во символов: </span><span id="omsCounter">0</span>/16
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="employeeDMS" class="form-label">ДМС</label>
+                                    <input type="text" class="form-control" id="employeeDMS" 
+                                        placeholder="Номер полиса ДМС"
+                                        maxlength="16">
+                                    <div class="invalid-feedback" id="dmsFeedback"></div>
+                                    <div class="length-counter">
+                                        <span>Кол-во символов: </span><span id="dmsCounter">0</span>/16
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="employeeStatus" class="form-label">Статус*</label>
+                            <select class="form-select" id="employeeStatus" required>
+                                <option value="W" selected>Работает</option>
+                                <option value="V">В отпуске</option>
+                                <option value="BT">В командировке</option>
+                                <option value="S">На больничном</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4 is-learning-toggle">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="employeeIsLearning">
+                                <label class="form-check-label" for="employeeIsLearning">Сейчас обучается</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Отмена
+                </button>
+                <button type="button" class="btn btn-primary" id="submitEmployeeForm">
+                    Сохранить
+                    <span class="spinner-border spinner-border-sm d-none" id="addWorkerSpinner" role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- MODAL ADD WORKER -->
+
+<!-- MODAL EDIT WORKER -->
+<div class="modal fade" id="editWorkerModal" tabindex="-1" aria-hidden="true" data-focus="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    Редактирование сотрудника
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="employee-form">
+                    <form id="employeeEditForm" method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="editEmployeeFullName" class="form-label">ФИО*</label>
+                            <input type="text" class="form-control" id="editEmployeeFullName" 
+                                   placeholder="Введите фамилию, имя и отчество" 
+                                   maxlength="100" required>
+                            <div class="d-flex justify-content-between">
+                                <div class="invalid-feedback" id="editFullNameFeedback">
+                                    Пожалуйста, введите корректное ФИО (2-3 слова, каждое с заглавной буквы)
+                                </div>
+                                <div class="length-counter">
+                                    <span>Кол-во символов: </span> <span id="editFullNameCounter">0</span>/100
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Пол*</label>
+                                <div class="d-flex gap-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="editEmployeeGender" id="editEmployeeGenderMale" value="M">
+                                        <label class="form-check-label" for="editEmployeeGenderMale">Мужской</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="editEmployeeGender" id="editEmployeeGenderFemale" value="F">
+                                        <label class="form-check-label" for="editEmployeeGenderFemale">Женский</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="editEmployeeBirthDate" class="form-label">Дата рождения*</label>
+                                <input type="date" class="form-control" id="editEmployeeBirthDate" required>
+                                <div class="invalid-feedback" id="editBirthDateFeedback">
+                                    Пожалуйста, укажите корректную дату рождения
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editEmployeePosition" class="form-label">Должность*</label>
+                            <input type="text" class="form-control" id="editEmployeePosition" 
+                                   placeholder="Введите должность" 
+                                   maxlength="50" required>
+                            <div class="d-flex justify-content-between">
+                                <div class="invalid-feedback">
+                                    Пожалуйста, укажите должность
+                                </div>
+                                <div class="length-counter">
+                                    <span>Кол-во символов: </span><span id="editPositionCounter">0</span>/50
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editEmployeeStruct" class="form-label">Структурное подразделение</label>
+                            <textarea class="form-control" id="editEmployeeStruct" 
+                                   placeholder="Введите структурное подразделение"
+                                   rows="2" maxlength="1000"></textarea>
+                            <div class="d-flex justify-content-between">                                
+                                <div class="length-counter">
+                                    <span>Кол-во символов: </span><span id="editStructCounter">0</span>/1000
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><b>Медицинские полисы</b></label>
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label for="editEmployeeOMS" class="form-label">ОМС</label>
+                                    <input type="text" class="form-control" id="editEmployeeOMS" 
+                                        placeholder="Номер полиса ОМС"
+                                        maxlength="16">
+                                    <div class="invalid-feedback" id="editOmsFeedback"></div>
+                                    <div class="length-counter">
+                                        <span>Кол-во символов: </span><span id="editOmsCounter">0</span>/16
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="editEmployeeDMS" class="form-label">ДМС</label>
+                                    <input type="text" class="form-control" id="editEmployeeDMS" 
+                                        placeholder="Номер полиса ДМС"
+                                        maxlength="16">
+                                    <div class="invalid-feedback" id="editDmsFeedback"></div>
+                                    <div class="length-counter">
+                                        <span>Кол-во символов: </span><span id="editDmsCounter">0</span>/16
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editEmployeeStatus" class="form-label">Статус*</label>
+                            <select class="form-select" id="editEmployeeStatus" required>
+                                <option value="W">Работает</option>
+                                <option value="V">В отпуске</option>
+                                <option value="BT">В командировке</option>
+                                <option value="S">На больничном</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4 is-learning-toggle">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="editEmployeeIsLearning">
+                                <label class="form-check-label" for="editEmployeeIsLearning">Сейчас обучается</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Отмена
+                </button>
+                <button type="button" class="btn btn-primary" id="submitEditEmployeeForm">
+                    Сохранить изменения
+                    <span class="spinner-border spinner-border-sm d-none" id="editWorkerSpinner" role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- MODAL EDIT WORKER -->
+
+<!-- MODAL DEL EDU -->
+<div class="modal fade" id="delEduModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Вы уверены, что хотите удалить данные об обучении?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <form id="deleteEduForm" method="post" action="">
+          {% csrf_token %}
+           <button type="button" class="btn btn-danger">
+               Удалить
+               <span class="spinner-border spinner-border-sm d-none" id="delEduSpinner" role="status" aria-hidden="true"></span>
+            </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- MODAL DEL EDU -->
+
+<!-- MODAL DEL MED -->
+<div class="modal fade" id="delMedModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Вы уверены, что хотите удалить данные о медосмотре?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <form id="deleteMedForm" method="post" action="">
+          {% csrf_token %}
+           <button type="submit" class="btn btn-danger">
+            Удалить
+            <span class="spinner-border spinner-border-sm d-none" id="delSubmitSpinner" role="status" aria-hidden="true"></span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- MODAL DEL MED -->
+
+<!-- MODAL DEL WORKER -->
+<div class="modal fade" id="delWorkerModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Вы уверены, что хотите удалить сотрудника <span id="employeeName"></span>?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <form id="deleteEmployeeForm" method="post" action="">
+          {% csrf_token %}
+        <button type="submit" class="btn btn-danger">
+            Удалить
+            <span class="spinner-border spinner-border-sm d-none" id="delWorkerSpinner" role="status" aria-hidden="true"></span>
+        </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- MODAL DEL WORKER -->
+
+<!-- MODAL ADD MED -->
+<div class="modal fade" id="addMedModal" tabindex="-1" aria-labelledby="addMedModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addMedModalLabel">Добавить медосмотр</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="medicalExamAddForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="medicalExamType" class="form-label">Тип медосмотра*</label>
+                        <select class="form-select" id="medicalExamType" required>
+                            <option value="">Выберите тип</option>
+                            <option value="periodic">Периодический</option>
+                            <option value="preliminary">Предварительный</option>
+                            <option value="fluorography">Флюорография</option>
+                            <option value="psych_examination">Псих. освидетельствование</option>
+                        </select>
+                        <div class="invalid-feedback">Пожалуйста, выберите тип</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="medicalExamDate" class="form-label">Дата прохождения*</label>
+                            <input type="date" class="form-control" id="medicalExamDate" required>
+                            <div class="invalid-feedback">Укажите дату</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="medicalExamExpiryDate" class="form-label">Дата окончания*</label>
+                            <input type="date" class="form-control" id="medicalExamExpiryDate" required>
+                            <div class="invalid-feedback">Укажите дату</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Прикрепленные файлы</label>
+                        <input type="file" id="medicalFileInput" multiple style="display: none;">
+                        <button type="button" id="medicalFileUploadBtn" class="btn btn-outline-primary btn-sm mb-2">
+                            <i class="bi bi-plus"></i> Добавить файлы
+                        </button>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Имя файла</th>
+                                        <th>Размер</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="medicalFileList">
+                                    <tr>
+                                        <td colspan="4" class="text-muted text-center">Нет прикрепленных файлов</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                 <button type="button" class="btn btn-primary" id="submitMedicalExamForm">
+                    Сохранить
+                    <span class="spinner-border spinner-border-sm d-none" id="submitSpinner" role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- MODAL ADD MED -->
+
+<!-- MODAL ALL MED -->
+<div class="modal fade" id="allMedModal" tabindex="-1" aria-labelledby="allMedLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" style="max-width: 95vw;">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="allMedLabel">Все данные о медицинских осмотрах</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Фильтры -->
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-2">
+                        <input type="text" id="allMedSearch" class="form-control" placeholder="Поиск..." maxlength="255">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text">с</span>
+                            <input type="date" id="medDateFrom" class="form-control" placeholder="Дата с">
+                            <span class="input-group-text">по</span>
+                            <input type="date" id="medDateTo" class="form-control" placeholder="Дата по">
+                            <button id="resetMedDates" class="btn btn-outline-secondary" type="button">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered all-data-tbl" id="allMedicalExamsTable">
+                        <thead>
+                            <tr>
+                                <th class="sortable" style="width: 50px;" data-column="index">№</th>
+                                <th class="sortable" style="min-width: 180px;" data-column="owner">ФИО</th>
+                                <th class="sortable" style="min-width: 180px;" data-column="type">Вид осмотра</th>
+                                <th class="sortable date" style="min-width: 140px;" data-column="date_from">Дата прохождения</th>
+                                <th class="sortable date" style="min-width: 140px;" data-column="date_to">Дата окончания</th>
+                                <th class="sortable" style="min-width: 180px;" data-column="attachments_count">Файлы</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allMedicalExamsTableBody">
+                            <tr><td colspan="6" style="text-align: center">Загрузка данных...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- MODAL ALL MED -->
+
+<!-- MODAL EDIT MED -->
+<div class="modal fade" id="editMedModal" tabindex="-1" aria-hidden="true" data-focus="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Редактирование медосмотра</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="medical-exam-form">
+                    <form id="medicalExamEditForm" method="post">
+                        <input type="hidden" id="medicalExamId">
+                        
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="editMedicalExamType" class="form-label">Тип медосмотра*</label>
+                            <select class="form-select" id="editMedicalExamType" required>
+                                <option value="" disabled>Выберите тип</option>
+                                <option value="periodic">Периодический</option>
+                                <option value="preliminary">Предварительный</option>
+                                <option value="fluorography">Флюорография</option>
+                                <option value="psych_examination">Псих. освидетельствование</option>
+                            </select>
+                            <div class="invalid-feedback">Пожалуйста, выберите тип</div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editMedicalExamDate" class="form-label">Дата прохождения*</label>
+                                <input type="date" class="form-control" id="editMedicalExamDate" required>
+                                <div class="invalid-feedback">Укажите дату</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="editMedicalExamExpiryDate" class="form-label">Дата окончания*</label>
+                                <input type="date" class="form-control" id="editMedicalExamExpiryDate" required>
+                                <div class="invalid-feedback">Укажите дату</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Прикрепленные файлы</label>
+                            <input type="file" id="editMedicalFileInput" multiple style="display: none;">
+                            <button type="button" id="editMedicalFileUploadBtn" class="btn btn-outline-primary btn-sm mb-2">
+                                <i class="bi bi-plus"></i> Добавить файлы
+                            </button>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Имя файла</th>
+                                            <th>Размер</th>
+                                            <th>Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="editMedicalFileList">
+                                        <tr>
+                                            <td colspan="4" class="text-muted text-center">Нет прикрепленных файлов</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="submitEditMedicalExamForm">
+                    Сохранить
+                    <span class="spinner-border spinner-border-sm d-none" id="editSubmitSpinner" role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- MODAL EDIT MED -->
+
+<!-- MODAL MED NAPRAV -->
+<div class="modal fade" id="mednapravModal" tabindex="-1" aria-hidden="true" data-focus="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    Формирование направления на медосмотр
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            
+            <!-- Тело модального окна с формой -->
+            <div class="modal-body">
+                <div class="medical-form">
+                    <form id="medicalExaminationForm" method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Тип медосмотра -->
+                        <div class="mb-4">
+                            <label for="napravExaminationType" class="form-label">Тип медосмотра*</label>
+                            <select class="form-select" id="napravExaminationType" required>
+                                <option value="" selected disabled>Выберите тип медосмотра</option>
+                                <option value="preliminary">Предварительный</option>
+                                <option value="periodic">Периодический</option>
+                                <option value="psychiatric">Психиатрическое освидетельствование</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Общие поля для всех типов -->
+                        <div id="napravCommonFields">
+                            <!-- ФИО одним полем -->
+                            <div class="mb-3">
+                                <label for="napravEmployeeFullName" class="form-label">ФИО*</label>
+                                <input type="text" class="form-control" id="napravEmployeeFullName" 
+                                       placeholder="Введите фамилию, имя и отчество" 
+                                       maxlength="100" required>
+                                <div class="d-flex justify-content-between">
+                                    <div class="invalid-feedback" id="napravEmployeeFullNameFeedback">
+                                        Пожалуйста, введите корректное ФИО (2-3 слова, каждое с заглавной буквы)
+                                    </div>
+                                    <div class="length-counter">
+                                        <span>Кол-во символов: </span> <span id="napravFullNameCounter">0</span>/100
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="napravEmployeeBirthDate" class="form-label">Дата рождения*</label>
+                                    <input type="date" class="form-control" id="napravEmployeeBirthDate" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Пол*</label>
+                                    <div class="d-flex gap-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="napravEmployeeGender" id="napravEmployeeGenderMale" value="M" checked>
+                                            <label class="form-check-label" for="napravEmployeeGenderMale">Мужской</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="napravEmployeeGender" id="napravEmployeeGenderFemale" value="F">
+                                            <label class="form-check-label" for="napravEmployeeGenderFemale">Женский</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Поля для предварительного/периодического осмотра -->
+                        <div id="napravRegularExaminationFields" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label">Тип медицинского страхования*</label>
+                                <div class="mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="napravHasOMS">
+                                        <label class="form-check-label" for="napravHasOMS">ОМС</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="napravHasDMS">
+                                        <label class="form-check-label" for="napravHasDMS">ДМС</label>
+                                    </div>
+                                </div>
+                                
+                               <div id="napravOMSFields" style="display: none;">
+                                <label for="napravOMSNumber" class="form-label">Номер полиса ОМС*</label>
+                                <input type="text" class="form-control" id="napravOMSNumber" maxlength="16">
+                                <div class="invalid-feedback" id="napravOMSFeedback">
+                                    Номер полиса ОМС должен содержать 16 цифр
+                                </div>
+                                <div class="length-counter">
+                                    <span>Кол-во символов: </span><span id="napravOMSCounter">0</span>/16
+                                </div>
+                            </div>
+
+                            <div id="napravDMSFields" style="display: none;">
+                                <label for="napravDMSNumber" class="form-label">Номер полиса ДМС*</label>
+                                <input type="text" class="form-control" id="napravDMSNumber" maxlength="16">
+                                <div class="invalid-feedback" id="napravDMSFeedback">
+                                    Номер полиса ДМС должен содержать минимум 10 символов
+                                </div>
+                                <div class="length-counter">
+                                    <span>Кол-во символов: </span><span id="napravDMSCounter">0</span>/16
+                                </div>
+                            </div>
+                                
+                                <div class="invalid-feedback" id="napravInsuranceFeedback">
+                                    Укажите хотя бы один тип страхования (ОМС или ДМС)
+                                </div>
+                            </div>
+                            <!-- Номер и дата направления -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="napravNumber" class="form-label">Номер направления*</label>
+                                    <input type="text" class="form-control" id="napravNumber" required>
+                                    <div class="invalid-feedback">
+                                        Пожалуйста, укажите номер направления
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="napravCreationDate" class="form-label">Дата составления направления*</label>
+                                    <input type="date" class="form-control" id="napravCreationDate" required>
+                                    <div class="invalid-feedback">
+                                        Пожалуйста, укажите дату составления
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Сведения о медицинской организации -->
+                            <div class="mb-4 mt-4">
+                                <h6 class="fw-bold border-bottom pb-2">Сведения о медицинской организации</h6>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="napravMedicalOrganization" class="form-label">Наименование медицинской организации*</label>
+                                <input type="text" class="form-control" id="napravMedicalOrganization" required>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="napravMedicalAddress" class="form-label">Фактический адрес местонахождения*</label>
+                                    <input type="text" class="form-control" id="napravMedicalAddress" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="napravOgrnCode" class="form-label">Код по ОГРН*</label>
+                                    <input type="text" class="form-control" id="napravOgrnCode" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="napravMedicalEmail" class="form-label">Электронная почта</label>
+                                    <input type="email" class="form-control" id="napravMedicalEmail">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="napravMedicalPhone" class="form-label">Контактный телефон</label>
+                                    <input type="tel" class="form-control" id="napravMedicalPhone" maxlength="12">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="napravDepartmentName" class="form-label">Наименование структурного подразделения</label>
+                                <input type="text" class="form-control" id="napravDepartmentName">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="napravEmployeePosition" class="form-label">Наименование должности (профессии) или вида работы*</label>
+                                <input type="text" class="form-control" id="napravEmployeePosition" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="napravHazardFactors" class="form-label">Вредные и (или) опасные производственные факторы, виды работ</label>
+                                <textarea class="form-control" id="napravHazardFactors" rows="3"></textarea>
+                            </div>
+                            
+                            <!-- Уполномоченный представитель работодателя -->
+                            <div class="mb-4 mt-4">
+                                <h6 class="fw-bold border-bottom pb-2">Уполномоченный представитель работодателя</h6>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="napravEmployerRepresentativeName" class="form-label">ФИО*</label>
+                                    <input type="text" class="form-control" id="napravEmployerRepresentativeName" placeholder="Введите ФИО представителя" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="napravEmployerRepresentativePosition" class="form-label">Должность*</label>
+                                    <input type="text" class="form-control" id="napravEmployerRepresentativePosition" placeholder="Введите должность" required>
+                                </div>
+                            </div>                           
+                        </div>
+                        
+                        <!-- Поля для психиатрического освидетельствования -->
+                        <div id="napravPsychiatricExaminationFields" style="display: none;">                                                        
+                            <div class="mb-3">
+                                <label for="napravCreationDatePsych" class="form-label">Дата составления направления*</label>
+                                <input type="date" class="form-control" id="napravCreationDatePsych" name="napravCreationDatePsych" required>
+                                <div class="invalid-feedback">Пожалуйста, укажите дату составления направления</div>
+                            </div>
+                            
+                            <div class="mb-4 mt-4">
+                                <h6 class="fw-bold border-bottom pb-2">Сведения о работодателе</h6>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="napravEmployerName" class="form-label">Наименование работодателя*</label>
+                                <input type="text" class="form-control" id="napravEmployerName" required>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="napravEmployerEmail" class="form-label">Адрес электронной почты работодателя</label>
+                                    <input type="email" class="form-control" id="napravEmployerEmail">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="napravEmployerPhone" class="form-label">Контактный номер телефона работодателя</label>
+                                    <input type="tel" class="form-control" id="napravEmployerPhone" maxlength="12">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="napravOkvedCode" class="form-label">Вид экономической деятельности по ОКВЭД</label>
+                                <input type="text" class="form-control" id="napravOkvedCode">
+                            </div>
+
+                             <div class="mb-4 mt-4">
+                                <h6 class="fw-bold border-bottom pb-2">Сведения о медицинской организации</h6>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="napravMedicalOrgPsych" class="form-label">Наименование медицинской организации*</label>
+                                <input type="text" class="form-control" id="napravMedicalOrgPsych" required>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="napravMedicalAddressPsych" class="form-label">Фактический адрес местонахождения*</label>
+                                    <input type="text" class="form-control" id="napravMedicalAddressPsych" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="napravOgrnPsych" class="form-label">ОГРН*</label>
+                                    <input type="text" class="form-control" id="napravOgrnPsych" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="napravMedicalEmailPsych" class="form-label">Электронная почта</label>
+                                    <input type="email" class="form-control" id="napravMedicalEmailPsych">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="napravMedicalPhonePsych" class="form-label">Контактный телефон</label>
+                                    <input type="tel" class="form-control" id="napravMedicalPhonePsych" maxlength="12">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="napravEmployeePositionPsych" class="form-label">Наименование должности (профессии) работника*</label>
+                                <input type="text" class="form-control" id="napravEmployeePositionPsych" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="napravActivityTypes" class="form-label">Вид (виды) деятельности согласно Приказу №342н</label>
+                                <textarea class="form-control" id="napravActivityTypes" rows="3"></textarea>
+                            </div>
+
+                            <!-- Сведения о заключениях -->
+                            <div class="mb-3">
+                                <label for="napravPreviousConclusions" class="form-label">Сведения о заключениях, выданных по результатам обязательных предварительных и (или) периодических медицинских осмотров работников, предусмотренных статьей 220 Трудового кодекса Российской Федерации</label>
+                                <textarea class="form-control" id="napravPreviousConclusions" rows="3"></textarea>
+                            </div>
+
+                             <div class="mb-3">
+                                <label for="napravDirectionDate" class="form-label">Дата выдачи направления работнику</label>
+                                <input type="date" class="form-control" id="napravDirectionDate">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Отмена
+                </button>
+                <button type="button" class="btn btn-primary" id="submitMedicalForm">
+                    Сформировать направление
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- MODAL MED NAPRAV -->
+
+
+<!-- MODAL ADD EDU -->
+<div class="modal fade" id="addEduModal" tabindex="-1" aria-hidden="true" data-focus="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Добавление данных об обучении</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="education-form">
+                    <form id="educationAddForm" method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="educationProgram" class="form-label">Программа обучения*</label>
+                            <select class="form-select" id="educationProgram" required>
+                                <option value="" selected disabled>Выберите программу обучения</option>
+                                <option value="ot_managers">Охрана труда руководителей и специалистов</option>
+                                <option value="ot_teachers">Охрана труда профессорско-преподавательского состава</option>
+                                <option value="first_aid">Оказание первой помощи</option>
+                                <option value="fire_safety">Пожарный минимум</option>
+                                <option value="electrical_safety">Электробезопасность</option>
+                                <option value="sanitary_minimum">Санитарный минимум</option>
+                                <option value="civil_defense">Гражданская оборона и чрезвычайные ситуации</option>
+                                <option value="anti_terror">Антитеррор</option>
+                            </select>
+                            <div class="invalid-feedback">Пожалуйста, выберите программу обучения</div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="educationProtocolNum" class="form-label">№ протокола*</label>
+                                <input type="text" class="form-control" id="educationProtocolNum" placeholder="Введите номер протокола" maxlength="255" required>
+                                <div class="invalid-feedback">Пожалуйста, укажите номер протокола</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="educationCertNum" class="form-label">№ удостоверения*</label>
+                                <input type="text" class="form-control" id="educationCertNum" placeholder="Введите номер удостоверения" maxlength="255" required>
+                                <div class="invalid-feedback">Пожалуйста, укажите номер удостоверения</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="educationHours" class="form-label">Кол-во часов*</label>
+                            <input type="number" class="form-control" id="educationHours" placeholder="Введите количество часов" min="1" max="1000" required>
+                            <div class="invalid-feedback">Пожалуйста, укажите корректное количество часов (1-1000)</div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="educationDateFrom" class="form-label">Дата начала обучения*</label>
+                                <input type="date" class="form-control" id="educationDateFrom" required>
+                                <div class="invalid-feedback">Пожалуйста, укажите дату начала обучения</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="educationDateTo" class="form-label">Дата окончания обучения*</label>
+                                <input type="date" class="form-control" id="educationDateTo" required>
+                                <div class="invalid-feedback">Пожалуйста, укажите дату окончания обучения</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Прикрепленные файлы</label>
+                            <input type="file" id="educationFileInput" multiple style="display: none;">
+                            <button type="button" id="educationFileUploadBtn" class="btn btn-outline-primary btn-sm mb-2">
+                                <i class="bi bi-plus"></i> Добавить файлы
+                            </button>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Имя файла</th>
+                                            <th>Размер</th>
+                                            <th>Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="educationFileList">
+                                        <tr>
+                                            <td colspan="4" class="text-muted text-center">Нет прикрепленных файлов</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+               <button type="button" class="btn btn-primary" id="submitEducationForm">
+                    Сохранить
+                    <span class="spinner-border spinner-border-sm d-none" id="submitEducationSpinner" role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- MODAL ADD EDU -->
+
+<!-- MODAL EDIT EDU -->
+<div class="modal fade" id="editEduModal" tabindex="-1" aria-hidden="true" data-focus="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Редактирование данных об обучении</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="education-form">
+                    <form id="educationEditForm" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" id="educationId">
+                        
+                        <div class="mb-3">
+                            <label for="editEducationProgram" class="form-label">Программа обучения*</label>
+                            <select class="form-select" id="editEducationProgram" required>
+                                <option value="" disabled>Выберите программу обучения</option>
+                                <option value="ot_managers">Охрана труда руководителей и специалистов</option>
+                                <option value="ot_teachers">Охрана труда профессорско-преподавательского состава</option>
+                                <option value="first_aid">Оказание первой помощи</option>
+                                <option value="fire_safety">Пожарный минимум</option>
+                                <option value="electrical_safety">Электробезопасность</option>
+                                <option value="sanitary_minimum">Санитарный минимум</option>
+                                <option value="civil_defense">Гражданская оборона и чрезвычайные ситуации</option>
+                                <option value="anti_terror">Антитеррор</option>
+                            </select>
+                            <div class="invalid-feedback">Пожалуйста, выберите программу обучения</div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editEducationProtocolNum" class="form-label">№ протокола*</label>
+                                <input type="text" class="form-control" id="editEducationProtocolNum" placeholder="Введите номер протокола" maxlength="255" required>
+                                <div class="invalid-feedback">Пожалуйста, укажите номер протокола</div>
+                            </div>
+            
+                            <div class="col-md-6">
+                                <label for="editEducationCertNum" class="form-label">№ удостоверения*</label>
+                                <input type="text" class="form-control" id="editEducationCertNum" placeholder="Введите номер удостоверения" maxlength="255" required>
+                                <div class="invalid-feedback">Пожалуйста, укажите номер удостоверения</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editEducationHours" class="form-label">Кол-во часов*</label>
+                            <input type="number" class="form-control" id="editEducationHours" placeholder="Введите количество часов" min="1" max="1000" required>
+                            <div class="invalid-feedback">Пожалуйста, укажите корректное количество часов (1-1000)</div>
+                        </div>
+                         
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editEducationDateFrom" class="form-label">Дата начала обучения*</label>
+                                <input type="date" class="form-control" id="editEducationDateFrom" required>
+                                <div class="invalid-feedback">Пожалуйста, укажите дату начала обучения</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="editEducationDateTo" class="form-label">Дата окончания обучения*</label>
+                                <input type="date" class="form-control" id="editEducationDateTo" required>
+                                <div class="invalid-feedback">Пожалуйста, укажите дату окончания обучения</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Прикрепленные файлы</label>
+                            <input type="file" id="editEducationFileInput" multiple style="display: none;">
+                            <button type="button" id="editEducationFileUploadBtn" class="btn btn-outline-primary btn-sm mb-2">
+                                <i class="bi bi-plus"></i> Добавить файлы
+                            </button>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Имя файла</th>
+                                            <th>Размер</th>
+                                            <th>Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="editEducationFileList">
+                                        <tr>
+                                            <td colspan="4" class="text-muted text-center">Нет прикрепленных файлов</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="submitEditEducationForm">
+                    Сохранить изменения
+                    <span class="spinner-border spinner-border-sm d-none" id="editEducationSpinner" role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- MODAL EDIT EDU -->
+
+<!-- MODAL ALL EDU -->
+<div class="modal fade" id="allEduModal" tabindex="-1" aria-labelledby="allEduLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" style="max-width: 95vw;">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="allEduLabel">Все данные об обучениях сотрудников</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-body">
+                <!-- Фильтры -->
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-2">
+                        <input type="text" id="allEduSearch" class="form-control" placeholder="Поиск" maxlength="255">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text">с</span>
+                            <input type="date" id="eduDateFrom" class="form-control" placeholder="Дата с">
+                            <span class="input-group-text">по</span>
+                            <input type="date" id="eduDateTo" class="form-control" placeholder="Дата по">
+                            <button id="resetEduDates" class="btn btn-outline-secondary" type="button">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive" style="overflow-x: auto;">
+                    <table class="table table-bordered all-data-tbl" id="allEducationsTable" style="min-width: 1200px;">
+                        <thead>
+                            <tr>
+                                <th class="sortable" style="width: 50px;" data-column="index">№</th>
+                                <th class="sortable" style="min-width: 200px;" data-column="owner">ФИО</th>
+                                <th class="sortable" style="min-width: 250px;" data-column="program">Программа</th>
+                                <th class="sortable" style="min-width: 150px;" data-column="protocol_num">№ протокола</th>
+                                <th class="sortable" style="min-width: 150px;" data-column="udostoverenie_num">№ удостоверения</th>
+                                <th class="sortable numeric" style="width: 100px;" data-column="hours">Часы</th>
+                                <th class="sortable date" style="min-width: 150px;" data-column="date_from">Дата начала</th>
+                                <th class="sortable date" style="min-width: 150px;" data-column="date_to">Дата окончания</th>
+                                <th class="sortable" style="min-width: 200px;" data-column="attachments_count">Файлы</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allEducationsTableBody">
+                            <tr><td colspan="9" style="text-align: center">Загрузка данных...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<!-- MODAL ALL EDU -->
+
+<div class="container-fluid">
+    <div class="row vh-100">
+        <!-- Левая колонка с меню -->
+        <div class="col-md-3 col-12 bg-light d-flex flex-column p-0 vh-100">
+    <div class="mb-1 border-bottom border-2 border-dark left-menue-div" id="all-med">Медосмотры</div>
+    <div class="mb-1 border-bottom border-2 border-dark left-menue-div" id="all-edu">Обучения</div>
+    <div class="mb-1 border-bottom border-2 border-dark left-menue-div sotrud">Сотрудники</div>
+    <div class="d-flex mb-1 border-bottom border-2 border-dark left-menue-control-div">
+        <span class="me-2 mb-1"><img id="addNewWorker" width="20px" src="{% static 'guard/images/add.png' %}" alt="add"></span>
+        <span class="me-2"><img id="delWorker" width="20px" src="{% static 'guard/images/del.png' %}" alt="del"></span>
+        <span><img id="editWorker" width="20px" src="{% static 'guard/images/edit.png' %}" alt="edit"></span>
+    </div>
+    <div class="search p-1"><input class="w-100 form-control" type="text" id="search-input" placeholder="Поиск"></div>
+    <fieldset class="p-3 border rounded bg-light">
+        <legend class="w-auto d-flex align-items-center toggle-filters" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="true" aria-controls="filtersCollapse">
+            <i class="bi bi-chevron-up me-2"></i>
+            Фильтры и сортировка
+        </legend>
+        <div class="collapse show" id="filtersCollapse">
+            <div class="mb-2">
+                <label class="form-label filters">Обучение:</label><br>
+                <div class="form-check form-check-inline">
+                    <input type="radio" checked class="form-check-input" id="allEdu" name="eduCheck" value="a">
+                    <label class="form-check-label filters" for="allEdu">Все</label>
+                </div><br>
+                <div class="form-check form-check-inline">
+                    <input type="radio" class="form-check-input" id="ed" name="eduCheck" value="e">
+                    <label class="form-check-label filters" for="ed">Обучаются</label>
+                </div><br>
+                <div class="form-check form-check-inline">
+                    <input type="radio" class="form-check-input" id="ned" name="eduCheck" value="ne">
+                    <label class="form-check-label filters" for="ned">Не обучаются</label>
+                </div>
+            </div>
+            
+            <div class="mb-2 mt-3">
+                <label class="form-label filters">Пол:</label><br>
+                <div class="form-check">
+                    <input type="radio" checked class="form-check-input me-2" id="all" name="gender" value="a">
+                    <label class="form-check-label filters" for="all">Все</label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input me-2" id="male" name="gender" value="M">
+                    <label class="form-check-label filters" for="male">Мужской</label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input me-2" id="female" name="gender" value="F">
+                    <label class="form-check-label filters" for="female">Женский</label>
+                </div>
+            </div>
+
+            <div class="row g-2">
+                <div class="w-100 filters">Возраст:</div>
+                <div class="col-6">
+                    <label class="form-label filters">от:</label>
+                    <input type="number" id="age_from" class="form-control" min="0" max="120">
+                </div>
+                <div class="col-6">
+                    <label class="form-label filters">до:</label>
+                    <input type="number" id="age_to" class="form-control" min="0" max="120">
+                </div>
+            </div>
+
+            <div class="mt-3"><hr>
+                <label class="form-label filters">Порядок сортировки:</label>
+                <div class="form-check">
+                    <input type="radio" checked class="form-check-input me-2" id="asc-sort" name="sort" value="a">
+                    <label class="form-check-label filters" for="asc-sort">По возрастанию (А-Я)</label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input me-2" id="desc-sort" name="sort" value="d">
+                    <label class="form-check-label filters" for="desc-sort">По убыванию (Я-А)</label>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+
+    <div class="worker-wrapper flex-grow-1 overflow-auto" id="worker-container">
+        {% for employee in employees %}
+            <div class="worker" data-id="{{employee.id}}" onclick="getWorkerData({{ employee.id }}); clickOnWorker($(this))">
+                {% with employee.FIO.split as FIO_parts %}
+                    {{ FIO_parts.0 }} {{ FIO_parts.1|first }}. {% if FIO_parts.2 %} {{ FIO_parts.2|first }}. {% endif %}
+                {% endwith %}
+            </div>
+             {% empty %}
+            <div class="text-center text-muted">Нет сотрудников</div>
+        {% endfor %}       
+    </div>
+</div>
+
+        <!-- Правая колонка с информацией -->
+        <div class="p-0 col-md-9 col-12 d-flex flex-column right-menue vh-100">
+            <div class="d-flex info justify-content-end align-items-center">
+    {% if request.user.is_authenticated %}
+    <span class="me-3">Здравствуйте, {{ request.user.first_name }} {% if request.user.email %} ({{ request.user.email }}) {% endif %}</span>
+    <!-- Dropdown настроек -->
+    <div class="dropdown me-3">
+        <a class="dropdown-toggle" href="#" role="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <img id="settings" width="25px" src="{% static 'guard/images/settings.png' %}" alt="Настройки">
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
+            <li>
+                <a class="dropdown-item" href="{% url 'guard:change-pass' %}">
+                    <img class="me-2" width="25px" src="{% static 'guard/images/passwd.png' %}" alt="">Изменить пароль
+                </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <a class="dropdown-item" href="{% url 'guard:logout-confirm' %}">
+                    <img class="me-2" width="25px" src="{% static 'guard/images/exit.png' %}" alt="">Выйти
+                </a>
+            </li>
+        </ul>
+    </div>
+    <!-- Dropdown уведомлений -->
+    <div class="dropdown me-3">
+        <button class="btn dropdown-toggle" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="{%static 'guard/images/info.png'%}" alt="notify"> <span class="badge bg-light text-dark fs-5" id="notificationCount">0</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" id="notificationMenu" aria-labelledby="notificationDropdown">
+            <li class="dropdown-item text-center">Нет новых уведомлений</li>
+        </ul>
+    </div>
+{% endif %}
+</div>
+
+            <div class="d-flex worker-info pb-3">
+                <span class="ms-2" id="worker-info-fio">Выберите сотрудника</span>
+            </div>
+            
+            <nav>
+                <div class="nav d-flex justify-content-start pb-3 tabs" id="nav-tab" role="tablist">
+                <button 
+                    class="active nav-link nav-btns align-self-center" 
+                    id="nav-main-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#nav-main" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="nav-main" 
+                    aria-selected="false">
+                    Общее
+                </button>
+
+                <button 
+                    class="nav-link nav-btns" 
+                    id="nav-med-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#nav-med" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="nav-med" 
+                    aria-selected="false">
+                    Медосмотры
+                </button>
+
+                <button 
+                    class="nav-link nav-btns" 
+                    id="nav-education-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#nav-education" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="nav-education" 
+                    aria-selected="false">
+                    Обучение
+                </button>
+                </div>
+            </nav>
+
+            <div class="tab-content flex-grow-1 d-flex flex-column overflow-hidden">
+                <div class="tab-pane fade show active h-100" id="nav-main" role="tabpanel" aria-labelledby="nav-main-tab">
+                    <div class="table-responsive h-100" style="max-height: 70vh;">
+                        <table class="table table-bordered table-hover info-tbl" id="info-tbl-main">
+                            <thead class="table-light sticky-top" style="top: 0">                            
+                            <tr>
+                                <th style="width: 20px;">№</th>
+                                <th>Дата рождения</th>
+                                <th>Пол</th>
+                                <th>ОМС</th>
+                                <th>ДМС</th>
+                                <th>подразделение</th>
+                                <th>Должность</th>
+                                <th>Статус</th>
+                                <th>Обучается</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr></tr>                            
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="nav-med" role="tabpanel" aria-labelledby="nav-med-tab">
+                    <div class="table-responsive h-100" style="max-height: 70vh;">
+                        <table class="table table-bordered table-hover info-tbl" id="info-tbl-med">
+                            <thead class="table-light sticky-top" style="top: 0">
+                                <tr>
+                                    <th class="bg-white" colspan="6">
+                                        <span><img id="addMed" width="20px" src="{% static 'guard/images/add.png' %}" alt="add"></span>
+                                        <span><img id="editMed" width="20px" src="{% static 'guard/images/edit.png' %}" alt="edit"></span>
+                                        <span><img id="delMed" width="20px" src="{% static 'guard/images/del.png' %}" alt="delete"></span>
+                                        <span><img id="createDoc" width="22px" src="{% static 'guard/images/doc.png' %}" alt="create document"></span>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th class="sortable-med" style="width: 20px;">№</th>
+                                    <th class="sortable-med">Вид</th>
+                                    <th class="date sortable-med">Дата прохождения</th>
+                                    <th class="date sortable-med">Дата окончания действия</th>
+                                    <th class="sortable-med">Файлы</th>                               
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr></tr>                            
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="nav-education" role="tabpanel" aria-labelledby="nav-education-tab">
+                    <div class="table-responsive h-100" style="max-height: 70vh;">
+                        <table class="table table-bordered table-hover info-tbl" id="info-tbl-education">
+                            <thead class="table-light sticky-top" style="top: 0">
+                                <tr>
+                                    <th class="bg-white" colspan="8">
+                                        <span><img id="addEdu" width="20px" src="{% static 'guard/images/add.png' %}" alt="add"></span>
+                                        <span><img id="editEdu" width="20px" src="{% static 'guard/images/edit.png' %}" alt="edit"></span>
+                                        <span><img id="delEdu" width="20px" src="{% static 'guard/images/del.png' %}" alt="delete"></span>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th class="sortable-edu" style="width: 20px;">№</th>
+                                    <th class="sortable-edu">Программа</th>
+                                    <th class="sortable-edu">№ протокола</th>
+                                    <th class="sortable-edu">№ удостоверения</th>   
+                                    <th class="sortable-edu" class="numeric">Кол-во часов</th>  
+                                    <th class="date sortable-edu">Дата начала обучения</th>   
+                                    <th class="date sortable-edu">Дата окончания обучения</th>
+                                    <th class="sortable-edu">Файлы</th>                       
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr></tr>                            
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

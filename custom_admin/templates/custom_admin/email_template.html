@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Welcome to Your Platform</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, Helvetica, sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f4f4; padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <!-- Main Container -->
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding: 30px 20px; background-color: #007bff;">
+                            <h2 style="color: #ffffff; margin: 0;">СУД ОТ</h2>
+                        </td>
+                    </tr>
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h1 style="font-size: 24px; color: #333333; margin: 0 0 20px; text-align: center;">Здравствуйте, {{ user_name }}!</h1>
+                            <p style="font-size: 16px; color: #555555; line-height: 1.6; margin: 0 0 20px;">
+                                Добро пожаловать на нашу платформу! Ваш аккаунт успешно создан. Ниже указаны ваши учетные данные для входа.
+                            </p>
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 20px 0; background-color: #f8f9fa; border-radius: 4px; padding: 15px;">
+                                <tr>
+                                    <td style="font-size: 16px; color: #555555; padding: 10px 0;">
+                                        <strong>Логин:</strong> {{ username }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size: 16px; color: #555555; padding: 10px 0;">
+                                        <strong>Email:</strong> {{ email }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size: 16px; color: #555555; padding: 10px 0;">
+                                        <strong>Пароль:</strong> {{ password }}
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="font-size: 16px; color: #555555; line-height: 1.6; margin: 0 0 20px;">
+                                Пожалуйста, войдите в систему и смените пароль для повышения безопасности.
+                            </p>
+                            <!-- Call to Action Button -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 30px auto;">
+                                <tr>
+                                    <td style="border-radius: 4px; background-color: #007bff;">
+                                        <a href="{{ login_url }}" style="display: inline-block; padding: 12px 30px; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 4px;" target="_blank">Войти</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 20px 30px; background-color: #f8f9fa; text-align: center;">
+                            <p style="font-size: 14px; color: #777777; margin: 0 0 10px;">
+                                Если у вас есть вопросы, свяжитесь с нами по адресу <a href="mailto:support@corp.ru" style="color: #007bff; text-decoration: none;">support@corp.ru</a>.
+                            </p>                           
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

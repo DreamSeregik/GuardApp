@@ -1,0 +1,286 @@
+{% extends "custom_admin/base.html" %}
+{% load static i18n %}
+
+{% block content %}
+<!-- MODAL ADD USER -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Добавление нового пользователя</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm" method="post" action="{% url 'custom_admin:add_user' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Логин*</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                        <div class="invalid-feedback" id="usernameFeedback">Пожалуйста, введите логин</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">E-mail</label>
+                        <input type="email" class="form-control" id="email" name="email">
+                        <div class="invalid-feedback" id="emailFeedback">Пожалуйста, введите корректный email</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">ФИО</label>
+                        <input type="text" class="form-control" id="full_name" name="full_name">
+                    </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input type="checkbox" class="form-check-input" role="switch" id="is_staff" name="is_staff">
+                        <label class="form-check-label" for="is_staff">Администратор</label>
+                    </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input type="checkbox" class="form-check-input" role="switch" id="is_active" name="is_active" checked>
+                        <label class="form-check-label" for="is_active">Активен</label>
+                    </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input type="checkbox" class="form-check-input" role="switch" id="generate_password" name="generate_password" checked>
+                        <label class="form-check-label" for="generate_password">Сгенерировать новый пароль и отправить по e-mail</label>
+                    </div>
+                    <div class="mb-3 password-field password-fields-hidden">
+                        <label for="password1" class="form-label">Пароль*</label>
+                        <input type="password" class="form-control" id="password1" name="password1">
+                        <div class="invalid-feedback" id="password1Feedback">Пожалуйста, введите пароль</div>
+                    </div>
+                    <div class="mb-3 password-field password-fields-hidden">
+                        <label for="password2" class="form-label">Подтверждение пароля*</label>
+                        <input type="password" class="form-control" id="password2" name="password2">
+                        <div class="invalid-feedback" id="password2Feedback">Пожалуйста, подтвердите пароль</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        Сохранить
+                        <span class="spinner-border spinner-border-sm d-none" id="addUserSpinner" role="status" aria-hidden="true"></span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- MODAL ADD USER -->
+
+<!-- MODAL EDIT USER -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Редактирование пользователя</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm" method="post" action="">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="edit_username" class="form-label">Логин*</label>
+                        <input type="text" class="form-control" id="edit_username" name="username">
+                        <div class="invalid-feedback" id="editUsernameFeedback">Пожалуйста, введите логин</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_email" class="form-label">E-mail</label>
+                        <input type="email" class="form-control" id="edit_email" name="email">
+                        <div class="invalid-feedback" id="editEmailFeedback">Пожалуйста, введите корректный email</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_full_name" class="form-label">ФИО</label>
+                        <input type="text" class="form-control" id="edit_full_name" name="full_name">
+                    </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input type="checkbox" class="form-check-input" role="switch" id="edit_is_staff" name="is_staff">
+                        <label class="form-check-label" for="edit_is_staff">Администратор</label>
+                    </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input type="checkbox" class="form-check-input" role="switch" id="edit_is_active" name="is_active">
+                        <label class="form-check-label" for="edit_is_active">Активен</label>
+                    </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input type="checkbox" class="form-check-input" role="switch" id="edit_generate_password" name="generate_password">
+                        <label class="form-check-label" for="edit_generate_password">Сгенерировать новый пароль и отправить по e-mail</label>
+                    </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input type="checkbox" class="form-check-input" role="switch" id="edit_change_password" name="change_password">
+                        <label class="form-check-label" for="edit_change_password">Изменить пароль вручную</label>
+                    </div>
+                    <div class="mb-3 password-field password-field-hidden">
+                        <label for="password1" class="form-label">Пароль</label>
+                        <input type="password" class="form-control" id="edit_password1" name="password1">
+                        <div class="invalid-feedback" id="editPassword1Feedback">Пожалуйста, введите пароль</div>
+                    </div>
+                    <div class="mb-3 password-field password-field-hidden">
+                        <label for="password2" class="form-label">Подтверждение пароля</label>
+                        <input type="password" class="form-control" id="edit_password2" name="password2">
+                        <div class="invalid-feedback" id="editPassword2Feedback">Пожалуйста, введите подтверждение пароля</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        Сохранить
+                        <span class="spinner-border spinner-border-sm d-none" id="editUserSpinner" role="status" aria-hidden="true"></span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- MODAL EDIT USER -->
+
+<!-- MODAL DELETE USER -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение удаления</h5>
+                <button type="btn-close" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Вы уверены, что хотите удалить пользователя?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn" data-bs-dismiss="modal">Отмена</button>
+                <form id="deleteUserForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        Удалить
+                        <span class="spinner-border-sm d-none" id="deleteUserSpinner" role="status" aria-hidden="true"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- MODAL DELETE USER -->
+
+<div class="container-fluid">
+    <div class="row vh-100">
+        <!-- Левая колонка -->
+        <div class="col-md-3 col-12 bg-light d-flex flex-column p-0 vh-100">
+            <div class="mb-1 border-bottom border-2 border-dark left-menue-div sotrud">Пользователи</div>
+            <div class="d-flex mb-1 border-bottom border-2 border-dark left-menue-control-div">
+                <span class="me-2 mb-1"><img id="addNewUser" width="20px" src="{% static 'custom_admin/images/add.png' %}" alt="add"></span>
+                <span class="me-2"><img id="deleteUser" width="20px" src="{% static 'custom_admin/images/del.png' %}" alt="del"></span>
+                <span><img id="editUser" width="20px" src="{% static 'custom_admin/images/edit.png' %}" alt="edit"></span>
+            </div>
+            <div class="search p-1"><input class="w-100 form-control" type="text" id="search-input" placeholder="Поиск" value="{{ search_query }}"></div>
+            <fieldset class="p-3 border rounded bg-light">
+                <legend class="w-auto d-flex align-items-center toggle-filters" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="true">
+                    <i class="bi bi-chevron-up me-2"></i>
+                    Фильтры и сортировка
+                </legend>
+                <div class="collapse show" id="filtersCollapse">
+                    <div class="mb-2">
+                        <label class="form-label filters">Роль:</label><br>
+                        <div class="form-check form-check-inline">
+                            <input type="radio" class="form-check-input" id="allRoles" name="roleCheck" value="a" {% if role_filter == 'a' %}checked{% endif %}>
+                            <label class="form-check-label filters" for="allRoles">Все</label>
+                        </div><br>
+                        <div class="form-check form-check-inline">
+                            <input type="radio" class="form-check-input" id="adminRole" name="roleCheck" value="admin" {% if role_filter == 'admin' %}checked{% endif %}>
+                            <label class="form-check-label filters" for="adminRole">Администратор</label>
+                        </div><br>
+                        <div class="form-check form-check-inline">
+                            <input type="radio" class="form-check-input" id="userRole" name="roleCheck" value="user" {% if role_filter == 'user' %}checked{% endif %}>
+                            <label class="form-check-label filters" for="userRole">Пользователь</label>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label filters">Статус:</label><br>
+                        <div class="form-check form-check-inline">
+                            <input type="radio" class="form-check-input" id="allStatus" name="statusCheck" value="a" {% if status_filter == 'a' %}checked{% endif %}>
+                            <label class="form-check-label filters" for="allStatus">Все</label>
+                        </div><br>
+                        <div class="form-check form-check-inline">
+                            <input type="radio" class="form-check-input" id="activeStatus" name="statusCheck" value="active" {% if status_filter == 'active' %}checked{% endif %}>
+                            <label class="form-check-label filters" for="activeStatus">Активен</label>
+                        </div><br>
+                        <div class="form-check form-check-inline">
+                            <input type="radio" class="form-check-input" id="inactiveStatus" name="statusCheck" value="inactive" {% if status_filter == 'inactive' %}checked{% endif %}>
+                            <label class="form-check-label filters" for="inactiveStatus">Неактивен</label>
+                        </div>
+                    </div>
+                    <div class="mt-3"><hr>
+                        <label class="form-label filters">Сортировка:</label>
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input me-2" id="asc-sort" name="sort" value="a">
+                            <label class="form-check-label filters" for="asc-sort">По возрастанию (А-Я) (A-Z)</label>
+                        </div>
+                       <div class="form-check">
+                            <input type="radio" checked class="form-check-input me-2" id="desc-sort" name="sort" value="d">
+                            <label class="form-check-label filters" for="desc-sort">По убыванию (Я-А) (Z-A)</label>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            <div class="worker-wrapper flex-grow-1 overflow-auto" id="worker-container">
+                <div class="text-muted text-center">Загрузка пользователей...</div>
+            </div>
+        </div>
+
+        <!-- Правая колонка -->
+        <div class="p-0 col-md-9 col-12 d-flex flex-column right-menue vh-100">
+            <div class="d-flex info justify-content-end align-items-center">
+                {% if messages %}
+                    <div class="w-100 h-10 err-container" id="err-container">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if request.user.is_authenticated %}
+                    <span class="me-3">Здравствуйте, {% with full_name=request.user.first_name %}
+                        {% if full_name|length > 1 %}
+                            {{ full_name }}
+                        {% else %}
+                            {{ request.user.username }}
+                        {% endif %}
+                    {% endwith %} {% if request.user.email %} ({{ request.user.email }}) {% endif %}</span>
+                    <div class="dropdown me-3">
+                        <a class="dropdown-toggle" href="#" role="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img id="settings" width="25px" src="{% static 'custom_admin/images/settings.png' %}" alt="Настройки">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'custom_admin:change_password' %}">
+                                    <img class="me-2" width="25px" src="{% static 'custom_admin/images/passwd.png' %}" alt="">Изменить пароль
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'custom_admin:logout_confirm' %}">
+                                    <img class="me-2" width="25px" src="{% static 'custom_admin/images/exit.png' %}" alt="">Выйти
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="d-flex worker-info pb-3">
+                <span class="ms-2" id="worker-info-fio">Выберите пользователя</span>
+            </div>
+            <div class="flex-grow-1 d-flex flex-column overflow-hidden">
+                <div class="table-responsive h-100" style="max-height: 70vh;">
+                    <table class="table table-bordered table-hover info-tbl" id="info-tbl-users">
+                        <tbody>
+                            <tr>
+                                <th scope="row">ФИО</th>
+                                <td id="user-fio">Не выбрано</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">E-mail</th>
+                                <td id="user-email">Не выбрано</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Логин</th>
+                                <td id="user-login">Не выбрано</td>
+                            </tr>                            
+                            <tr>
+                                <th scope="row">Статус</th>
+                                <td id="user-status">Не выбрано</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

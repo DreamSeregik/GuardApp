@@ -1,0 +1,352 @@
+import secrets
+import string
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.db import DatabaseError, IntegrityError
+from django.http import HttpResponseForbidden, JsonResponse, HttpResponseRedirect
+from django.shortcuts import redirect, render, get_object_or_404
+from django.urls import reverse, reverse_lazy
+from django.views import View
+from django.views.generic import FormView
+from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.views import LogoutView
+from .forms import ChangePasswordForm, CustomUserCreationForm, CustomUserChangeForm
+from .emails import send_password_reset_email, send_welcome_email
+
+class AdminsOnlyMixin:
+    def dispatch(self, request, *args, **kwargs):
+       if not request.user.is_staff:
+           return redirect('guard:forbidden')
+       return super().dispatch(request, *args, **kwargs)
+
+class ApiUsersView(LoginRequiredMixin, AdminsOnlyMixin, View):
+    def get(self, request, *args, **kwargs):
+        users = User.objects.all().exclude(username='system_notification')
+        search_query = request.GET.get('search', '')
+        role_filter = request.GET.get('role', 'a')
+        status_filter = request.GET.get('status', 'a')
+        sort_type = request.GET.get('sort', 'asc')
+
+        if search_query:
+            users = users.filter(
+                username__icontains=search_query
+            ) | users.filter(
+                email__icontains=search_query
+            ) | users.filter(
+                last_name__icontains=search_query
+            ) | users.filter(
+                first_name__icontains=search_query
+            )
+        if role_filter == 'admin':
+            users = users.filter(is_staff=True)
+        elif role_filter == 'user':
+            users = users.filter(is_staff=False)
+        
+        if status_filter == 'active':
+            users = users.filter(is_active=True)
+        elif status_filter == 'inactive':
+            users = users.filter(is_active=False)
+
+        users = users.order_by('username' if sort_type == 'asc' else '-username')
+
+        user_list = [{
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name or '',
+            'last_name': user.last_name or ''
+        } for user in users]
+
+        return JsonResponse({'users': user_list})
+
+class AdminPanelView(LoginRequiredMixin, AdminsOnlyMixin, View):
+    template_name = 'custom_admin/admin_panel.html'
+
+    def get(self, request):
+        search_query = request.GET.get('search', '')
+        role_filter = request.GET.get('role', 'a')
+        status_filter = request.GET.get('status', 'a')
+        sort_type = request.GET.get('sort', 'desc')
+
+        users = User.objects.all().exclude(username='system_notification')
+        if search_query:
+            users = users.filter(username__icontains=search_query) | users.filter(email__icontains=search_query)
+        if role_filter == 'admin':
+            users = users.filter(is_staff=True)
+        elif role_filter == 'user':
+            users = users.filter(is_staff=False)
+        if status_filter == 'active':
+            users = users.filter(is_active=True)
+        elif status_filter == 'inactive':
+            users = users.filter(is_active=False)
+        if sort_type == 'asc':
+            users = users.order_by('username')
+        else:
+            users = users.order_by('-username')
+
+        context = {
+            'users': users,
+            'search_query': search_query,
+            'role_filter': role_filter,
+            'status_filter': status_filter,
+            'sort_type': sort_type,
+        }
+        return render(request, self.template_name, context)
+
+class AddUserView(LoginRequiredMixin, AdminsOnlyMixin, View):
+    template_name = 'custom_admin/admin_panel.html'
+    form_class = CustomUserCreationForm
+
+    def get(self, request):
+        return render(request, self.template_name, {'form': self.form_class()})
+
+    def post(self, request):
+        # Check if a user with the same username already exists
+        username = request.POST.get('username', '').strip()
+        if not username:
+            return JsonResponse({'error': 'Логин не указан'}, status=400)
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({'error': 'Пользователь с логином "' + username + '" уже существует'}, status=400)
+        
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            full_name = form.cleaned_data['full_name'].strip()
+            if full_name:
+                parts = full_name.split(maxsplit=1)
+                user.last_name = parts[0] if parts else ''
+                user.first_name = parts[1] if len(parts) > 1 else ''
+            else:
+                user.first_name = ''
+                user.last_name = ''
+            if form.cleaned_data['generate_password']:
+                password = ''.join(secrets.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(12))
+                user.set_password(password)
+                try:
+                    user.save()
+                    success = send_welcome_email(
+                        to_email=user.email,
+                        username=user.username,
+                        full_name=full_name,
+                        password=password
+                    )
+                    if success:
+                        return JsonResponse({'success': f'Пользователь "{username}" создан, пароль отправлен на {user.email}'})
+                    else:
+                        return JsonResponse({'error': f'Не удалось отправить пароль на email "{user.email}"'}, status=500)
+                except Exception as e:
+                    return JsonResponse({'error': f'Не удалось сохранить пользователя "{username}": {str(e)}'}, status=500)
+            else:
+                try:
+                    user.set_password(form.cleaned_data['password1'])
+                    user.save()
+                    return JsonResponse({'success': f'Пользователь "{username}" успешно создан'})
+                except Exception as e:
+                    return JsonResponse({'error': f'Не удалось сохранить пользователя "{username}": {str(e)}'}, status=500)
+        else:
+            # Detailed form errors
+            errors = {}
+            for field, field_errors in form.errors.items():
+                errors[field] = []
+                for error in field_errors:
+                    if field == '__all__':
+                        errors['general'] = error
+                    else:
+                        errors[field] = [error]
+            return JsonResponse({
+                'error': 'Ошибка валидации формы',
+                'details': errors
+            }, status=400)
+
+class EditUserView(LoginRequiredMixin, AdminsOnlyMixin, View):
+    template_name = 'custom_admin/admin_panel.html'
+    form_class = CustomUserChangeForm
+
+    def get(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        initial_data = {
+            'username': user.username,
+            'email': user.email,
+            'full_name': f"{user.last_name} {user.first_name}".strip(),
+            'is_staff': user.is_staff,
+            'is_active': user.is_active,
+        }
+        form = self.form_class(instance=user, initial=initial_data)
+        return render(request, self.template_name, {'form': form, 'edit_user': user})
+
+    def post(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        form = self.form_class(request.POST, instance=user)
+        if form.is_valid():
+            user = form.save(commit=False)
+            full_name = form.cleaned_data['full_name'].strip()
+            if full_name:
+                parts = full_name.split(maxsplit=1)
+                user.last_name = parts[0] if parts else ''
+                user.first_name = parts[1] if len(parts) > 1 else ''
+            else:
+                user.first_name = ''
+                user.last_name = ''
+
+            if form.cleaned_data['generate_password']:
+                if not request.session.get(f'password_generated_{user_id}'):
+                    user.save()
+                    return JsonResponse({'success': f'Пользователь "{user.username}" успешно обновлен'})
+                else:
+                    user.save()
+                    request.session.pop(f'password_generated_{user_id}', None)
+                    return JsonResponse({'success': f'Пользователь "{user.username}" успешно обновлен'})
+            # Если выбрано изменение пароля вручную
+            elif form.cleaned_data['change_password']:
+                user.set_password(form.cleaned_data['password1'])
+            # Если ни одна из опций не выбрана, пароль не меняется
+            user.save()
+            return JsonResponse({'success': f'Пользователь "{user.username}" успешно обновлен'})
+        return JsonResponse({'error': form.errors.as_json()}, status=400)
+
+class DeleteUserView(LoginRequiredMixin, AdminsOnlyMixin, View):
+    template_name = 'custom_admin/admin_panel.html'
+
+    def get(self, request, user_id):
+        try:
+            user = get_object_or_404(User, id=user_id)
+            return render(request, self.template_name, {'delete_user': user})
+        except Exception as e:
+            return JsonResponse({
+                'error': 'Ошибка при загрузке данных пользователя',
+                'details': {'exception': str(e)}
+            }, status=500)
+
+    def post(self, request, user_id):
+        try:
+            user = get_object_or_404(User, id=user_id)
+            # Check if user is trying to delete themselves
+            if user.id == request.user.id:
+                return JsonResponse({
+                    'error': 'нельзя удалить пользователя, под которым выполнен вход'                    
+                }, status=400)
+            # Check if user is the last admin
+            if user.is_staff and User.objects.filter(is_staff=True).exclude(username='system_notification').count() == 1:
+                return JsonResponse({
+                    'error': 'Нельзя удалить единственного администратора',
+                    'details': {
+                        'reason': 'Попытка удаления последнего пользователя с правами администратора',
+                        'user_id': user_id,
+                        'username': user.username
+                    }
+                }, status=400)
+
+            # Attempt to delete the user
+            user.delete()
+            return JsonResponse({
+                'success': f'Пользователь "{user.username}" успешно удален',
+                'details': {
+                    'user_id': user_id,
+                    'username': user.username
+                }
+            })
+
+        except User.DoesNotExist:
+            return JsonResponse({
+                'error': 'Пользователь не найден',
+                'details': {
+                    'reason': 'Пользователь с указанным ID не существует',
+                    'user_id': user_id
+                }
+            }, status=404)
+        except IntegrityError as e:
+            return JsonResponse({
+                'error': 'Ошибка целостности базы данных',
+                'details': {
+                    'reason': 'Удаление пользователя нарушит связи в базе данных',
+                    'exception': str(e),
+                    'user_id': user_id
+                }
+            }, status=500)
+        except DatabaseError as e:
+            return JsonResponse({
+                'error': 'Ошибка базы данных',
+                'details': {
+                    'reason': 'Произошла ошибка при взаимодействии с базой данных',
+                    'exception': str(e),
+                    'user_id': user_id
+                }
+            }, status=500)
+        except Exception as e:
+            return JsonResponse({
+                'error': 'Неизвестная ошибка при удалении пользователя',
+                'details': {
+                    'reason': 'Произошла непредвиденная ошибка',
+                    'exception': str(e),
+                    'user_id': user_id
+                }
+            }, status=500)
+
+class GeneratePasswordView(LoginRequiredMixin, AdminsOnlyMixin, View):
+     def post(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            password = ''.join(secrets.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(12))
+            user.set_password(password)
+            user.save()
+            
+            full_name = f"{user.last_name} {user.first_name}".strip()
+            
+            email_sent = send_password_reset_email(
+                to_email=user.email,
+                username=user.username,
+                full_name=full_name,
+                password=password,
+                request=request
+            )
+            
+            if email_sent:
+                request.session[f'password_generated_{user_id}'] = True
+                return JsonResponse({'success': 'Пароль сгенерирован и отправлен на e-mail'})
+            else:
+                return JsonResponse({'error': 'Ошибка отправки e-mail'}, status=500)
+                
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'Пользователь не найден'}, status=404)
+
+class ChangePasswordView(LoginRequiredMixin, FormView):
+    template_name = 'custom_admin/change_password.html'
+    form_class = ChangePasswordForm
+    success_url = reverse_lazy('custom_admin:admin_panel')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        update_session_auth_hash(self.request, form.user)
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Ошибка при смене пароля. Проверьте введённые данные.')
+        return super().form_invalid(form)
+
+class LogoutConfirmView(LoginRequiredMixin, View):
+    template_name = 'custom_admin/logout_confirm.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+class UserDetailView(LoginRequiredMixin, View):
+    def get(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            return JsonResponse({
+                'username': user.username,
+                'email': user.email,
+                'last_name': user.last_name,
+                'first_name': user.first_name,
+                'is_active': user.is_active,
+                'is_staff': user.is_staff,
+            })
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'Пользователь не найден'}, status=404)

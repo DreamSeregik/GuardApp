@@ -1,0 +1,168 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>СУД ОТ | Изменение пароля</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'guard/css/style.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'guard/js/helper.js' %}"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="login-container">
+            <div class="login-header d-block w-100">Изменение пароля</div>
+            <div class="form-content">
+                <form method="post" id="passwordChangeForm" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Общие ошибки (будут показаны через уведомления) -->
+                    {% if form.non_field_errors %}
+                        <div class="d-none" id="nonFieldErrors">
+                            {% for error in form.non_field_errors %}
+                                {{ error|escapejs }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-group mb-3">
+                        <label for="id_old_password">Текущий пароль</label>
+                        <input type="password" 
+                               name="old_password" 
+                               class="form-control {% if form.old_password.errors %}is-invalid{% endif %}" 
+                               id="id_old_password">
+                        {% if form.old_password.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.old_password.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="id_new_password1">Новый пароль</label>
+                        <input type="password" 
+                               name="new_password1" 
+                               class="form-control {% if form.new_password1.errors %}is-invalid{% endif %}" 
+                               id="id_new_password1">
+                        {% if form.new_password1.errors %}
+                            <div class="invalid-feedback">
+                                <ul class="mb-0 ps-3">
+                                    {% for error in form.new_password1.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="id_new_password2">Подтверждение пароля</label>
+                        <input type="password" 
+                               name="new_password2" 
+                               class="form-control {% if form.new_password2.errors %}is-invalid{% endif %}" 
+                               id="id_new_password2">
+                        {% if form.new_password2.errors %}
+                            <div class="invalid-feedback">
+                                <ul class="mb-0 ps-3">
+                                    {% for error in form.new_password2.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary flex-grow-1">Изменить пароль</button>
+                        <a href="{% url 'guard:index' %}" class="btn btn-secondary flex-grow-1">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Показываем общие ошибки через уведомления
+            const nonFieldErrors = document.getElementById('nonFieldErrors');
+            if (nonFieldErrors) {
+                const errors = nonFieldErrors.textContent.trim();
+                if (errors) {
+                    showNotification(errors, 'error');
+                }
+            }
+
+            // Валидация формы перед отправкой
+            const form = document.getElementById('passwordChangeForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    let isValid = true;
+                    const fields = [
+                        { id: 'id_old_password', message: 'Введите текущий пароль' },
+                        { id: 'id_new_password1', message: 'Введите новый пароль' },
+                        { id: 'id_new_password2', message: 'Подтвердите новый пароль' }
+                    ];
+
+                    // Сбрасываем стили ошибок
+                    fields.forEach(field => {
+                        const el = document.getElementById(field.id);
+                        el.classList.remove('is-invalid');
+                    });
+
+                    // Проверяем каждое поле
+                    fields.forEach(field => {
+                        const el = document.getElementById(field.id);
+                        if (!el.value.trim()) {
+                            el.classList.add('is-invalid');
+                            let feedback = el.nextElementSibling;
+                            
+                            if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+                                feedback = document.createElement('div');
+                                feedback.className = 'invalid-feedback';
+                                feedback.textContent = field.message;
+                                el.parentNode.appendChild(feedback);
+                            }
+                            
+                            isValid = false;
+                        }
+                    });
+
+                    // Проверка совпадения паролей
+                    const newPass1 = document.getElementById('id_new_password1');
+                    const newPass2 = document.getElementById('id_new_password2');
+                    
+                    if (newPass1.value && newPass2.value && newPass1.value !== newPass2.value) {
+                        newPass2.classList.add('is-invalid');
+                        let feedback = newPass2.nextElementSibling;
+                        
+                        if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+                            feedback = document.createElement('div');
+                            feedback.className = 'invalid-feedback';
+                            feedback.innerHTML = '<ul class="mb-0 ps-3"><li>Пароли не совпадают</li></ul>';
+                            newPass2.parentNode.appendChild(feedback);
+                        } else {
+                            feedback.innerHTML = '<ul class="mb-0 ps-3"><li>Пароли не совпадают</li></ul>';
+                        }
+                        
+                        isValid = false;
+                    }
+
+                    if (!isValid) {
+                        e.preventDefault();
+                        // Прокручиваем к первой ошибке
+                        const firstInvalid = document.querySelector('.is-invalid');
+                        if (firstInvalid) {
+                            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
