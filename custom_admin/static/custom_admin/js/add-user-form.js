@@ -25,6 +25,8 @@ const UserForm = {
         this.$password1Input = $('#password1');
         this.$password2Input = $('#password2');
         this.$spinner = $('#addUserSpinner');
+        this.$showPassword1 = $('#showPassword1');
+        this.$showPassword2 = $('#showPassword2');
     },
 
     bindEvents: function () {
@@ -34,6 +36,8 @@ const UserForm = {
         this.$usernameInput.on('input', this.validateUsernameInput.bind(this));
         this.$password1Input.on('input', this.validatePasswordInputs.bind(this));
         this.$password2Input.on('input', this.validatePasswordInputs.bind(this));
+        this.$showPassword1.on('change', this.togglePasswordVisibility.bind(this, 'password1'));
+        this.$showPassword2.on('change', this.togglePasswordVisibility.bind(this, 'password2'));
 
         this.$modal.on('show.bs.modal', this.handleModalShow.bind(this));
         this.$modal.on('shown.bs.modal', this.handleModalShown.bind(this));
@@ -80,9 +84,15 @@ const UserForm = {
     updatePasswordFields: function () {
         const showPasswordFields = !this.$generateCheckbox.prop('checked');
         $('.password-field').toggleClass('password-fields-hidden', !showPasswordFields);
+
+        const isEmailRequired = this.$generateCheckbox.prop('checked');
+        $('label[for="email"]').toggleClass('required-field', isEmailRequired);
+
         if (!showPasswordFields) {
             this.$password1Input.val('').removeClass('is-invalid');
             this.$password2Input.val('').removeClass('is-invalid');
+            this.$showPassword1.prop('checked', false)
+            this.$showPassword2.prop('checked', false)
             $('#password1Feedback').hide();
             $('#password2Feedback').hide();
         }
@@ -102,14 +112,30 @@ const UserForm = {
     validateEmailInput: function () {
         const email = this.$emailInput.val().trim();
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (this.$generateCheckbox.prop('checked') && (!email || !emailRegex.test(email))) {
-            this.$emailInput.addClass('is-invalid');
-            $('#emailFeedback').text(email ? 'Введите корректный email' : 'Пожалуйста, введите email').show();
-        } else {
-            this.$emailInput.removeClass('is-invalid');
-            $('#emailFeedback').hide();
+
+        if (this.$generateCheckbox.prop('checked')) {
+            if (!email) {
+                this.$emailInput.addClass('is-invalid');
+                $('#emailFeedback').text('Пожалуйста, введите email').show();
+                return false;
+            } else if (!emailRegex.test(email)) {
+                this.$emailInput.addClass('is-invalid');
+                $('#emailFeedback').text('Введите корректный email').show();
+                return false;
+            }
         }
+
+        this.$emailInput.removeClass('is-invalid');
+        $('#emailFeedback').hide();
+        return true;
     },
+
+    togglePasswordVisibility: function (fieldId) {
+        const $field = $(`#${fieldId}`);
+        const $checkbox = $(`#show${fieldId.charAt(0).toUpperCase() + fieldId.slice(1)}`);
+        $field.attr('type', $checkbox.prop('checked') ? 'text' : 'password');
+    },
+
 
     validatePasswordInputs: function () {
         if (this.$generateCheckbox.prop('checked')) {
@@ -157,20 +183,9 @@ const UserForm = {
         }
 
         // Валидация email
-        const email = this.$emailInput.val().trim();
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (this.$generateCheckbox.prop('checked')) {
-            if (!email) {
-                this.$emailInput.addClass('is-invalid');
-                $('#emailFeedback').text('Пожалуйста, введите email').show();
+            if (!this.validateEmailInput()) {
                 isValid = false;
-            } else if (!emailRegex.test(email)) {
-                this.$emailInput.addClass('is-invalid');
-                $('#emailFeedback').text('Введите корректный email').show();
-                isValid = false;
-            } else {
-                this.$emailInput.removeClass('is-invalid');
-                $('#emailFeedback').hide();
             }
         }
 
@@ -297,6 +312,8 @@ const UserForm = {
         $('#password1Feedback').hide();
         $('#password2Feedback').hide();
         this.$generateCheckbox.prop('checked', true);
+        this.$showPassword1.prop('checked', false)
+        this.$showPassword2.prop('checked', false)
         this.updatePasswordFields();
         this.hideSpinner();
     }

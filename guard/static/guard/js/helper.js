@@ -1,4 +1,4 @@
-const SERVER = 'http://127.0.0.1:8000'
+const SERVER = 'https://guardapp.onrender.com'
 const PERSONAL_DATA = `${SERVER}/worker/personal/`
 const PERSONAL_DATA_UPDATE = `${SERVER}/worker/personal/update/`
 const WORKER_DELETE = `${SERVER}/worker/delete/`

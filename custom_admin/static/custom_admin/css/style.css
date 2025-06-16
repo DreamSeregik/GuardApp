@@ -1,9 +1,19 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-weight: normal;
+}
+
 .toggle-filters:hover {
     cursor: pointer;
 }
 
 .toggle-filters .bi {
     font-size: 1.2rem;
+}
+
+.required-field::after {
+    content: " *";
 }
 
 fieldset legend {
@@ -37,12 +47,6 @@ fieldset legend {
 
 .password-fields-hidden {
     display: none !important;
-}
-
-body {
-    margin: 0;
-    padding: 0;
-    font-weight: normal;
 }
 
 .err-container {
@@ -144,26 +148,6 @@ tr.selected-row td {
 
 .worker-info span img {
     vertical-align: middle;
-}
-
-.tabs {
-    height: 50px;
-    border-bottom: 1px solid black;
-    padding-left: 13px;
-    font-size: 15pt;
-    background: white;
-}
-
-.tabs button {
-    color: rgb(97,97,97);
-}
-
-.nav-btns:hover {
-    color: red   
-}
-
-.nav-btns[aria-selected="true"] {
-    color: red
 }
 
 .left-menue-div {

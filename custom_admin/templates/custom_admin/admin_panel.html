@@ -43,11 +43,19 @@
                         <label for="password1" class="form-label">Пароль*</label>
                         <input type="password" class="form-control" id="password1" name="password1">
                         <div class="invalid-feedback" id="password1Feedback">Пожалуйста, введите пароль</div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="showPassword1">
+                            <label class="form-check-label" for="showPassword1">Показать пароль</label>
+                        </div>
                     </div>
                     <div class="mb-3 password-field password-fields-hidden">
                         <label for="password2" class="form-label">Подтверждение пароля*</label>
                         <input type="password" class="form-control" id="password2" name="password2">
                         <div class="invalid-feedback" id="password2Feedback">Пожалуйста, подтвердите пароль</div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="showPassword2">
+                            <label class="form-check-label" for="showPassword2">Показать пароль</label>
+                        </div>
                     </div>
                     <button type="submit" class="btn btn-primary">
                         Сохранить
@@ -103,14 +111,22 @@
                         <label class="form-check-label" for="edit_change_password">Изменить пароль вручную</label>
                     </div>
                     <div class="mb-3 password-field password-field-hidden">
-                        <label for="password1" class="form-label">Пароль</label>
+                        <label for="edit_password1" class="form-label">Пароль</label>
                         <input type="password" class="form-control" id="edit_password1" name="password1">
                         <div class="invalid-feedback" id="editPassword1Feedback">Пожалуйста, введите пароль</div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="edit_showPassword1">
+                            <label class="form-check-label" for="edit_showPassword1">Показать пароль</label>
+                        </div>
                     </div>
                     <div class="mb-3 password-field password-field-hidden">
-                        <label for="password2" class="form-label">Подтверждение пароля</label>
+                        <label for="edit_password2" class="form-label">Подтверждение пароля</label>
                         <input type="password" class="form-control" id="edit_password2" name="password2">
                         <div class="invalid-feedback" id="editPassword2Feedback">Пожалуйста, введите подтверждение пароля</div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="edit_showPassword2">
+                            <label class="form-check-label" for="edit_showPassword2">Показать пароль</label>
+                        </div>
                     </div>
                     <button type="submit" class="btn btn-primary">
                         Сохранить

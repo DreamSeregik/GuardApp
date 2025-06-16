@@ -16,3 +16,4 @@ function showNotification(message, type = 'error') {
         }
     });
 }
+

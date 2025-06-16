@@ -327,7 +327,6 @@ class ChangePasswordView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request, 'Ошибка при смене пароля. Проверьте введённые данные.')
         return super().form_invalid(form)
 
 class LogoutConfirmView(LoginRequiredMixin, View):
