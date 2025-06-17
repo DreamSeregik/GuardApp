@@ -32,20 +32,16 @@ $(document).ready(function () {
                 { id: 'id_new_password2', message: 'Подтвердите новый пароль' }
             ];
 
+            // Сбрасываем предыдущие ошибки
+            $('.is-invalid').removeClass('is-invalid');
+            $('.invalid-feedback').remove();
+
             // Проверяем каждое поле
             $.each(fields, function (_, field) {
                 const $field = $(`#${field.id}`);
                 if (!$field.val().trim()) {
                     $field.addClass('is-invalid');
-                    let $feedback = $field.next('.invalid-feedback');
-
-                    if (!$feedback.length) {
-                        $feedback = $(`<div class="invalid-feedback">${field.message}</div>`);
-                        $field.after($feedback);
-                    } else {
-                        $feedback.text(field.message);
-                    }
-
+                    $(`<div class="invalid-feedback">${field.message}</div>`).insertAfter($field);
                     isValid = false;
                 }
             });
@@ -56,15 +52,7 @@ $(document).ready(function () {
 
             if ($newPass1.val() && $newPass2.val() && $newPass1.val() !== $newPass2.val()) {
                 $newPass2.addClass('is-invalid');
-                let $feedback = $newPass2.next('.invalid-feedback');
-
-                if (!$feedback.length) {
-                    $feedback = $('<div class="invalid-feedback">Пароли не совпадают</div>');
-                    $newPass2.after($feedback);
-                } else {
-                    $feedback.text('Пароли не совпадают');
-                }
-
+                $(`<div class="invalid-feedback">Пароли не совпадают</div>`).insertAfter($newPass2);
                 isValid = false;
             }
 
@@ -77,7 +65,17 @@ $(document).ready(function () {
                         scrollTop: $firstInvalid.offset().top - 100
                     }, 500);
                 }
+            } else {
+                // Показываем индикатор загрузки и блокируем кнопку
+                $('#submitButton').prop('disabled', true);
+                $('#submitPasswordSpinner').removeClass('d-none');
             }
+        });
+
+        // Сброс состояния кнопки при возврате на страницу
+        $(window).on('pageshow', function () {
+            $('#submitButton').prop('disabled', false);
+            $('#submitPasswordSpinner').addClass('d-none');
         });
     }
 });

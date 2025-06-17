@@ -284,6 +284,19 @@ legend {
     margin-left: 10px;
 }
 
+#editUserLoadingSpinner {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#editUserLoadingSpinner .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }

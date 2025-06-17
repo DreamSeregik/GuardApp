@@ -185,6 +185,13 @@
             </div>
             
             <div class="modal-body">
+                 <!-- Индикатор загрузки -->
+                <div id="editWorkerLoadingSpinner" class="d-none text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <p>Загрузка данных...</p>
+                </div>
                 <div class="employee-form">
                     <form id="employeeEditForm" method="post">
                         {% csrf_token %}
@@ -529,6 +536,13 @@
             </div>
             
             <div class="modal-body">
+                <!-- Индикатор загрузки -->
+                <div id="editMedLoadingSpinner" class="d-none text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <p>Загрузка данных...</p>
+                </div>
                 <div class="medical-exam-form">
                     <form id="medicalExamEditForm" method="post">
                         <input type="hidden" id="medicalExamId">
@@ -613,6 +627,13 @@
             
             <!-- Тело модального окна с формой -->
             <div class="modal-body">
+                 <!-- Индикатор загрузки -->
+                <div id="napravLoadingSpinner" class="d-none text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <p>Загрузка данных...</p>
+                </div>
                 <div class="medical-form">
                     <form id="medicalExaminationForm" method="post">
                         {% csrf_token %}
@@ -885,6 +906,7 @@
                 </button>
                 <button type="button" class="btn btn-primary" id="submitMedicalForm">
                     Сформировать направление
+                    <span id="submitMedicalSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                 </button>
             </div>
         </div>
@@ -1006,6 +1028,13 @@
             </div>
             
             <div class="modal-body">
+                 <!-- Индикатор загрузки -->
+                <div id="editEducationLoadingSpinner" class="d-none text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <p>Загрузка данных...</p>
+                </div>
                 <div class="education-form">
                     <form id="educationEditForm" method="post">
                         {% csrf_token %}
@@ -1346,8 +1375,10 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr></tr>                            
-                            </tbody>
+                                <tr>
+                                    <td colspan="9" style="text-align: center">Выберите сотрудника</td>
+                                </tr>                            
+                            </tbody>                           
                         </table>
                     </div>
                 </div>
@@ -1372,7 +1403,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr></tr>                            
+                                <tr>
+                                    <td colspan="5" style="text-align: center">Выберите сотрудника</td>
+                                </tr>                            
                             </tbody>
                         </table>
                     </div>
@@ -1401,7 +1434,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr></tr>                            
+                                <tr>
+                                    <td colspan="8" style="text-align: center">Выберите сотрудника</td>
+                                </tr>                        
                             </tbody>
                         </table>
                     </div>

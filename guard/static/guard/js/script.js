@@ -431,33 +431,42 @@ $(document).ready(async function () {
     $("#search-input").keyup(async function () {
         const url = new URL(WORKER_SEARCH);
         const container = $("#worker-container");
-        const { employees } = await sendPostRequest(url, { query: $(this).val() });
 
-        container.empty();
+        container.html('<div class="text-muted text-center">Загрузка списка сотрудников...</div>');
 
-        if (employees.length === 0) {
-            container.append('<div class="text-muted text-center">нет сотрудников</div>');
-            return;
-        }
+        try {
+            const { employees } = await sendPostRequest(url, { query: $(this).val() });
 
-        employees.forEach((el) => {
-            const html = $("<div>", {
-                class: "worker",
-                "data-id": el.id,
-                text: getInitials(el.FIO),
+            container.empty();
+
+            if (employees.length === 0) {
+                container.append('<div class="text-muted text-center">Нет сотрудников</div>');
+                return;
+            }
+
+            employees.forEach((el) => {
+                const html = $("<div>", {
+                    class: "worker",
+                    "data-id": el.id,
+                    text: getInitials(el.FIO),
+                });
+
+                html.on("click", () => {
+                    getWorkerData(el.id);
+                    clickOnWorker(html);
+                });
+
+                if (worker_id && worker_id == $(html).data("id"))
+                    clickOnWorker(html);
+
+                container.append(html);
             });
 
-            html.on("click", () => {
-                getWorkerData(el.id);
-                clickOnWorker(html);
-            });
-
-            if (worker_id && worker_id == $(html).data("id"))
-                clickOnWorker(html);
-
-            container.append(html);
             if (!container.html() === "") sortWorkersByFIO(sort_type);
-        });
+        } catch (error) {
+            console.error('Ошибка при поиске сотрудников:', error);
+            container.html('<div class="text-muted text-center">Ошибка загрузки сотрудников</div>');
+        }
     });
 
     setupMedTableSorting();
@@ -696,42 +705,52 @@ async function filterWorkers({
     const url = new URL(FILTER);
     const container = $("#worker-container");
 
+    // Показываем сообщение о загрузке
+    container.html('<div class="text-muted text-center">Загрузка списка сотрудников...</div>');
+
     if (gender) url.searchParams.set("gender", gender);
     if (is_edu) url.searchParams.set("is_edu", is_edu);
     if (min_age) url.searchParams.set("min_age", min_age);
     if (max_age) url.searchParams.set("max_age", max_age);
     if (order) url.searchParams.set("order", order);
 
-    const { employees } = await sendGetRequest(url);
-    container.empty();
+    try {
+        const { employees } = await sendGetRequest(url);
+        container.empty();
 
-    if (employees.length === 0) {
-        container.append('<div class="text-muted text-center">нет сотрудников</div>');
-        return;
-    }
+        if (employees.length === 0) {
+            container.append('<div class="text-muted text-center">Нет сотрудников</div>');
+            return;
+        }
 
-    employees.forEach((el) => {
-        const html = $("<div>", {
-            class: "worker",
-            "data-id": el.id,
-            text: getInitials(el.FIO),
+        employees.forEach((el) => {
+            const html = $("<div>", {
+                class: "worker",
+                "data-id": el.id,
+                text: getInitials(el.FIO),
+            });
+
+            html.on("click", () => {
+                getWorkerData(el.id);
+                clickOnWorker(html);
+            });
+
+            if (worker_id && worker_id == $(html).data("id"))
+                clickOnWorker(html);
+
+            container.append(html);
         });
 
-        html.on("click", () => {
-            getWorkerData(el.id);
-            clickOnWorker(html);
-        });
-
-        if (worker_id && worker_id == $(html).data("id"))
-            clickOnWorker(html);
-
-        container.append(html);
         if (!container.html() === "") sortWorkersByFIO(sort_type);
-    });
+    } catch (error) {
+        console.error('Ошибка при фильтрации сотрудников:', error);
+        container.html('<div class="text-muted text-center">Ошибка загрузки сотрудников</div>');
+    }
 }
 
 async function getFIO(id) {
     const url = new URL(`${FIO}${id}`);
+    $("#worker-info-fio").html('Загрузка данных...');
     const data = await sendGetRequest(url);
     $("#worker-info-fio").html(data.FIO);
 }
@@ -739,6 +758,9 @@ async function getFIO(id) {
 async function getMainData(id) {
     const url = new URL(`${FILTER}`);
     url.searchParams.set("id", id);
+
+    $("#info-tbl-main tbody").html('<tr><td colspan="9" style="text-align: center">Загрузка данных...</td></tr>');
+
     const { status, employees } = await sendGetRequest(url);
     if (status != "SUCCESS") {
         return;
@@ -779,6 +801,9 @@ function getFileIcon(fileName) {
 
 async function getMedData(id) {
     const url = new URL(`${MED_DATA}${id}`);
+
+    $("#info-tbl-med tbody").html('<tr><td colspan="5" style="text-align: center">Загрузка данных...</td></tr>');
+
     const data = await sendGetRequest(url);
 
     if (data["data"].length !== 0) {
@@ -809,13 +834,18 @@ async function getMedData(id) {
         });
     } else {
         $("#info-tbl-med tbody").html("").append(
-            `<tr class="no-data"><td colspan='6' style='text-align: center'>Записей нет</td></tr>`
+            `<tr class="no-data"><td colspan='5' style='text-align: center'>Записей нет</td></tr>`
         );
     }
 }
 
+
 async function getEducationData(id) {
     const url = `${EDUCATION_DATA}${id}`;
+
+    // Показываем индикатор загрузки
+    $("#info-tbl-education tbody").html('<tr><td colspan="8" style="text-align: center">Загрузка данных...</td></tr>');
+
     const data = await sendGetRequest(url);
     if (data["data"].length !== 0) {
         $("#info-tbl-education tbody").html("");
@@ -844,7 +874,7 @@ async function getEducationData(id) {
         });
     } else {
         $("#info-tbl-education tbody").html("").append(
-            `<tr class="no-data"><td colspan='9' style='text-align: center'>Записей нет</td></tr>`
+            `<tr class="no-data"><td colspan='8' style='text-align: center'>Записей нет</td></tr>`
         );
     }
 }

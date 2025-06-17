@@ -18,6 +18,7 @@ const MedicalExamEditForm = {
         this.$fileList = $('#editMedicalFileList');
         this.$fileUploadBtn = $('#editMedicalFileUploadBtn');
         this.$spinner = $('#editSubmitSpinner');
+        this.$loadingSpinner = $('#editMedLoadingSpinner');
     },
 
     bindEvents: function () {
@@ -30,8 +31,11 @@ const MedicalExamEditForm = {
     },
 
     handleModalShow: function (event) {
+        this.showLoadingSpinner();
         if (selectedMedID) {
-            this.loadExamData(selectedMedID);
+            this.loadExamData(selectedMedID).finally(() => {
+                this.hideLoadingSpinner();
+            });
         }
     },
 
@@ -275,6 +279,16 @@ const MedicalExamEditForm = {
     hideSpinner: function () {
         this.$submitBtn.prop('disabled', false);
         this.$spinner.addClass('d-none');
+    },
+
+    showLoadingSpinner: function () {
+        this.$loadingSpinner.removeClass('d-none');
+        this.$form.addClass('d-none');
+    },
+
+    hideLoadingSpinner: function () {
+        this.$loadingSpinner.addClass('d-none');
+        this.$form.removeClass('d-none');
     },
 
     submitForm: async function () {

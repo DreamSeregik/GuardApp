@@ -28,6 +28,7 @@ const EmployeeEditForm = {
         this.$isLearningCheckbox = $('#editEmployeeIsLearning');
         this.$submitBtn = $('#submitEditEmployeeForm');
         this.$spinner = $('#editWorkerSpinner');
+        this.$loadingSpinner = $('#editWorkerLoadingSpinner');
     },
 
     bindEvents: function () {
@@ -181,8 +182,11 @@ const EmployeeEditForm = {
     },
 
     handleModalShow: function () {
+        this.showLoadingSpinner(); // Показываем индикатор загрузки
         if (worker_id) {
-            this.loadEmployeeData(worker_id);
+            this.loadEmployeeData(worker_id).finally(() => {
+                this.hideLoadingSpinner(); // Скрываем индикатор загрузки после загрузки данных
+            });
         }
     },
 
@@ -331,9 +335,18 @@ const EmployeeEditForm = {
         this.$spinner.addClass('d-none');
     },
 
+    showLoadingSpinner: function () {
+        this.$loadingSpinner.removeClass('d-none');
+        this.$form.addClass('d-none');
+    },
+
+    hideLoadingSpinner: function () {
+        this.$loadingSpinner.addClass('d-none');
+        this.$form.removeClass('d-none');
+    },
+
     submitForm: async function () {
         if (!this.validateForm()) {
-            // Прокручиваем к первой ошибке
             const $firstError = this.$form.find('.is-invalid').first();
             if ($firstError.length) {
                 $('html, body').animate({

@@ -44,6 +44,8 @@ const MedicalExaminationForm = {
         this.$employerRepPosition = $('#napravEmployerRepresentativePosition');
         this.$OMSCounter = $('#napravOMSCounter');
         this.$DMSCounter = $('#napravDMSCounter');
+        this.$submitSpinner = $('#submitMedicalSpinner');
+        this.$loadingSpinner = $('#napravLoadingSpinner');
     },
 
     /**
@@ -106,21 +108,21 @@ const MedicalExaminationForm = {
      * Обработчик открытия модального окна
      */
     handleModalShow: async function () {
+        this.showLoadingSpinner(); // Показываем индикатор загрузки
         this.resetForm();
         this.$modal.removeAttr('aria-hidden');
-
-        // Устанавливаем текущую дату в поле "Дата составления направления"
         const today = new Date();
         const formattedDate = today.toISOString().split('T')[0];
         this.$directionDate.val(formattedDate);
         this.$directionDatePsych.val(formattedDate);
-
-        const userFIO = await sendGetRequest('/user')
-
-        this.$employerRepName.val(userFIO.FIO)
-
-        if (worker_id) {
-            this.loadEmployeeData(worker_id);
+        try {
+            const userFIO = await sendGetRequest('/user');
+            this.$employerRepName.val(userFIO.FIO);
+            if (worker_id) {
+                await this.loadEmployeeData(worker_id);
+            }
+        } finally {
+            this.hideLoadingSpinner(); // Скрываем индикатор загрузки после загрузки данных
         }
     },
 
@@ -473,12 +475,33 @@ const MedicalExaminationForm = {
         return commonData;
     },
 
+    showLoadingSpinner: function () {
+        this.$loadingSpinner.removeClass('d-none');
+        this.$form.addClass('d-none'); // Скрываем форму во время загрузки
+    },
+
+    hideLoadingSpinner: function () {
+        this.$loadingSpinner.addClass('d-none');
+        this.$form.removeClass('d-none'); // Показываем форму после загрузки
+    },
+
+    showSubmitSpinner: function () {
+        this.$submitBtn.prop('disabled', true);
+        this.$submitSpinner.removeClass('d-none');
+    },
+
+    hideSubmitSpinner: function () {
+        this.$submitBtn.prop('disabled', false);
+        this.$submitSpinner.addClass('d-none');
+    },
+
     /**
      * Отправка формы
      */
     submitForm: async function () {
         if (!this.validateForm()) return;
 
+        this.showSubmitSpinner();
         const formData = this.getFormData();
         const url = new URL(NAPRAV);
 
@@ -496,6 +519,8 @@ const MedicalExaminationForm = {
         } catch (error) {
             console.error('Ошибка при отправке формы:', error);
             showNotification('Произошла ошибка при отправке формы', 'error');
+        } finally {
+            this.hideSubmitSpinner();
         }
     },
 
@@ -508,6 +533,7 @@ const MedicalExaminationForm = {
         this.$regularFields.hide();
         this.$psychiatricFields.hide();
         this.initCounters();
+        this.hideSubmitSpinner();
 
         // Сброс ошибок ОМС/ДМС
         this.hideError(this.$OMSNumber, 'napravOMSFeedback');

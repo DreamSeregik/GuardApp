@@ -35,24 +35,45 @@ function showNotification(message, type = 'error') {
 }
 
 async function fetchNotifications() {
-  const { status, notifications, count } = await sendGetRequest('/notifications')
-  if (status == 'SUCCESS') {
-    const notificationMenu = $('#notificationMenu');
-    const notificationCount = $('#notificationCount');
-    notificationMenu.empty();
-    if (count > 0) {
-      notifications.forEach(function (notification) {
-        notificationMenu.append(
-          `<a class="dropdown-item" href="#">${notification.message}</a>`
+  const $notificationMenu = $('#notificationMenu');
+  const $notificationCount = $('#notificationCount');
+
+  // Добавляем индикатор загрузки
+  $notificationMenu.html(`
+    <li class="dropdown-item text-center">
+      <div class="d-flex justify-content-center align-items-center">
+        <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+          <span class="visually-hidden">Загрузка...</span>
+        </div>
+        <span>Загрузка уведомлений...</span>
+      </div>
+    </li>
+  `);
+
+  try {
+    const { status, notifications, count } = await sendGetRequest('/notifications');
+    if (status === 'SUCCESS') {
+      $notificationMenu.empty();
+      if (count > 0) {
+        notifications.forEach(function (notification) {
+          $notificationMenu.append(
+            `<a class="dropdown-item" href="#">${notification.message}</a>`
+          );
+        });
+        $notificationCount.text(count);
+      } else {
+        $notificationMenu.append(
+          '<div class="dropdown-item text-center">Нет новых уведомлений</div>'
         );
-      });
-      notificationCount.text(count);
-    } else {
-      notificationMenu.append(
-        '<div class="dropdown-item text-center">Нет новых уведомлений</div>'
-      );
-      notificationCount.text('0');
+        $notificationCount.text('0');
+      }
     }
+  } catch (error) {
+    console.error('Ошибка при загрузке уведомлений:', error);
+    $notificationMenu.empty().append(
+      '<div class="dropdown-item text-center text-danger">Ошибка загрузки уведомлений</div>'
+    );
+    showNotification('Ошибка загрузки уведомлений', 'error');
   }
 }
 

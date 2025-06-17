@@ -22,7 +22,7 @@ from docxtpl import DocxTemplate
 
 from .tasks import check_expirations
 
-from .forms import LoginForm
+from .forms import ChangePasswordForm, LoginForm
 from .models import Employee, FileAttachment, Med, Education, Notification
 
 class UsersOnlyMixin:
@@ -41,6 +41,7 @@ class ForbiddenView(LoginRequiredMixin, TemplateView):
         return context
 
 class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
+    form_class = ChangePasswordForm
     template_name = 'guard/change_pass_page.html'
     success_url = reverse_lazy('guard:login')
 

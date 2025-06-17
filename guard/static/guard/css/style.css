@@ -671,9 +671,83 @@ legend {
     width:auto;
 }
 
+/* Стили для индикатора загрузки уведомлений */
+#notificationMenu .dropdown-item .spinner-border {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15em;
+}
+
+#notificationMenu .dropdown-item {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#notificationMenu .spinner-border {
+  animation: spin 0.75s linear infinite;
+}
+
 /* Стили для спиннера в форме добавления медосмотра */
-#submitSpinner, #editSubmitSpinner, #delSubmitSpinner {
+#submitSpinner, #editSubmitSpinner, #delSubmitSpinner, #submitMedicalSpinner, #submitPasswordSpinner{
     margin-left: 10px;
+}
+
+/* Стили для индикатора загрузки в форме редактирования сотрудника */
+#editWorkerLoadingSpinner {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#editWorkerLoadingSpinner .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Стили для индикатора загрузки в форме редактирования медосмотра */
+#editMedLoadingSpinner {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#editMedLoadingSpinner .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Стили для индикатора загрузки в форме редактирования обучения */
+#editEducationLoadingSpinner {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#editEducationLoadingSpinner .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Стили для индикатора загрузки в форме направления на медосмотр */
+#napravLoadingSpinner {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#napravLoadingSpinner .spinner-border {
+    width: 3rem;
+    height: 3rem;
 }
 
 /* Анимация для спиннера */

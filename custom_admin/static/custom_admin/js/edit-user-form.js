@@ -31,6 +31,7 @@ const UserEditForm = {
         this.$showPassword2 = $('#edit_showPassword2');
         this.$passwordFields = $('.password-field');
         this.$spinner = $('#editUserSpinner');
+        this.$loadingSpinner = $('#editUserLoadingSpinner')
     },
 
     bindEvents: function () {
@@ -53,6 +54,19 @@ const UserEditForm = {
 
         this.$closeBtn.on('click', this.handleCloseClick.bind(this));
         this.$cancelBtn.on('click', this.handleCancelClick.bind(this));
+
+        this.$generateCheckbox.on('change', () => {
+            if (this.$generateCheckbox.prop('checked')) {
+                this.$changePasswordCheckbox.prop('checked', false);
+            }
+            this.updatePasswordFields();
+        });
+        this.$changePasswordCheckbox.on('change', () => {
+            if (this.$changePasswordCheckbox.prop('checked')) {
+                this.$generateCheckbox.prop('checked', false);
+            }
+            this.updatePasswordFields();
+        });
     },
 
     togglePasswordVisibility: function (fieldId) {
@@ -63,8 +77,11 @@ const UserEditForm = {
 
     handleModalShow: function () {
         this.resetForm();
+        this.showLoadingSpinner(); // Показываем индикатор загрузки
         if (selectedUserId) {
-            this.loadUserData(selectedUserId);
+            this.loadUserData(selectedUserId).finally(() => {
+                this.hideLoadingSpinner(); // Скрываем индикатор загрузки после загрузки данных
+            });
         }
         this.$modal.removeAttr('aria-hidden');
     },
@@ -167,7 +184,7 @@ const UserEditForm = {
 
     updatePasswordFields: function () {
         const showPasswordFields = !this.$generateCheckbox.prop('checked') && this.$changePasswordCheckbox.prop('checked');
-        this.$passwordFields.toggleClass('password-field-hidden', !showPasswordFields);
+        this.$passwordFields.toggleClass('password-fields-hidden', !showPasswordFields);
 
         const isEmailRequired = this.$generateCheckbox.prop('checked');
         $('label[for="edit_email"]').toggleClass('required-field', isEmailRequired);
@@ -270,6 +287,16 @@ const UserEditForm = {
     hideSpinner: function () {
         this.$submitBtn.prop('disabled', false);
         this.$spinner.addClass('d-none');
+    },
+
+    showLoadingSpinner: function () {
+        this.$loadingSpinner.removeClass('d-none');
+        this.$form.addClass('d-none');
+    },
+
+    hideLoadingSpinner: function () {
+        this.$loadingSpinner.addClass('d-none');
+        this.$form.removeClass('d-none');
     },
 
     submitForm: async function (e) {
@@ -375,10 +402,11 @@ const UserEditForm = {
         this.$showPassword2.prop('checked', false);
         this.$password1Input.attr('type', 'password');
         this.$password2Input.attr('type', 'password');
+        this.$passwordFields.addClass('password-fields-hidden'); // Скрываем поля пароля по умолчанию
         this.updatePasswordFields();
         this.hideSpinner();
-    }
-};
+    },
+}
 
 // Инициализация при загрузке документа
 $(document).ready(function () {

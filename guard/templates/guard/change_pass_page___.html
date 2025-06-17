@@ -5,41 +5,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>СУД ОТ | Изменение пароля</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'guard/css/style.css' %}">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'guard/css/style.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="text/javascript" src="{% static 'guard/js/jq.js' %}" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+    <script type="text/javascript" src="{% static 'guard/js/helper.js' %}" defer></script>
     <script type="text/javascript" src="{% static 'guard/js/change-pass.js' %}" defer></script>
-    <script src="{% static 'guard/js/helper.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
-    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
 </head>
 <body>
     <div class="container">
         <div class="login-container">
             <div class="login-header d-block w-100">Изменение пароля</div>
-            
-            <!-- Общие ошибки (будут показаны через уведомления) -->
-            {% if form.non_field_errors %}
-                <div class="d-none" id="nonFieldErrors">
-                    {% for error in form.non_field_errors %}
-                        {{ error|escapejs }}
-                    {% endfor %}
-                </div>
-            {% endif %}
-            
             <div class="form-content">
                 <form method="post" id="passwordChangeForm" novalidate>
                     {% csrf_token %}
                     
+                    <!-- Общие ошибки (будут показаны через уведомления) -->
+                    {% if form.non_field_errors %}
+                        <div class="d-none" id="nonFieldErrors">
+                            {% for error in form.non_field_errors %}
+                                {{ error|escapejs }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
                     <div class="form-group mb-3 position-relative">
                         <label for="id_old_password">Текущий пароль</label>
-                        <input type="password" 
-                            name="old_password" 
-                            id="id_old_password" 
-                            class="form-control {% if form.old_password.errors %}is-invalid{% endif %}"
-                            value="{{ form.old_password.value|default_if_none:'' }}">
+                        <div class="password-input-container">
+                            <input type="password" 
+                                name="old_password" 
+                                class="form-control {% if form.old_password.errors %}is-invalid{% endif %}" 
+                                id="id_old_password"
+                                value="{{ form.old_password.value|default_if_none:'' }}">
+                        </div>
                         {% if form.old_password.errors %}
                             <div class="invalid-feedback">
                                 {% for error in form.old_password.errors %}
@@ -55,11 +55,12 @@
 
                     <div class="form-group mb-3 position-relative">
                         <label for="id_new_password1">Новый пароль</label>
-                        <input type="password" 
-                            name="new_password1" 
-                            id="id_new_password1" 
-                            class="form-control {% if form.new_password1.errors %}is-invalid{% endif %}"
-                            value="{{ form.new_password1.value|default_if_none:'' }}">
+                        <div class="password-input-container">
+                            <input type="password" 
+                                name="new_password1" 
+                                class="form-control {% if form.new_password1.errors %}is-invalid{% endif %}" 
+                                id="id_new_password1">
+                        </div>
                         {% if form.new_password1.errors %}
                             <div class="invalid-feedback">
                                 {% for error in form.new_password1.errors %}
@@ -73,13 +74,14 @@
                         </div>
                     </div>
 
-                    <div class="form-group mb-3 position-relative">
+                   <div class="form-group mb-3 position-relative">
                         <label for="id_new_password2">Подтверждение пароля</label>
-                        <input type="password" 
-                            name="new_password2" 
-                            id="id_new_password2" 
-                            class="form-control {% if form.new_password2.errors %}is-invalid{% endif %}"
-                            value="{{ form.new_password2.value|default_if_none:'' }}">
+                        <div class="password-input-container">
+                            <input type="password" 
+                                name="new_password2" 
+                                class="form-control {% if form.new_password2.errors %}is-invalid{% endif %}" 
+                                id="id_new_password2">
+                         </div>
                         {% if form.new_password2.errors %}
                             <div class="invalid-feedback">
                                 {% for error in form.new_password2.errors %}
@@ -94,9 +96,9 @@
                     </div>
 
                     <div class="d-flex gap-2 mt-3">
-                        <button type="submit" class="btn btn-primary flex-grow-1" id="submitButton">
-                            <span id="buttonText">Изменить пароль</span>
-                            <span id="loadingSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <button type="submit" class="btn btn-primary" id="submitPasswordChange">
+                            Изменить пароль
+                            <span id="submitPasswordSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                         </button>
                         <a href="{% url 'guard:index' %}" class="btn btn-secondary flex-grow-1">Отмена</a>
                     </div>
@@ -105,37 +107,4 @@
         </div>
     </div>
 </body>
-
-<style>
-    /* Стили для чекбоксов "Показать пароль" */
-.form-check-input[type="checkbox"] {
-    width: 1.1em;
-    height: 1.1em;
-    margin-top: 0.2em;
-    margin-left: 2px;
-}
-
-.form-check-label {
-    margin-left: 0.3em;
-    font-size: 0.9rem;
-    color: #495057;
-    cursor: pointer;
-}
-
-.form-check {
-    display: flex;
-    align-items: center;
-    margin-top: 0.5rem;
-    padding-left: 0;
-}
-
-/* Убираем стандартные стили input-group, так как мы больше не используем иконки */
-.input-group {
-    display: block;
-}
-
-.password-input-container {
-    position: relative;
-}
-</style>
 </html>

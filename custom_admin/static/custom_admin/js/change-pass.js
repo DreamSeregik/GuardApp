@@ -68,7 +68,10 @@ $(document).ready(function () {
                 isValid = false;
             }
 
-            if (!isValid) {
+            if (isValid) {
+                $('#loadingSpinner').removeClass('d-none');
+                $('#submitButton').prop('disabled', true);
+            } else {
                 e.preventDefault();
                 // Прокручиваем к первой ошибке
                 const $firstInvalid = $('.is-invalid').first();
@@ -78,6 +81,10 @@ $(document).ready(function () {
                     }, 500);
                 }
             }
+        });
+        $(window).on('pageshow', function () {
+            $('#loadingSpinner').addClass('d-none');
+            $('#submitButton').prop('disabled', false);
         });
     }
 });
