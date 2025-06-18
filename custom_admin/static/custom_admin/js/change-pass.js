@@ -21,7 +21,6 @@ $(document).ready(function () {
         $passwordField.attr('type', this.checked ? 'text' : 'password');
     });
 
-    // Валидация формы перед отправкой
     const $form = $('#passwordChangeForm');
     if ($form.length) {
         $form.on('submit', function (e) {
@@ -40,10 +39,10 @@ $(document).ready(function () {
                     let $feedback = $field.next('.invalid-feedback');
 
                     if (!$feedback.length) {
-                        $feedback = $(`<div class="invalid-feedback">${field.message}</div>`);
+                        $feedback = $(`<div class="invalid-feedback"><ul><li>${field.message}</li></ul></div>`);
                         $field.after($feedback);
                     } else {
-                        $feedback.text(field.message);
+                        $feedback.html(`<ul><li>${field.message}</li></ul>`);
                     }
 
                     isValid = false;
@@ -59,10 +58,10 @@ $(document).ready(function () {
                 let $feedback = $newPass2.next('.invalid-feedback');
 
                 if (!$feedback.length) {
-                    $feedback = $('<div class="invalid-feedback">Пароли не совпадают</div>');
+                    $feedback = $('<div class="invalid-feedback"><ul><li>Пароли не совпадают</li></ul></div>');
                     $newPass2.after($feedback);
                 } else {
-                    $feedback.text('Пароли не совпадают');
+                    $feedback.html('<ul><li>Пароли не совпадают</li></ul>');
                 }
 
                 isValid = false;

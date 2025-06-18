@@ -61,17 +61,20 @@ const EmployeeEditForm = {
     // Валидация ФИО
     validateFullName: function () {
         const fullName = this.$fullNameInput.val().trim();
-        const isValid = EmployeeForm.processFullName(fullName).isValid;
+        const fullNameResult = EmployeeForm.processFullName(fullName);
 
         if (!fullName) {
             this.showError(this.$fullNameInput, 'editFullNameFeedback', 'Поле обязательно для заполнения');
-        } else if (!isValid) {
-            this.showError(this.$fullNameInput, 'editFullNameFeedback',
-                'Введите корректное ФИО (2-3 слова, каждое с заглавной буквы)');
+        } else if (!fullNameResult.isValid) {
+            if (fullNameResult.error === 'latin') {
+                this.showError(this.$fullNameInput, 'editFullNameFeedback', 'ФИО должно содержать только кириллицу');
+            } else {
+                this.showError(this.$fullNameInput, 'editFullNameFeedback', 'Введите корректное ФИО (2-3 слова, каждое с заглавной буквы, только кириллица)');
+            }
         } else {
             this.hideError(this.$fullNameInput, 'editFullNameFeedback');
         }
-        return isValid && fullName;
+        return fullNameResult.isValid && fullName;
     },
 
     // Валидация должности
@@ -79,13 +82,15 @@ const EmployeeEditForm = {
         const position = this.$positionInput.val().trim();
 
         if (!position) {
-            this.showError(this.$positionInput, 'editPositionFeedback', 'Поле обязательно для заполнения');
+            this.showError(this.$positionInput, 'editPositionFeedback', 'Пожалуйста, укажите должность');
+            return false;
         } else if (position.length < 2) {
             this.showError(this.$positionInput, 'editPositionFeedback', 'Должность должна содержать минимум 2 символа');
+            return false;
         } else {
             this.hideError(this.$positionInput, 'editPositionFeedback');
+            return true;
         }
-        return !!position && position.length >= 2;
     },
 
     // Валидация даты рождения
@@ -96,8 +101,7 @@ const EmployeeEditForm = {
         if (!dateStr) {
             this.showError(this.$birthDateInput, 'editBirthDateFeedback', 'Поле обязательно для заполнения');
         } else if (!isValid) {
-            this.showError(this.$birthDateInput, 'editBirthDateFeedback',
-                'возраст от 14 до 100 лет');
+            this.showError(this.$birthDateInput, 'editBirthDateFeedback', 'Возраст должен быть от 14 до 100 лет');
         } else {
             this.hideError(this.$birthDateInput, 'editBirthDateFeedback');
         }
@@ -386,7 +390,7 @@ const EmployeeEditForm = {
         this.$form.find('.is-invalid').removeClass('is-invalid');
         this.$form.find('.invalid-feedback').text('').hide();
         this.initCounters();
-        this.hideSpinner()
+        this.hideSpinner();
     }
 };
 

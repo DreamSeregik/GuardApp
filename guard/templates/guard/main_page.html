@@ -92,7 +92,7 @@
                                    placeholder="Введите должность" 
                                    maxlength="50" required>
                             <div class="d-flex justify-content-between">
-                                <div class="invalid-feedback">
+                                <div class="invalid-feedback" id="positionFeedback">
                                     Пожалуйста, укажите должность
                                 </div>
                                 <div class="length-counter">
@@ -240,7 +240,7 @@
                                    placeholder="Введите должность" 
                                    maxlength="50" required>
                             <div class="d-flex justify-content-between">
-                                <div class="invalid-feedback">
+                                <div class="invalid-feedback" id="editPositionFeedback">
                                     Пожалуйста, укажите должность
                                 </div>
                                 <div class="length-counter">
@@ -947,14 +947,24 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="educationProtocolNum" class="form-label">№ протокола*</label>
-                                <input type="text" class="form-control" id="educationProtocolNum" placeholder="Введите номер протокола" maxlength="255" required>
+                                <input type="text" class="form-control" id="educationProtocolNum" 
+                                    placeholder="Введите номер протокола" 
+                                    maxlength="50" required>
                                 <div class="invalid-feedback">Пожалуйста, укажите номер протокола</div>
+                                <div class="length-counter">
+                                    <span>Кол-во символов: </span><span id="protocolNumCounter">0</span>/50
+                                </div>
                             </div>
-                            
+                                                        
                             <div class="col-md-6">
                                 <label for="educationCertNum" class="form-label">№ удостоверения*</label>
-                                <input type="text" class="form-control" id="educationCertNum" placeholder="Введите номер удостоверения" maxlength="255" required>
+                                <input type="text" class="form-control" id="educationCertNum" 
+                                    placeholder="Введите номер удостоверения" 
+                                    maxlength="50" required>
                                 <div class="invalid-feedback">Пожалуйста, укажите номер удостоверения</div>
+                                <div class="length-counter">
+                                    <span>Кол-во символов: </span><span id="certNumCounter">0</span>/50
+                                </div>
                             </div>
                         </div>
                         
@@ -1059,14 +1069,24 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="editEducationProtocolNum" class="form-label">№ протокола*</label>
-                                <input type="text" class="form-control" id="editEducationProtocolNum" placeholder="Введите номер протокола" maxlength="255" required>
+                                <input type="text" class="form-control" id="editEducationProtocolNum" 
+                                    placeholder="Введите номер протокола" 
+                                    maxlength="50" required>
                                 <div class="invalid-feedback">Пожалуйста, укажите номер протокола</div>
+                                <div class="length-counter">
+                                    <span>Кол-во символов: </span><span id="editProtocolNumCounter">0</span>/50
+                                </div>
                             </div>
             
-                            <div class="col-md-6">
+                           <div class="col-md-6">
                                 <label for="editEducationCertNum" class="form-label">№ удостоверения*</label>
-                                <input type="text" class="form-control" id="editEducationCertNum" placeholder="Введите номер удостоверения" maxlength="255" required>
+                                <input type="text" class="form-control" id="editEducationCertNum" 
+                                    placeholder="Введите номер удостоверения" 
+                                    maxlength="50" required>
                                 <div class="invalid-feedback">Пожалуйста, укажите номер удостоверения</div>
+                                <div class="length-counter">
+                                    <span>Кол-во символов: </span><span id="editCertNumCounter">0</span>/50
+                                </div>
                             </div>
                         </div>
                         

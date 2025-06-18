@@ -7,6 +7,7 @@ const EducationForm = {
         this.bindEvents();
         this.modal = new bootstrap.Modal(this.$modal[0], { focus: false });
         this.files = [];
+        this.initCounters();
     },
 
     cacheElements: function () {
@@ -15,11 +16,17 @@ const EducationForm = {
         this.$modalContent = $('.modal-content', this.$modal);
         this.$closeBtn = $('.btn-close', this.$modal);
         this.$programSelect = $('#educationProgram');
+        this.$hours = $('#educationHours')
         this.$submitBtn = $('#submitEducationForm');
         this.$fileInput = $('#educationFileInput');
         this.$fileList = $('#educationFileList');
         this.$fileUploadBtn = $('#educationFileUploadBtn');
         this.$spinner = $('#submitEducationSpinner');
+        this.$protocolNumInput = $('#educationProtocolNum');
+        this.$certNumInput = $('#educationCertNum');
+        this.$protocolNumCounter = $('#protocolNumCounter');
+        this.$certNumCounter = $('#certNumCounter');
+
     },
 
     bindEvents: function () {
@@ -32,6 +39,9 @@ const EducationForm = {
         this.$modal.on('hide.bs.modal', this.handleModalHide.bind(this));
         this.$modal.on('hidden.bs.modal', this.handleModalHidden.bind(this));
         this.$closeBtn.on('click', this.handleCloseClick.bind(this));
+        this.$protocolNumInput.on('input', this.updateCounter.bind(this, 'protocolNum'));
+        this.$certNumInput.on('input', this.updateCounter.bind(this, 'certNum'));
+        this.$hours.on('input', this.restrictHoursInput.bind(this));
     },
 
     handleModalShow: function () {
@@ -68,6 +78,36 @@ const EducationForm = {
         }
         this.$fileInput.val('');
         this.updateFileList();
+    },
+
+    restrictHoursInput: function (e) {
+        const $input = $(e.target);
+        const value = $input.val();
+        if (value.length > 4) {
+            $input.val(value.slice(0, 4));
+        }
+    },
+
+    initCounters: function () {
+        this.updateCounter('protocolNum');
+        this.updateCounter('certNum');
+    },
+
+    updateCounter: function (field) {
+        let $input, $counter;
+
+        switch (field) {
+            case 'protocolNum':
+                $input = this.$protocolNumInput;
+                $counter = this.$protocolNumCounter;
+                break;
+            case 'certNum':
+                $input = this.$certNumInput;
+                $counter = this.$certNumCounter;
+                break;
+        }
+
+        $counter.text($input.val().length);
     },
 
     addFile: function (file) {
@@ -112,11 +152,11 @@ const EducationForm = {
         }
         return str.replace(/[&<>"']/g, function (match) {
             const escape = {
-                '&': '&',
-                '<': '<',
-                '>': '>',
-                '"': '"',
-                "'": "'"
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
             };
             return escape[match];
         });
@@ -173,9 +213,9 @@ const EducationForm = {
             isValid = false;
         }
 
-        const hours = parseInt($('#educationHours').val());
-        if (isNaN(hours) || hours < 1 || hours > 1000) {
-            $('#educationHours').addClass('is-invalid');
+        const hours = this.$hours.val();
+        if (isNaN(hours) || hours < 1 || hours > 1000 || hours.length > 4) {
+            this.$hours.addClass('is-invalid');
             isValid = false;
         }
 
@@ -212,9 +252,9 @@ const EducationForm = {
         return {
             'employee_id': worker_id,
             'programm': this.$programSelect.val(),
-            'protocol_num': $('#educationProtocolNum').val(),
-            'udostoverenie_num': $('#educationCertNum').val(),
-            'hours': $('#educationHours').val(),
+            'protocol_num': this.$protocolNumInput.val(),
+            'udostoverenie_num': this.$certNumInput.val(),
+            'hours': this.$hours.val(),
             'date_from': $('#educationDateFrom').val(),
             'date_to': $('#educationDateTo').val()
         };
@@ -290,6 +330,7 @@ const EducationForm = {
         this.files = [];
         this.updateFileList();
         this.hideSpinner();
+        this.initCounters();
     }
 };
 

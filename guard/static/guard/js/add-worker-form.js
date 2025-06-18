@@ -28,28 +28,29 @@ const EmployeeForm = {
     },
 
     bindEvents: function () {
-        this.$fullNameInput.on('input', this.updateCounter.bind(this, 'fullName'));
-        this.$positionInput.on('input', this.updateCounter.bind(this, 'position'));
+        this.$fullNameInput.on('input', () => {
+            this.updateCounter('fullName');
+            this.validateFullNameInput();
+        });
+        this.$positionInput.on('input', () => {
+            this.updateCounter('position');
+            this.validatePosition();
+        });
         this.$structInput.on('input', this.updateCounter.bind(this, 'struct'));
-        this.$omsInput.on('input', this.updateCounter.bind(this, 'oms'));
-        this.$dmsInput.on('input', this.updateCounter.bind(this, 'dms'));
-        this.$submitBtn.on('click', this.submitForm.bind(this));
-        this.$birthDateInput.on('input', this.validateBirthDateInput.bind(this));
         this.$omsInput.on('input', () => {
             this.updateCounter('oms');
             this.validateOMS();
         });
-
         this.$dmsInput.on('input', () => {
             this.updateCounter('dms');
             this.validateDMS();
         });
-
+        this.$birthDateInput.on('input', this.validateBirthDateInput.bind(this));
+        this.$submitBtn.on('click', this.submitForm.bind(this));
         this.$modal.on('show.bs.modal', this.handleModalShow.bind(this));
         this.$modal.on('shown.bs.modal', this.handleModalShown.bind(this));
         this.$modal.on('hide.bs.modal', this.handleModalHide.bind(this));
         this.$modal.on('hidden.bs.modal', this.handleModalHidden.bind(this));
-
         this.$closeBtn.on('click', this.handleCloseClick.bind(this));
     },
 
@@ -131,17 +132,20 @@ const EmployeeForm = {
         const settings = { ...defaults, ...options };
 
         if (!name || typeof name !== 'string') {
-            return { isValid: false, formattedName: '' };
+            return { isValid: false, formattedName: '', error: 'empty' };
         }
 
         const cleanedName = name.trim().replace(/\s+/g, ' ');
-
         if (cleanedName === '') {
-            return { isValid: false, formattedName: '' };
+            return { isValid: false, formattedName: '', error: 'empty' };
+        }
+
+        // Проверка на наличие латинских символов
+        if (/[a-zA-Z]/.test(cleanedName)) {
+            return { isValid: false, formattedName: cleanedName, error: 'latin' };
         }
 
         let parts = cleanedName.split(' ');
-
         if (settings.requireMiddleName && parts.length !== 3) {
             return { isValid: false, formattedName: cleanedName };
         }
@@ -183,11 +187,9 @@ const EmployeeForm = {
         regexParts.push('^[А-ЯЁ]');
 
         let mainPart = '[а-яё]+';
-
         if (settings.allowHyphen) {
             mainPart = '(?:[а-яё]+(?:-[А-ЯЁ][а-яё]+)*)';
         }
-
         if (settings.allowApostrophe) {
             mainPart = '(?:[а-яё]*(?:\'[А-ЯЁ][а-яё]+)*)';
         }
@@ -231,16 +233,47 @@ const EmployeeForm = {
         };
     },
 
-    validateBirthDateInput: function () {
-        const birthDateInput = this.$birthDateInput.val();
-        if (!birthDateInput || !this.validateBirthDate(birthDateInput)) {
-            this.$birthDateInput.addClass('is-invalid');
-            $('#birthDateFeedback').text('Пожалуйста, укажите корректную дату рождения (возраст от 16 до 100 лет, не в будущем)');
+    validateFullNameInput: function () {
+        const fullName = this.$fullNameInput.val().trim();
+        const fullNameResult = this.processFullName(fullName);
+
+        if (!fullName) {
+            this.showError(this.$fullNameInput, 'fullNameFeedback', 'Поле обязательно для заполнения');
+        } else if (!fullNameResult.isValid) {
+            if (fullNameResult.error === 'latin') {
+                this.showError(this.$fullNameInput, 'fullNameFeedback', 'ФИО должно содержать только кириллицу');
+            } else {
+                this.showError(this.$fullNameInput, 'fullNameFeedback', 'Введите корректное ФИО (2-3 слова, каждое с заглавной буквы, только кириллица)');
+            }
         } else {
-            this.$birthDateInput.removeClass('is-invalid');
+            this.hideError(this.$fullNameInput, 'fullNameFeedback');
+        }
+        return fullNameResult.isValid && fullName;
+    },
+
+    validatePosition: function () {
+        const position = this.$positionInput.val().trim();
+
+        if (!position) {
+            this.showError(this.$positionInput, 'positionFeedback', 'Пожалуйста, укажите должность');
+            return false;
+        } else if (position.length < 2) {
+            this.showError(this.$positionInput, 'positionFeedback', 'Должность должна содержать минимум 2 символа');
+            return false;
+        } else {
+            this.hideError(this.$positionInput, 'positionFeedback');
+            return true;
         }
     },
 
+    validateBirthDateInput: function () {
+        const birthDateInput = this.$birthDateInput.val();
+        if (!birthDateInput || !this.validateBirthDate(birthDateInput)) {
+            this.showError(this.$birthDateInput, 'birthDateFeedback', 'Пожалуйста, укажите корректную дату рождения (возраст от 14 до 100 лет, не в будущем)');
+        } else {
+            this.hideError(this.$birthDateInput, 'birthDateFeedback');
+        }
+    },
 
     validateBirthDate: function (dateStr) {
         if (!dateStr) return false;
@@ -257,86 +290,84 @@ const EmployeeForm = {
         return inputDate <= today && inputDate <= minAgeDate && inputDate >= maxAgeDate;
     },
 
-    // Валидация ОМС
-    // Валидация ОМС
     validateOMS: function () {
         const oms = this.$omsInput.val().trim();
-        const $feedback = $('#omsFeedback');
-
         if (oms && oms.length !== 16) {
-            this.$omsInput.addClass('is-invalid');
-            $feedback.text('Номер полиса ОМС должен содержать 16 цифр').show();
+            this.showError(this.$omsInput, 'omsFeedback', 'Номер полиса ОМС должен содержать 16 цифр');
             return false;
         } else if (oms && !/^\d+$/.test(oms)) {
-            this.$omsInput.addClass('is-invalid');
-            $feedback.text('Номер полиса ОМС должен содержать только цифры').show();
+            this.showError(this.$omsInput, 'omsFeedback', 'Номер полиса ОМС должен содержать только цифры');
             return false;
         } else {
-            this.$omsInput.removeClass('is-invalid');
-            $feedback.text('').hide();
+            this.hideError(this.$omsInput, 'omsFeedback');
             return true;
         }
     },
 
-    // Валидация ДМС
     validateDMS: function () {
         const dms = this.$dmsInput.val().trim();
-        const $feedback = $('#dmsFeedback');
-
         if (dms && dms.length < 10) {
-            this.$dmsInput.addClass('is-invalid');
-            $feedback.text('Номер полиса ДМС должен содержать минимум 10 символов').show();
+            this.showError(this.$dmsInput, 'dmsFeedback', 'Номер полиса ДМС должен содержать минимум 10 символов');
             return false;
         } else {
-            this.$dmsInput.removeClass('is-invalid');
-            $feedback.text('').hide();
+            this.hideError(this.$dmsInput, 'dmsFeedback');
             return true;
         }
+    },
+
+    showError: function ($input, feedbackId, message) {
+        $input.addClass('is-invalid');
+        $(`#${feedbackId}`).text(message).show();
+    },
+
+    hideError: function ($input, feedbackId) {
+        $input.removeClass('is-invalid');
+        $(`#${feedbackId}`).text('').hide();
     },
 
     validateForm: function () {
         let isValid = true;
 
         // Валидация ФИО
-        if (!this.processFullName(this.$fullNameInput.val()).isValid) {
-            this.$fullNameInput.addClass('is-invalid');
-            $('#fullNameFeedback').text('Пожалуйста, введите корректное ФИО (2-3 слова, каждое с заглавной буквы)');
+        if (!this.validateFullNameInput()) {
             isValid = false;
-        } else {
-            this.$fullNameInput.removeClass('is-invalid');
         }
 
         // Валидация должности
-        if (this.$positionInput.val().trim().length < 2) {
-            this.$positionInput.addClass('is-invalid');
+        if (!this.validatePosition()) {
             isValid = false;
-        } else {
-            this.$positionInput.removeClass('is-invalid');
         }
 
         // Валидация даты рождения
-        const birthDateInput = $('#employeeBirthDate').val();
+        const birthDateInput = this.$birthDateInput.val();
         if (!birthDateInput || !this.validateBirthDate(birthDateInput)) {
-            $('#employeeBirthDate').addClass('is-invalid');
-            $('#birthDateFeedback').text('Пожалуйста, укажите корректную дату рождения');
+            this.showError(this.$birthDateInput, 'birthDateFeedback', 'Пожалуйста, укажите корректную дату рождения');
             isValid = false;
         } else {
-            $('#employeeBirthDate').removeClass('is-invalid');
+            this.hideError(this.$birthDateInput, 'birthDateFeedback');
+        }
+
+        // Валидация пола
+        const genderSelected = $('input[name="employeeGender"]:checked').length > 0;
+        if (!genderSelected) {
+            this.showError($('input[name="employeeGender"]').closest('.d-flex'), 'genderFeedback', 'Пожалуйста, выберите пол');
+            isValid = false;
+        } else {
+            this.hideError($('input[name="employeeGender"]').closest('.d-flex'), 'genderFeedback');
+        }
+
+        // Валидация статуса
+        const status = $('#employeeStatus').val();
+        if (!status) {
+            this.showError($('#employeeStatus'), 'statusFeedback', 'Пожалуйста, выберите статус');
+            isValid = false;
+        } else {
+            this.hideError($('#employeeStatus'), 'statusFeedback');
         }
 
         // Валидация ОМС и ДМС
         if (this.$omsInput.val().trim() && !this.validateOMS()) isValid = false;
         if (this.$dmsInput.val().trim() && !this.validateDMS()) isValid = false;
-
-        // Валидация обязательных полей
-        this.$form.find('[required]').each(function () {
-            if (!$(this).val()) {
-                $(this).addClass('is-invalid');
-                isValid = false;
-            } else {
-                $(this).removeClass('is-invalid');
-            }
-        });
 
         return isValid;
     },
@@ -345,7 +376,7 @@ const EmployeeForm = {
         return {
             FIO: this.processFullName(this.$fullNameInput.val()).formattedName,
             gender: $('input[name="employeeGender"]:checked').val(),
-            birthday: $('#employeeBirthDate').val(),
+            birthday: this.$birthDateInput.val(),
             position: this.$positionInput.val(),
             department: this.$structInput.val(),
             oms_number: this.$omsInput.val(),
@@ -368,7 +399,7 @@ const EmployeeForm = {
     submitForm: async function () {
         if (!this.validateForm()) return;
 
-        this.showSpinner()
+        this.showSpinner();
         const formData = this.getFormData();
         const url = new URL(`${SERVER}/worker/add/`);
 
@@ -387,17 +418,14 @@ const EmployeeForm = {
             console.error('Ошибка при отправке формы:', error);
             showNotification('Произошла ошибка при отправке формы');
         } finally {
-            this.hideSpinner()
+            this.hideSpinner();
         }
     },
 
     resetForm: function () {
         this.$form.trigger('reset');
         this.$form.find('.is-invalid').removeClass('is-invalid');
-        this.$birthDateInput.removeClass('is-invalid');
-        $('#birthDateFeedback').text('');
-        $('#omsFeedback').text('').hide();
-        $('#dmsFeedback').text('').hide();
+        this.$form.find('.invalid-feedback').text('').hide();
         this.initCounters();
         this.hideSpinner();
     },

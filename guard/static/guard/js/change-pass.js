@@ -41,7 +41,7 @@ $(document).ready(function () {
                 const $field = $(`#${field.id}`);
                 if (!$field.val().trim()) {
                     $field.addClass('is-invalid');
-                    $(`<div class="invalid-feedback">${field.message}</div>`).insertAfter($field);
+                    $(`<div class="invalid-feedback"><ul><li>${field.message}</li></ul></div>`).insertAfter($field);
                     isValid = false;
                 }
             });
@@ -52,7 +52,7 @@ $(document).ready(function () {
 
             if ($newPass1.val() && $newPass2.val() && $newPass1.val() !== $newPass2.val()) {
                 $newPass2.addClass('is-invalid');
-                $(`<div class="invalid-feedback">Пароли не совпадают</div>`).insertAfter($newPass2);
+                $(`<div class="invalid-feedback"><ul><li>Пароли не совпадают</li></ul></div>`).insertAfter($newPass2);
                 isValid = false;
             }
 
@@ -68,14 +68,14 @@ $(document).ready(function () {
             } else {
                 // Показываем индикатор загрузки и блокируем кнопку
                 $('#submitButton').prop('disabled', true);
-                $('#submitPasswordSpinner').removeClass('d-none');
+                $('#loadingSpinner').removeClass('d-none');
             }
         });
 
         // Сброс состояния кнопки при возврате на страницу
         $(window).on('pageshow', function () {
             $('#submitButton').prop('disabled', false);
-            $('#submitPasswordSpinner').addClass('d-none');
+            $('#loadingSpinner').addClass('d-none');
         });
     }
 });

@@ -8,6 +8,7 @@ const EducationEditForm = {
         this.modal = new bootstrap.Modal(this.$modal[0], { focus: false });
         this.files = [];
         this.existingFiles = []; // Храним существующие файлы
+        this.initCounters();
     },
 
     cacheElements: function () {
@@ -16,12 +17,17 @@ const EducationEditForm = {
         this.$modalContent = $('.modal-content', this.$modal);
         this.$closeBtn = $('.btn-close', this.$modal);
         this.$programSelect = $('#editEducationProgram');
+        this.$hours = $('#editEducationHours')
         this.$submitBtn = $('#submitEditEducationForm');
         this.$fileInput = $('#editEducationFileInput');
         this.$fileList = $('#editEducationFileList');
         this.$fileUploadBtn = $('#editEducationFileUploadBtn');
+        this.$protocolNumInput = $("#editEducationProtocolNum");
+        this.$certNumInput = $("#editEducationCertNum")
         this.$spinner = $('#editEducationSpinner');
         this.$loadingSpinner = $('#editEducationLoadingSpinner');
+        this.$protocolNumCounter = $('#editProtocolNumCounter');
+        this.$certNumCounter = $('#editCertNumCounter');
     },
 
     bindEvents: function () {
@@ -34,6 +40,9 @@ const EducationEditForm = {
         this.$fileUploadBtn.off('click').on('click', () => this.$fileInput.trigger('click'));
         this.$fileList.off('click', '.remove-file').on('click', '.remove-file', this.removeFile.bind(this));
         this.$closeBtn.off('click').on('click', this.handleCloseClick.bind(this));
+        this.$protocolNumInput.on('input', this.updateCounter.bind(this, 'protocolNum'));
+        this.$certNumInput.on('input', this.updateCounter.bind(this, 'certNum'));
+        this.$hours.on('input', this.restrictHoursInput.bind(this));
     },
 
     handleModalShow: function (event) {
@@ -74,6 +83,36 @@ const EducationEditForm = {
         }
         this.$fileInput.val('');
         this.updateFileList(this.existingFiles);
+    },
+
+    restrictHoursInput: function (e) {
+        const $input = $(e.target);
+        const value = $input.val();
+        if (value.length > 4) {
+            $input.val(value.slice(0, 4));
+        }
+    },
+
+    initCounters: function () {
+        this.updateCounter('protocolNum');
+        this.updateCounter('certNum');
+    },
+
+    updateCounter: function (field) {
+        let $input, $counter;
+
+        switch (field) {
+            case 'protocolNum':
+                $input = this.$protocolNumInput;
+                $counter = this.$protocolNumCounter;
+                break;
+            case 'certNum':
+                $input = this.$certNumInput;
+                $counter = this.$certNumCounter;
+                break;
+        }
+
+        $counter.text($input.val().length);
     },
 
     addFile: function (file) {
@@ -235,9 +274,11 @@ const EducationEditForm = {
 
             if (data.status === "SUCCESS") {
                 this.$programSelect.val(data.data[0].program_type || data.data[0].programm);
-                $('#editEducationProtocolNum').val(data.data[0].protocol_num);
-                $('#editEducationCertNum').val(data.data[0].udostoverenie_num);
-                $('#editEducationHours').val(data.data[0].hours);
+                this.$protocolNumInput.val(data.data[0].protocol_num);
+                this.updateCounter("protocolNum");
+                this.$certNumInput.val(data.data[0].udostoverenie_num);
+                this.updateCounter("certNum");
+                this.$hours.val(data.data[0].hours);
                 $('#editEducationDateFrom').val(data.data[0].date_from);
                 $('#editEducationDateTo').val(data.data[0].date_to);
 
@@ -266,9 +307,9 @@ const EducationEditForm = {
             isValid = false;
         }
 
-        const hours = parseInt($('#editEducationHours').val());
-        if (isNaN(hours) || hours < 1 || hours > 1000) {
-            $('#editEducationHours').addClass('is-invalid');
+        const hours = this.$hours.val();
+        if (isNaN(hours) || hours < 1 || hours > 1000 || hours.length > 4) {
+            this.$hours.addClass('is-invalid');
             isValid = false;
         }
 
@@ -304,9 +345,9 @@ const EducationEditForm = {
     getFormData: function () {
         return {
             programm: this.$programSelect.val(),
-            protocol_num: $('#editEducationProtocolNum').val(),
-            udostoverenie_num: $('#editEducationCertNum').val(),
-            hours: $('#editEducationHours').val(),
+            protocol_num: this.$protocolNumInput.val(),
+            udostoverenie_num: this.$certNumInput.val(),
+            hours: this.$hours.val(),
             date_from: $('#editEducationDateFrom').val(),
             date_to: $('#editEducationDateTo').val()
         };
@@ -403,6 +444,7 @@ const EducationEditForm = {
         this.existingFiles = [];
         this.updateFileList();
         this.hideSpinner();
+        this.initCounters();
     }
 };
 
