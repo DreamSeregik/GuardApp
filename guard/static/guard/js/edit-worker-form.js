@@ -186,10 +186,11 @@ const EmployeeEditForm = {
     },
 
     handleModalShow: function () {
-        this.showLoadingSpinner(); // Показываем индикатор загрузки
+        this.showLoadingSpinner();
+        this.$submitBtn.prop('disabled', true);
         if (worker_id) {
             this.loadEmployeeData(worker_id).finally(() => {
-                this.hideLoadingSpinner(); // Скрываем индикатор загрузки после загрузки данных
+                this.hideLoadingSpinner();
             });
         }
     },
@@ -232,6 +233,7 @@ const EmployeeEditForm = {
                 this.validateStatus();
 
                 this.$isLearningCheckbox.prop('checked', employees.is_edu || false);
+                this.$submitBtn.prop('disabled', false); // Активируем кнопку после загрузки
             }
         } catch (error) {
             console.error('Ошибка при загрузке данных сотрудника:', error);
@@ -248,6 +250,7 @@ const EmployeeEditForm = {
             document.activeElement.blur();
         }
         this.hideSpinner();
+        this.$submitBtn.prop('disabled', true); // Отключаем кнопку при закрытии
     },
 
     handleModalHidden: function () {
@@ -381,7 +384,7 @@ const EmployeeEditForm = {
             console.error('Ошибка при отправке формы:', error);
             showNotification('Произошла ошибка при отправке формы');
         } finally {
-            this.hideSpinner(); // Скрываем спиннер после завершения
+            this.hideSpinner();
         }
     },
 

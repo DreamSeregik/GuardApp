@@ -108,7 +108,8 @@ const MedicalExaminationForm = {
      * Обработчик открытия модального окна
      */
     handleModalShow: async function () {
-        this.showLoadingSpinner(); // Показываем индикатор загрузки
+        this.showLoadingSpinner();
+        this.$submitBtn.prop('disabled', true);
         this.resetForm();
         this.$modal.removeAttr('aria-hidden');
         const today = new Date();
@@ -164,6 +165,7 @@ const MedicalExaminationForm = {
                 // Устанавливаем должность
                 $('#napravEmployeePosition').val(employees.position || '');
                 $('#napravEmployeePositionPsych').val(employees.position || '');
+                this.$submitBtn.prop('disabled', false);
             }
         } catch (error) {
             console.error('Ошибка при загрузке данных сотрудника:', error);
@@ -491,7 +493,6 @@ const MedicalExaminationForm = {
     },
 
     hideSubmitSpinner: function () {
-        this.$submitBtn.prop('disabled', false);
         this.$submitSpinner.addClass('d-none');
     },
 
@@ -521,6 +522,7 @@ const MedicalExaminationForm = {
             showNotification('Произошла ошибка при отправке формы', 'error');
         } finally {
             this.hideSubmitSpinner();
+            this.$submitBtn.prop('disabled', false);
         }
     },
 

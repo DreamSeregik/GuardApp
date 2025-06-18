@@ -92,8 +92,16 @@ $(document).ready(async function () {
     });
 
     $("#all-med").click(async () => {
+        $("#allMedLoadingSpinner").removeClass("d-none");
+        $("#allMedContent").addClass("d-none");
+        $("#allMedModal").modal("show");
+
         const url = new URL(MED);
         const { data, status } = await sendGetRequest(url);
+
+        $("#allMedLoadingSpinner").addClass("d-none");
+        $("#allMedContent").removeClass("d-none");
+
         if (status === "SUCCESS") {
             const tbody = $("#allMedicalExamsTableBody");
             tbody.empty();
@@ -107,35 +115,39 @@ $(document).ready(async function () {
                             console.warn(`Empty or invalid file name for attachment ID ${attachment.id}:`, attachment);
                         }
                         return `<a href="/files/preview/${attachment.id}/" target="_blank" class="file-link" title="${fileName}">
-                        <i class="bi ${getFileIcon(fileName)}"></i> ${fileName}
-                    </a>`;
+                    <i class="bi ${getFileIcon(fileName)}"></i> ${fileName}
+                </a>`;
                     }).join("");
                     attachmentsHtml = `<div class="file-list">${fileLinks}</div>`;
                 }
                 const row = $(`<tr data-attachments-count="${el.attachments ? el.attachments.length : 0}">
-                <td>${index + 1}</td>
-                <td>${el.owner}</td>
-                <td>${el.type}</td>
-                <td>${el.date_from}</td>
-                <td>${el.date_to}</td>
-                <td>${attachmentsHtml}</td>
-            </tr>`);
+            <td>${index + 1}</td>
+            <td>${el.owner}</td>
+            <td>${el.type}</td>
+            <td>${el.date_from}</td>
+            <td>${el.date_to}</td>
+            <td>${attachmentsHtml}</td>
+        </tr>`);
                 tbody.append(row);
                 originalMedRows.push(row.clone());
             });
             $("#allMedicalExamsTable .sortable").addClass("none");
-            $("#allMedModal").modal("show");
-
-            // Reset search input
             $("#allMedSearch").val("");
-            filterMedTable(); // Apply initial filter (show all)
+            filterMedTable();
         }
     });
 
-    // All Educations Modal Click Handler
+
     $("#all-edu").click(async () => {
+        $("#allEduLoadingSpinner").removeClass("d-none");
+        $("#allEduContent").addClass("d-none");
+        $("#allEduModal").modal("show");
         const url = new URL(EDU);
         const { data, status } = await sendGetRequest(url);
+
+        $("#allEduLoadingSpinner").addClass("d-none");
+        $("#allEduContent").removeClass("d-none");
+
         if (status === "SUCCESS") {
             const tbody = $("#allEducationsTableBody");
             tbody.empty();
@@ -149,31 +161,28 @@ $(document).ready(async function () {
                             console.warn(`Empty or invalid file name for attachment ID ${attachment.id}:`, attachment);
                         }
                         return `<a href="/files/preview/${attachment.id}/" target="_blank" class="file-link" title="${fileName}">
-                        <i class="bi ${getFileIcon(fileName)}"></i> ${fileName}
-                    </a>`;
+                    <i class="bi ${getFileIcon(fileName)}"></i> ${fileName}
+                </a>`;
                     }).join("");
                     attachmentsHtml = `<div class="file-list">${fileLinks}</div>`;
                 }
                 const row = $(`<tr data-attachments-count="${el.attachments ? el.attachments.length : 0}">
-                <td>${index + 1}</td>
-                <td>${el.owner}</td>
-                <td>${el.program}</td>
-                <td>${el.protocol_num}</td>
-                <td>${el.udostoverenie_num}</td>
-                <td>${el.hours}</td>
-                <td>${el.date_from}</td>
-                <td>${el.date_to}</td>
-                <td>${attachmentsHtml}</td>
-            </tr>`);
+            <td>${index + 1}</td>
+            <td>${el.owner}</td>
+            <td>${el.program}</td>
+            <td>${el.protocol_num}</td>
+            <td>${el.udostoverenie_num}</td>
+            <td>${el.hours}</td>
+            <td>${el.date_from}</td>
+            <td>${el.date_to}</td>
+            <td>${attachmentsHtml}</td>
+        </tr>`);
                 tbody.append(row);
                 originalEduRows.push(row.clone());
             });
             $("#allEducationsTable .sortable").addClass("none");
-            $("#allEduModal").modal("show");
-
-            // Reset search input
             $("#allEduSearch").val("");
-            filterEduTable(); // Apply initial filter (show all)
+            filterEduTable();
         }
     });
 

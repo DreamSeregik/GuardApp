@@ -311,7 +311,7 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     Отмена
                 </button>
-                <button type="button" class="btn btn-primary" id="submitEditEmployeeForm">
+                <button type="button" class="btn btn-primary" id="submitEditEmployeeForm" disabled>
                     Сохранить изменения
                     <span class="spinner-border spinner-border-sm d-none" id="editWorkerSpinner" role="status" aria-hidden="true"></span>
                 </button>
@@ -374,28 +374,40 @@
 <!-- MODAL DEL MED -->
 
 <!-- MODAL DEL WORKER -->
-<div class="modal fade" id="delWorkerModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Вы уверены, что хотите удалить сотрудника <span id="employeeName"></span>?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-        <form id="deleteEmployeeForm" method="post" action="">
-          {% csrf_token %}
-        <button type="submit" class="btn btn-danger">
-            Удалить
-            <span class="spinner-border spinner-border-sm d-none" id="delWorkerSpinner" role="status" aria-hidden="true"></span>
-        </button>
-        </form>
-      </div>
+<div class="modal fade" id="delWorkerModal" tabindex="-1" aria-labelledby="delWorkerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="delWorkerModalLabel">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Спиннер загрузки -->
+                <div id="delWorkerLoadingSpinner" class="d-none">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                        <p>Загрузка данных...</p>
+                    </div>
+                </div>
+                <!-- Контент формы -->
+                <div id="delWorkerContent">
+                    <p>Вы уверены, что хотите удалить сотрудника <span id="employeeName"></span>?</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <form id="deleteEmployeeForm" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" disabled>
+                        Удалить
+                        <span id="delSubmitSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 <!-- MODAL DEL WORKER -->
 
@@ -482,40 +494,49 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <!-- Фильтры -->
-                <div class="row mb-3">
-                    <div class="col-md-6 mb-2">
-                        <input type="text" id="allMedSearch" class="form-control" placeholder="Поиск..." maxlength="255">
+                <!-- Индикатор загрузки -->
+                <div id="allMedLoadingSpinner" class="d-none text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
                     </div>
-                    <div class="col-md-6">
-                        <div class="input-group">
-                            <span class="input-group-text">с</span>
-                            <input type="date" id="medDateFrom" class="form-control" placeholder="Дата с">
-                            <span class="input-group-text">по</span>
-                            <input type="date" id="medDateTo" class="form-control" placeholder="Дата по">
-                            <button id="resetMedDates" class="btn btn-outline-secondary" type="button">
-                                <i class="bi bi-x-circle"></i>
-                            </button>
+                    <p>Загрузка данных...</p>
+                </div>
+                <div id="allMedContent">
+                    <!-- Фильтры -->
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-2">
+                            <input type="text" id="allMedSearch" class="form-control" placeholder="Поиск..." maxlength="255">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text">с</span>
+                                <input type="date" id="medDateFrom" class="form-control" placeholder="Дата с">
+                                <span class="input-group-text">по</span>
+                                <input type="date" id="medDateTo" class="form-control" placeholder="Дата по">
+                                <button id="resetMedDates" class="btn btn-outline-secondary" type="button">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="table-responsive">
-                    <table class="table table-bordered all-data-tbl" id="allMedicalExamsTable">
-                        <thead>
-                            <tr>
-                                <th class="sortable" style="width: 50px;" data-column="index">№</th>
-                                <th class="sortable" style="min-width: 180px;" data-column="owner">ФИО</th>
-                                <th class="sortable" style="min-width: 180px;" data-column="type">Вид осмотра</th>
-                                <th class="sortable date" style="min-width: 140px;" data-column="date_from">Дата прохождения</th>
-                                <th class="sortable date" style="min-width: 140px;" data-column="date_to">Дата окончания</th>
-                                <th class="sortable" style="min-width: 180px;" data-column="attachments_count">Файлы</th>
-                            </tr>
-                        </thead>
-                        <tbody id="allMedicalExamsTableBody">
-                            <tr><td colspan="6" style="text-align: center">Загрузка данных...</td></tr>
-                        </tbody>
-                    </table>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered all-data-tbl" id="allMedicalExamsTable">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" style="width: 50px;" data-column="index">№</th>
+                                    <th class="sortable" style="min-width: 180px;" data-column="owner">ФИО</th>
+                                    <th class="sortable" style="min-width: 180px;" data-column="type">Вид осмотра</th>
+                                    <th class="sortable date" style="min-width: 140px;" data-column="date_from">Дата прохождения</th>
+                                    <th class="sortable date" style="min-width: 140px;" data-column="date_to">Дата окончания</th>
+                                    <th class="sortable" style="min-width: 180px;" data-column="attachments_count">Файлы</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allMedicalExamsTableBody">
+                                <tr><td colspan="6" style="text-align: center">Загрузка данных...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -604,7 +625,7 @@
             
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-primary" id="submitEditMedicalExamForm">
+                <button type="button" class="btn btn-primary" id="submitEditMedicalExamForm" disabled>
                     Сохранить
                     <span class="spinner-border spinner-border-sm d-none" id="editSubmitSpinner" role="status" aria-hidden="true"></span>
                 </button>
@@ -904,7 +925,7 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     Отмена
                 </button>
-                <button type="button" class="btn btn-primary" id="submitMedicalForm">
+                <button type="button" class="btn btn-primary" id="submitMedicalForm" disabled>
                     Сформировать направление
                     <span id="submitMedicalSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                 </button>
@@ -1140,7 +1161,7 @@
             
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-primary" id="submitEditEducationForm">
+                <button type="button" class="btn btn-primary" id="submitEditEducationForm" disabled>
                     Сохранить изменения
                     <span class="spinner-border spinner-border-sm d-none" id="editEducationSpinner" role="status" aria-hidden="true"></span>
                 </button>
@@ -1159,43 +1180,51 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="modal-body">
-                <!-- Фильтры -->
-                <div class="row mb-3">
-                    <div class="col-md-6 mb-2">
-                        <input type="text" id="allEduSearch" class="form-control" placeholder="Поиск" maxlength="255">
+                <!-- Индикатор загрузки -->
+                <div id="allEduLoadingSpinner" class="d-none text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
                     </div>
-                    <div class="col-md-6">
-                        <div class="input-group">
-                            <span class="input-group-text">с</span>
-                            <input type="date" id="eduDateFrom" class="form-control" placeholder="Дата с">
-                            <span class="input-group-text">по</span>
-                            <input type="date" id="eduDateTo" class="form-control" placeholder="Дата по">
-                            <button id="resetEduDates" class="btn btn-outline-secondary" type="button">
-                                <i class="bi bi-x-circle"></i>
-                            </button>
+                    <p>Загрузка данных...</p>
+                </div>
+                <div id="allEduContent">
+                    <!-- Фильтры -->
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-2">
+                            <input type="text" id="allEduSearch" class="form-control" placeholder="Поиск" maxlength="255">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text">с</span>
+                                <input type="date" id="eduDateFrom" class="form-control" placeholder="Дата с">
+                                <span class="input-group-text">по</span>
+                                <input type="date" id="eduDateTo" class="form-control" placeholder="Дата по">
+                                <button id="resetEduDates" class="btn btn-outline-secondary" type="button">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="table-responsive" style="overflow-x: auto;">
-                    <table class="table table-bordered all-data-tbl" id="allEducationsTable" style="min-width: 1200px;">
-                        <thead>
-                            <tr>
-                                <th class="sortable" style="width: 50px;" data-column="index">№</th>
-                                <th class="sortable" style="min-width: 200px;" data-column="owner">ФИО</th>
-                                <th class="sortable" style="min-width: 250px;" data-column="program">Программа</th>
-                                <th class="sortable" style="min-width: 150px;" data-column="protocol_num">№ протокола</th>
-                                <th class="sortable" style="min-width: 150px;" data-column="udostoverenie_num">№ удостоверения</th>
-                                <th class="sortable numeric" style="width: 100px;" data-column="hours">Часы</th>
-                                <th class="sortable date" style="min-width: 150px;" data-column="date_from">Дата начала</th>
-                                <th class="sortable date" style="min-width: 150px;" data-column="date_to">Дата окончания</th>
-                                <th class="sortable" style="min-width: 200px;" data-column="attachments_count">Файлы</th>
-                            </tr>
-                        </thead>
-                        <tbody id="allEducationsTableBody">
-                            <tr><td colspan="9" style="text-align: center">Загрузка данных...</td></tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive" style="overflow-x: auto;">
+                        <table class="table table-bordered all-data-tbl" id="allEducationsTable" style="min-width: 1200px;">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" style="width: 50px;" data-column="index">№</th>
+                                    <th class="sortable" style="min-width: 200px;" data-column="owner">ФИО</th>
+                                    <th class="sortable" style="min-width: 250px;" data-column="program">Программа</th>
+                                    <th class="sortable" style="min-width: 150px;" data-column="protocol_num">№ протокола</th>
+                                    <th class="sortable" style="min-width: 150px;" data-column="udostoverenie_num">№ удостоверения</th>
+                                    <th class="sortable numeric" style="width: 100px;" data-column="hours">Часы</th>
+                                    <th class="sortable date" style="min-width: 150px;" data-column="date_from">Дата начала</th>
+                                    <th class="sortable date" style="min-width: 150px;" data-column="date_to">Дата окончания</th>
+                                    <th class="sortable" style="min-width: 200px;" data-column="attachments_count">Файлы</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allEducationsTableBody">
+                                <tr><td colspan="9" style="text-align: center">Загрузка данных...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1203,7 +1232,6 @@
             </div>
         </div>
     </div>
-</div>
 </div>
 <!-- MODAL ALL EDU -->
 

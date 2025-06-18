@@ -47,6 +47,7 @@ const EducationEditForm = {
 
     handleModalShow: function (event) {
         this.showLoadingSpinner();
+        this.$submitBtn.prop('disabled', true); // Отключаем кнопку при открытии
         if (selectedEducationID) {
             this.loadEducationData(selectedEducationID).finally(() => {
                 this.hideLoadingSpinner();
@@ -63,6 +64,7 @@ const EducationEditForm = {
             document.activeElement.blur();
         }
         this.hideSpinner();
+        this.$submitBtn.prop('disabled', true); // Отключаем кнопку при закрытии
     },
 
     handleModalHidden: function () {
@@ -289,6 +291,7 @@ const EducationEditForm = {
                     this.existingFiles = [];
                     this.updateFileList();
                 }
+                this.$submitBtn.prop('disabled', false); // Активируем кнопку после загрузки
             } else {
                 console.error('Ошибка загрузки данных:', data.description);
                 showNotification(data.description || 'Ошибка загрузки данных');

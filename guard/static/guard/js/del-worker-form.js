@@ -19,7 +19,9 @@ const EmployeeDeleteModal = {
         this.$closeBtn = $('.btn-close', this.$modal);
         this.$cancelBtn = $('.btn-secondary', this.$modal);
         this.$submitBtn = $('.btn-danger', this.$form);
-        this.$spinner = $('#delWorkerSpinner');
+        this.$spinner = $('#delSubmitSpinner');
+        this.$loadingSpinner = $('#delWorkerLoadingSpinner');
+        this.$content = $('#delWorkerContent');
     },
 
     bindEvents: function () {
@@ -33,9 +35,21 @@ const EmployeeDeleteModal = {
     },
 
     handleModalShow: async function () {
-        const url = new URL(`${FIO}${worker_id}`);
-        const data = await sendGetRequest(url);
-        $("#employeeName").html(data.FIO);
+        this.$loadingSpinner.removeClass('d-none');
+        this.$content.addClass('d-none');
+        this.$submitBtn.prop('disabled', true); // Отключаем кнопку при открытии
+        try {
+            const url = new URL(`${FIO}${worker_id}`);
+            const data = await sendGetRequest(url);
+            this.$employeeName.html(data.FIO);
+            this.$submitBtn.prop('disabled', false); // Активируем кнопку после загрузки
+        } catch (error) {
+            console.error('Ошибка при загрузке данных сотрудника:', error);
+            showNotification('Ошибка загрузки данных');
+        } finally {
+            this.$loadingSpinner.addClass('d-none');
+            this.$content.removeClass('d-none');
+        }
     },
 
     handleModalShown: function () {
@@ -47,6 +61,9 @@ const EmployeeDeleteModal = {
             document.activeElement.blur();
         }
         this.hideSpinner();
+        this.$loadingSpinner.addClass('d-none');
+        this.$content.removeClass('d-none');
+        this.$submitBtn.prop('disabled', true); // Отключаем кнопку при закрытии
     },
 
     handleCloseClick: function (e) {

@@ -760,6 +760,48 @@ legend {
     height: 3rem;
 }
 
+/* Стили для индикатора загрузки в форме всех медосмотров */
+#allMedLoadingSpinner {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#allMedLoadingSpinner .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Стили для индикатора загрузки в форме всех обучений */
+#allEduLoadingSpinner {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#allEduLoadingSpinner .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Стили для индикатора загрузки в форме удаления сотрудника */
+#delWorkerLoadingSpinner {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#delWorkerLoadingSpinner .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
 /* Анимация для спиннера */
 @keyframes spin {
     0% { transform: rotate(0deg); }

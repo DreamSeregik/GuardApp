@@ -32,6 +32,7 @@ const MedicalExamEditForm = {
 
     handleModalShow: function (event) {
         this.showLoadingSpinner();
+        this.$submitBtn.prop('disabled', true); // Отключаем кнопку при открытии
         if (selectedMedID) {
             this.loadExamData(selectedMedID).finally(() => {
                 this.hideLoadingSpinner();
@@ -213,6 +214,7 @@ const MedicalExamEditForm = {
                     this.existingFiles = [];
                     this.updateFileList();
                 }
+                this.$submitBtn.prop('disabled', false); // Активируем кнопку после загрузки
             } else {
                 console.error('Ошибка загрузки данных:', data.description);
                 showNotification(data.description || 'Ошибка загрузки данных');
@@ -231,6 +233,7 @@ const MedicalExamEditForm = {
         this.existingFiles = []; // Очищаем при закрытии
         this.updateFileList();
         this.hideSpinner();
+        this.$submitBtn.prop('disabled', true); // Отключаем кнопку при закрытии
     },
 
     validateForm: function () {
