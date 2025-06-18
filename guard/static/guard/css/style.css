@@ -163,6 +163,20 @@ body
     user-select: none;
 }
 
+#info-tbl-education td:nth-child(3), /* № протокола */
+#info-tbl-education td:nth-child(4) { /* № удостоверения */
+    word-wrap: break-word;
+    white-space: normal;
+    max-width: 150px; /* или другое подходящее значение */
+    overflow-wrap: break-word;
+}
+
+
+.file-list{
+    height: 150px;
+    width: 250px;
+    overflow-y: auto;
+}
 
 /* Стили для сортируемых заголовков в таблицах медосмотров и обучений */
 #info-tbl-med th.sortable-med, 

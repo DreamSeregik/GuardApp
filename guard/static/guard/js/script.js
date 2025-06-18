@@ -811,40 +811,53 @@ function getFileIcon(fileName) {
 async function getMedData(id) {
     const url = new URL(`${MED_DATA}${id}`);
 
+    // Показываем индикатор загрузки
     $("#info-tbl-med tbody").html('<tr><td colspan="5" style="text-align: center">Загрузка данных...</td></tr>');
 
-    const data = await sendGetRequest(url);
+    try {
+        const data = await sendGetRequest(url);
+        if (!data || !data.data) {
+            console.error('Ошибка: данные не получены или некорректны', data);
+            $("#info-tbl-med tbody").html('<tr class="no-data"><td colspan="5" style="text-align: center">Ошибка загрузки данных</td></tr>');
+            return;
+        }
 
-    if (data["data"].length !== 0) {
-        $("#info-tbl-med tbody").html("");
-        data["data"].forEach((el) => {
-            let attachmentsHtml = "-";
-            if (el.attachments && el.attachments.length > 0) {
-                attachmentsHtml = el.attachments.map(attachment => {
-                    const fileName = attachment.name && attachment.name.trim() ? attachment.name : `file_${attachment.id}`;
-                    if (!attachment.name) {
-                        console.warn(`Empty or invalid file name for attachment ID ${attachment.id}:`, attachment);
-                    }
-                    return `<a href="/files/preview/${attachment.id}/" target="_blank" class="file-link">
-                        <i class="bi ${getFileIcon(fileName)}"></i> ${fileName}
-                    </a>`;
-                }).join(", ");
-            }
+        if (data.data.length !== 0) {
+            $("#info-tbl-med tbody").html("");
+            data.data.forEach((el, index) => {
+                let attachmentsHtml = "-";
+                if (el.attachments && Array.isArray(el.attachments) && el.attachments.length > 0) {
+                    const fileLinks = el.attachments.map(attachment => {
+                        const fileName = attachment.name && attachment.name.trim() ? attachment.name : `file_${attachment.id || 'unknown'}`;
+                        if (!attachment.name || !attachment.id) {
+                            console.warn(`Некорректные данные вложения для ID ${el.id}:`, attachment);
+                        }
+                        return `<a href="/files/preview/${attachment.id}/" target="_blank" class="file-link" title="${fileName}">
+                            <i class="bi ${getFileIcon(fileName)}"></i> ${fileName}
+                        </a>`;
+                    }).join("");
+                    attachmentsHtml = `<div class="file-list">${fileLinks}</div>`;
+                } else {
+                    console.log(`Нет вложений для записи с ID ${el.id}`);
+                }
 
-            $("#info-tbl-med tbody").append(
-                `<tr data-id="${el.id}">
-                    <td>${$("#info-tbl-med>tbody tr").length + 1}</td>
-                    <td>${el.type}</td>
-                    <td>${el.date_from}</td>
-                    <td>${el.date_to}</td>
-                    <td>${attachmentsHtml}</td>
-                </tr>`
-            );
-        });
-    } else {
-        $("#info-tbl-med tbody").html("").append(
-            `<tr class="no-data"><td colspan='5' style='text-align: center'>Записей нет</td></tr>`
-        );
+                $("#info-tbl-med tbody").append(
+                    `<tr data-id="${el.id}">
+                        <td>${index + 1}</td>
+                        <td>${el.type || '-'}</td>
+                        <td>${el.date_from || '-'}</td>
+                        <td>${el.date_to || '-'}</td>
+                        <td>${attachmentsHtml}</td>
+                    </tr>`
+                );
+            });
+        } else {
+            console.log('Нет данных о медосмотрах для сотрудника с ID:', id);
+            $("#info-tbl-med tbody").html('<tr class="no-data"><td colspan="5" style="text-align: center">Записей нет</td></tr>');
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке данных о медосмотрах:', error);
+        $("#info-tbl-med tbody").html('<tr class="no-data"><td colspan="5" style="text-align: center">Ошибка загрузки данных</td></tr>');
     }
 }
 
@@ -855,36 +868,53 @@ async function getEducationData(id) {
     // Показываем индикатор загрузки
     $("#info-tbl-education tbody").html('<tr><td colspan="8" style="text-align: center">Загрузка данных...</td></tr>');
 
-    const data = await sendGetRequest(url);
-    if (data["data"].length !== 0) {
-        $("#info-tbl-education tbody").html("");
-        data["data"].forEach((el) => {
-            let attachmentsHtml = "-";
-            if (el.attachments && el.attachments.length > 0) {
-                attachmentsHtml = el.attachments.map(attachment =>
-                    `<a href="${attachment.url}" target="_blank" class="file-link">
-                        <i class="bi bi-file-earmark-text"></i> ${attachment.name || 'Файл'}
-                    </a>`
-                ).join(", ");
-            }
+    try {
+        const data = await sendGetRequest(url);
+        if (!data || !data.data) {
+            console.error('Ошибка: данные не получены или некорректны', data);
+            $("#info-tbl-education tbody").html('<tr class="no-data"><td colspan="8" style="text-align: center">Ошибка загрузки данных</td></tr>');
+            return;
+        }
 
-            $("#info-tbl-education tbody").append(
-                `<tr data-id="${el.id}">
-                    <td>${$("#info-tbl-education>tbody tr").length + 1}</td>
-                    <td>${el.programm}</td>
-                    <td>${el.protocol_num}</td>
-                    <td>${el.udostoverenie_num}</td>
-                    <td>${el.hours}</td>
-                    <td>${el.date_from}</td>
-                    <td>${el.date_to}</td>
-                    <td>${attachmentsHtml}</td>
-                </tr>`
-            );
-        });
-    } else {
-        $("#info-tbl-education tbody").html("").append(
-            `<tr class="no-data"><td colspan='8' style='text-align: center'>Записей нет</td></tr>`
-        );
+        if (data.data.length !== 0) {
+            $("#info-tbl-education tbody").html("");
+            data.data.forEach((el, index) => {
+                let attachmentsHtml = "-";
+                if (el.attachments && Array.isArray(el.attachments) && el.attachments.length > 0) {
+                    const fileLinks = el.attachments.map(attachment => {
+                        const fileName = attachment.name && attachment.name.trim() ? attachment.name : `file_${attachment.id || 'unknown'}`;
+                        if (!attachment.name || !attachment.id) {
+                            console.warn(`Некорректные данные вложения для ID ${el.id}:`, attachment);
+                        }
+                        return `<a href="/files/preview/${attachment.id}/" target="_blank" class="file-link" title="${fileName}">
+                            <i class="bi ${getFileIcon(fileName)}"></i> ${fileName}
+                        </a>`;
+                    }).join("");
+                    attachmentsHtml = `<div class="file-list">${fileLinks}</div>`;
+                } else {
+                    console.log(`Нет вложений для записи с ID ${el.id}`);
+                }
+
+                $("#info-tbl-education tbody").append(
+                    `<tr data-id="${el.id}">
+                        <td>${index + 1}</td>
+                        <td>${el.programm || '-'}</td>
+                        <td>${el.protocol_num || '-'}</td>
+                        <td>${el.udostoverenie_num || '-'}</td>
+                        <td>${el.hours || '-'}</td>
+                        <td>${el.date_from || '-'}</td>
+                        <td>${el.date_to || '-'}</td>
+                        <td>${attachmentsHtml}</td>
+                    </tr>`
+                );
+            });
+        } else {
+            console.log('Нет данных об обучении для сотрудника с ID:', id);
+            $("#info-tbl-education tbody").html('<tr class="no-data"><td colspan="8" style="text-align: center">Записей нет</td></tr>');
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке данных об обучении:', error);
+        $("#info-tbl-education tbody").html('<tr class="no-data"><td colspan="8" style="text-align: center">Ошибка загрузки данных</td></tr>');
     }
 }
 
