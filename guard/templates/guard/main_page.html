@@ -744,12 +744,12 @@
 
                             <div class="mt-3" id="napravDMSFields" style="display: none;">
                                 <label for="napravDMSNumber" class="form-label">Номер полиса ДМС*</label>
-                                <input type="text" class="form-control" id="napravDMSNumber" maxlength="20">
+                                <input type="text" class="form-control" id="napravDMSNumber" maxlength="16">
                                 <div class="invalid-feedback" id="napravDMSFeedback">
                                     Номер полиса ДМС должен содержать минимум 10 символов
                                 </div>
                                 <div class="length-counter">
-                                    <span>Кол-во символов: </span><span id="napravDMSCounter">0</span>/20
+                                    <span>Кол-во символов: </span><span id="napravDMSCounter">0</span>/16
                                 </div>
                             </div>
                             <!-- Номер и дата направления -->
@@ -943,14 +943,14 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="napravEmployerName" class="form-label">Наименование работодателя*</label>
-                                <input type="text" class="form-control" id="napravEmployerName" maxlength="255" required>
+                                <label for="napravEmployerNameTextarea" class="form-label">Наименование работодателя*</label>
+                                <textarea class="form-control" id="napravEmployerName" rows="3" maxlength="500" required></textarea>
                                 <div class="d-flex justify-content-between">
                                     <div class="invalid-feedback" id="employerNameFeedback">
-                                        Название должно содержать от 3 до 255 символов
+                                        укажите наименование работодателя
                                     </div>
                                     <div class="length-counter">
-                                        <span>Кол-во символов: </span><span id="employerNameCounter">0</span>/255
+                                        <span>Кол-во символов: </span><span id="employerNameCounter">0</span>/500
                                     </div>
                                 </div>
                             </div>
@@ -986,7 +986,15 @@
                             
                             <div class="mb-3">
                                 <label for="napravOkvedCode" class="form-label">Вид экономической деятельности по ОКВЭД</label>
-                                <input type="text" class="form-control" id="napravOkvedCode">
+                                <input type="text" class="form-control" id="napravOkvedCode" maxlength="100">
+                                <div class="d-flex justify-content-between">
+                                    <div class="invalid-feedback" id="napravOkvedCodeFeedback">
+                                        Введите корректный код ОКВЭД (например, 62.01 или 62.01.1)
+                                    </div>
+                                    <div class="length-counter">
+                                        <span>Кол-во символов: </span><span id="okvedCodeCounter">0</span>/10
+                                    </div>
+                                </div>
                             </div>
 
                              <div class="mb-4 mt-4">

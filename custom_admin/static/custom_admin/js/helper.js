@@ -5,6 +5,7 @@ function showNotification(message, type = 'error') {
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
+        showCloseButton: true,
         timer: 3000,
         timerProgressBar: true,
         background: type === 'success' ? '#e6fffa' : '#ffe6e6',

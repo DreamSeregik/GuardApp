@@ -88,6 +88,8 @@ const MedicalExaminationForm = {
         this.$ogrnPsychCounter = $('#ogrnPsychCounter');
         this.$ogrnCodeInput = $('#napravOgrnCode');
         this.$ogrnCodeCounter = $('#ogrnCodeCounter');
+        this.$okvedCodeInput = $('#napravOkvedCode');
+        this.$okvedCodeCounter = $('#okvedCodeCounter');
     },
 
     /**
@@ -236,6 +238,12 @@ const MedicalExaminationForm = {
             this.updateCounter('activityTypes');
             this.validateActivityTypes();
         });
+
+        this.$okvedCodeInput.on('input', () => {
+            this.updateCounter('okvedCode');
+            this.validateOkvedCode();
+        });
+        this.$okvedCodeInput.on('blur', this.validateOkvedCode.bind(this));
 
         this.$hazardFactorsInput.on('blur', this.validateHazardFactors.bind(this));
         this.$positionPsychInput.on('blur', this.validatePositionPsych.bind(this));
@@ -515,11 +523,25 @@ const MedicalExaminationForm = {
     },
 
     validateMedicalOrg: function () {
+        const maxLength = 500;
+        const minLength = 3;
         const value = this.$medicalOrgInput.val().trim();
         if (!value) {
             this.showError(this.$medicalOrgInput, 'napravMedicalOrganizationFeedback', 'Поле обязательно для заполнения');
             return false;
         }
+
+        if (value.length < minLength) {
+            this.showError(this.$medicalOrgInput, 'napravMedicalOrganizationFeedback', `название медицинской организации должно содеражать минимум ${minLength} символа`);
+            return false;
+        }
+
+        if (value.length > maxLength) {
+            this.showError(this.$medicalOrgInput, 'napravMedicalOrganizationFeedback', `название медицинской организации не должно превышать ${maxLength} символов`);
+            return false;
+        }
+
+
         this.hideError(this.$medicalOrgInput, 'napravMedicalOrganizationFeedback');
         return true;
     },
@@ -535,11 +557,25 @@ const MedicalExaminationForm = {
     },
 
     validateMedicalOrgPsych: function () {
+        const maxLength = 500;
+        const minLength = 3;
         const value = this.$medicalOrgPsychInput.val().trim();
+
         if (!value) {
             this.showError(this.$medicalOrgPsychInput, 'napravMedicalOrgPsychFeedback', 'Поле обязательно для заполнения');
             return false;
         }
+
+        if (value.length < minLength) {
+            this.showError(this.$medicalOrgPsychInput, 'napravMedicalOrgPsychFeedback', `название медицинской организации должно содеражать минимум ${minLength} символа`);
+            return false;
+        }
+
+        if (value.length > maxLength) {
+            this.showError(this.$medicalOrgPsychInput, 'napravMedicalOrgPsychFeedback', `название медицинской организации не должно превышать ${maxLength} символов`);
+            return false;
+        }
+
         this.hideError(this.$medicalOrgPsychInput, 'napravMedicalOrgPsychFeedback');
         return true;
     },
@@ -931,8 +967,9 @@ const MedicalExaminationForm = {
         this.updateCounter('employerRepPosition');
         this.updateCounter('employerName');
         this.updateCounter('employerPhone');
-        this.updateCounter('napravMedOrgPhonePsych')
-        this.updateCounter('napravMedOrgEmailPsych')
+        this.updateCounter('napravMedOrgPhonePsych');
+        this.updateCounter('napravMedOrgEmailPsych');
+        this.updateCounter('okvedCode');
         this.updateDirectionNumberCounter();
     },
 
@@ -965,7 +1002,8 @@ const MedicalExaminationForm = {
             'activityTypes': ['napravActivityTypes', 'activityTypesCounter'],
             'previousConclusions': ['napravPreviousConclusions', 'previousConclusionsCounter'],
             'ogrnPsych': ['napravOgrnPsych', 'ogrnPsychCounter'],
-            'ogrnCode': ['napravOgrnCode', 'ogrnCodeCounter']
+            'ogrnCode': ['napravOgrnCode', 'ogrnCodeCounter'],
+            'okvedCode': ['napravOkvedCode', 'okvedCodeCounter']
         };
 
         if (fieldMap[field]) {
@@ -1127,6 +1165,44 @@ const MedicalExaminationForm = {
             this.hideError(this.$employerNameInput, 'employerNameFeedback');
             return true;
         }
+    },
+
+    /**
+ * Валидация кода ОКВЭД
+ */
+    validateOkvedCode: function () {
+        const value = this.$okvedCodeInput.val().trim();
+        const maxLength = 10;
+        const minLength = 2
+
+        if (!value) {
+            this.hideError(this.$okvedCodeInput, 'napravOkvedCodeFeedback');
+            return true; // Поле не обязательно
+        }
+
+        // Проверка формата кода ОКВЭД (допустимы цифры и точки)
+        if (!/^[\d.]+$/.test(value)) {
+            this.showError(this.$okvedCodeInput, 'napravOkvedCodeFeedback',
+                'Код ОКВЭД должен содержать только цифры и точки');
+            return false;
+        }
+
+        // Проверка максимальной длины
+        if (value.length > maxLength) {
+            this.showError(this.$okvedCodeInput, 'napravOkvedCodeFeedback',
+                `Превышена максимальная длина (${maxLength} символов)`);
+            return false;
+        }
+
+        // Проверка минимальной длины
+        if (value.length < minLength) {
+            this.showError(this.$okvedCodeInput, 'napravOkvedCodeFeedback',
+                `Код ОКВЭД должен состоять минимум из ${minLength} символов`);
+            return false;
+        }
+
+        this.hideError(this.$okvedCodeInput, 'napravOkvedCodeFeedback');
+        return true;
     },
 
     /**
@@ -1309,6 +1385,12 @@ const MedicalExaminationForm = {
             }
             if (!this.validateOgrnPsych()) {
                 isValid = false;
+            }
+
+            if (this.$okvedCodeInput.val().trim()) {
+                if (!this.validateOkvedCode()) {
+                    isValid = false;
+                }
             }
 
             const psychiatricRequired = [
