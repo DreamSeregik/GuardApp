@@ -20,7 +20,9 @@ const UserEditForm = {
         this.$submitBtn = $('button[type="submit"]', this.$form);
         this.$usernameInput = $('#edit_username');
         this.$emailInput = $('#edit_email');
+        this.$emailCounter = $('#editEmailCounter');
         this.$fullNameInput = $('#edit_full_name');
+        this.$fullNameCounter = $('#editFullNameCounter');
         this.$isStaffCheckbox = $('#edit_is_staff');
         this.$isActiveCheckbox = $('#edit_is_active');
         this.$generateCheckbox = $('#edit_generate_password');
@@ -31,19 +33,33 @@ const UserEditForm = {
         this.$showPassword2 = $('#edit_showPassword2');
         this.$passwordFields = $('.password-field');
         this.$spinner = $('#editUserSpinner');
-        this.$loadingSpinner = $('#editUserLoadingSpinner')
+        this.$loadingSpinner = $('#editUserLoadingSpinner');
+        this.$password1Counter = $('#editPassword1Counter');
+        this.$password2Counter = $('#editPassword2Counter');
     },
 
     bindEvents: function () {
-        this.$emailInput.on('input', this.validateEmailInput.bind(this));
-        this.$usernameInput.on('input', this.validateUsernameInput.bind(this));
-        this.$password1Input.on('input', this.validatePasswordInputs.bind(this));
-        this.$password2Input.on('input', this.validatePasswordInputs.bind(this));
+        this.$emailInput.on('input', () => {
+            this.validateEmailInput();
+            this.updateEmailCounter();
+        });
+        this.$usernameInput.on('input', () => {
+            this.validateUsernameInput();
+            this.updateUsernameCounter();
+        });
+        this.$password1Input.on('input', (e) => {
+            this.validatePasswordInputs();
+            this.updatePassword1Counter();
+            this.restrictToLatin(e.target);
+        });
+        this.$password2Input.on('input', (e) => {
+            this.validatePasswordInputs();
+            this.updatePassword2Counter();
+            this.restrictToLatin(e.target);
+        });
         this.$generateCheckbox.on('change', this.updatePasswordFields.bind(this));
         this.$changePasswordCheckbox.on('change', this.updatePasswordFields.bind(this));
         this.$submitBtn.on('click', this.submitForm.bind(this));
-
-        // Обработчики для чекбоксов "Показать пароль"
         this.$showPassword1.on('change', this.togglePasswordVisibility.bind(this, 'edit_password1'));
         this.$showPassword2.on('change', this.togglePasswordVisibility.bind(this, 'edit_password2'));
 
@@ -55,6 +71,13 @@ const UserEditForm = {
         this.$closeBtn.on('click', this.handleCloseClick.bind(this));
         this.$cancelBtn.on('click', this.handleCancelClick.bind(this));
 
+        this.$fullNameInput.on('input', () => {
+            this.validateFullNameInput();
+            this.updateFullNameCounter();
+        });
+        this.$fullNameInput.on('blur', this.validateFullNameInput.bind(this));
+
+        // Взаимоисключающие чекбоксы
         this.$generateCheckbox.on('change', () => {
             if (this.$generateCheckbox.prop('checked')) {
                 this.$changePasswordCheckbox.prop('checked', false);
@@ -69,6 +92,77 @@ const UserEditForm = {
         });
     },
 
+    validateFullNameInput: function () {
+        const fullName = this.$fullNameInput.val().trim();
+        const fullNameRegex = /^[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+(?:\s[А-ЯЁ][а-яё]+)?$/;
+
+        if (fullName === '') {
+            this.$fullNameInput.removeClass('is-invalid');
+            $('#editFullNameFeedback').hide();
+            return true;
+        } else if (!fullNameRegex.test(fullName)) {
+            this.$fullNameInput.addClass('is-invalid');
+            $('#editFullNameFeedback').text('Введите корректное ФИО (2-3 слова, каждое с заглавной буквы)').show();
+            return false;
+        } else {
+            this.$fullNameInput.removeClass('is-invalid');
+            $('#editFullNameFeedback').hide();
+            return true;
+        }
+    },
+
+    validateEmailInput: function () {
+        const email = this.$emailInput.val().trim();
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+        if (!this.$generateCheckbox.prop('checked') && email === '') {
+            this.$emailInput.removeClass('is-invalid');
+            $('#editEmailFeedback').hide();
+            return true;
+        }
+
+        if (this.$generateCheckbox.prop('checked') && email === '') {
+            this.$emailInput.addClass('is-invalid');
+            $('#editEmailFeedback').text('Пожалуйста, введите email').show();
+            return false;
+        }
+
+        if (email && !emailRegex.test(email)) {
+            this.$emailInput.addClass('is-invalid');
+            $('#editEmailFeedback').text('Введите корректный email (например, example@domain.com)').show();
+            return false;
+        }
+
+        this.$emailInput.removeClass('is-invalid');
+        $('#editEmailFeedback').hide();
+        return true;
+    },
+
+    updateFullNameCounter: function () {
+        const length = this.$fullNameInput.val().length;
+        this.$fullNameCounter.text(length);
+    },
+
+    updateEmailCounter: function () {
+        const length = this.$emailInput.val().length;
+        this.$emailCounter.text(length);
+    },
+
+    updateUsernameCounter: function () {
+        const length = this.$usernameInput.val().length;
+        $('#editUsernameCounter').text(length);
+    },
+
+    updatePassword1Counter: function () {
+        const length = this.$password1Input.val().length;
+        this.$password1Counter.text(length);
+    },
+
+    updatePassword2Counter: function () {
+        const length = this.$password2Input.val().length;
+        this.$password2Counter.text(length);
+    },
+
     togglePasswordVisibility: function (fieldId) {
         const $field = $(`#${fieldId}`);
         const $checkbox = $(`#edit_show${fieldId.replace('edit_', '').charAt(0).toUpperCase() + fieldId.replace('edit_', '').slice(1)}`);
@@ -77,10 +171,10 @@ const UserEditForm = {
 
     handleModalShow: function () {
         this.resetForm();
-        this.showLoadingSpinner(); // Показываем индикатор загрузки
+        this.showLoadingSpinner();
         if (selectedUserId) {
             this.loadUserData(selectedUserId).finally(() => {
-                this.hideLoadingSpinner(); // Скрываем индикатор загрузки после загрузки данных
+                this.hideLoadingSpinner();
             });
         }
         this.$modal.removeAttr('aria-hidden');
@@ -95,10 +189,9 @@ const UserEditForm = {
             document.activeElement.blur();
         }
         this.hideSpinner();
-        // Сбрасываем состояние полей пароля при закрытии модального окна
         this.$changePasswordCheckbox.prop('checked', false);
         this.$generateCheckbox.prop('checked', false);
-        this.$passwordFields.addClass('password-fields-hidden')
+        this.$passwordFields.addClass('password-fields-hidden');
         this.updatePasswordFields();
     },
 
@@ -123,31 +216,12 @@ const UserEditForm = {
         if (!username) {
             this.$usernameInput.addClass('is-invalid');
             $('#editUsernameFeedback').text('Пожалуйста, введите логин').show();
+            return false;
         } else {
             this.$usernameInput.removeClass('is-invalid');
             $('#editUsernameFeedback').hide();
+            return true;
         }
-    },
-
-    validateEmailInput: function () {
-        const email = this.$emailInput.val().trim();
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (this.$generateCheckbox.prop('checked')) {
-            if (!email) {
-                this.$emailInput.addClass('is-invalid');
-                $('#editEmailFeedback').text('Пожалуйста, введите email').show();
-                return false;
-            } else if (!emailRegex.test(email)) {
-                this.$emailInput.addClass('is-invalid');
-                $('#editEmailFeedback').text('Введите корректный email').show();
-                return false;
-            }
-        }
-
-        this.$emailInput.removeClass('is-invalid');
-        $('#editEmailFeedback').hide();
-        return true;
     },
 
     validatePasswordInputs: function () {
@@ -161,10 +235,17 @@ const UserEditForm = {
 
         const password1 = this.$password1Input.val();
         const password2 = this.$password2Input.val();
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{8,}$/;
 
         if (!password1) {
             this.$password1Input.addClass('is-invalid');
             $('#editPassword1Feedback').text('Введите пароль').show();
+        } else if (password1.length < 8) {
+            this.$password1Input.addClass('is-invalid');
+            $('#editPassword1Feedback').text('Пароль должен содержать минимум 8 символов').show();
+        } else if (!passwordRegex.test(password1)) {
+            this.$password1Input.addClass('is-invalid');
+            $('#editPassword1Feedback').text('Пароль должен содержать буквы и цифры').show();
         } else {
             this.$password1Input.removeClass('is-invalid');
             $('#editPassword1Feedback').hide();
@@ -179,6 +260,19 @@ const UserEditForm = {
         } else {
             this.$password2Input.removeClass('is-invalid');
             $('#editPassword2Feedback').hide();
+        }
+    },
+
+    restrictToLatin: function (inputElement) {
+        const value = inputElement.value;
+        const cursorPos = inputElement.selectionStart;
+        const newValue = value.replace(/[^a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g, '');
+
+        if (value !== newValue) {
+            inputElement.value = newValue;
+            inputElement.setSelectionRange(cursorPos - 1, cursorPos - 1);
+            inputElement.name === "password1" ? this.updatePassword1Counter() : this.updatePassword2Counter();
+            showNotification('Пароль должен содержать только латинские буквы и символы', 'warning');
         }
     },
 
@@ -217,6 +311,14 @@ const UserEditForm = {
             this.$isActiveCheckbox.prop('checked', data.is_active || false);
             this.$generateCheckbox.prop('checked', false);
             this.$changePasswordCheckbox.prop('checked', false);
+
+            // Обновляем счетчики
+            this.updateUsernameCounter();
+            this.updateEmailCounter();
+            this.updateFullNameCounter();
+            this.updatePassword1Counter();
+            this.updatePassword2Counter();
+
             this.updatePasswordFields();
             this.validateEmailInput();
         } catch (error) {
@@ -228,46 +330,47 @@ const UserEditForm = {
     validateForm: function () {
         let isValid = true;
 
-        // Валидация логина
-        if (!this.$usernameInput.val().trim()) {
-            this.$usernameInput.addClass('is-invalid');
-            $('#editUsernameFeedback').text('Пожалуйста, введите логин').show();
+        if (!this.validateUsernameInput()) {
             isValid = false;
-        } else {
-            this.$usernameInput.removeClass('is-invalid');
-            $('#editUsernameFeedback').hide();
         }
 
-        // Валидация email
-        if (this.$generateCheckbox.prop('checked')) {
-            if (!this.validateEmailInput()) {
-                isValid = false;
-            }
+        if (this.$generateCheckbox.prop('checked') && !this.validateEmailInput()) {
+            isValid = false;
+        } else if (!this.$generateCheckbox.prop('checked') && this.$emailInput.val().trim() !== '' && !this.validateEmailInput()) {
+            isValid = false;
         }
 
-        // Валидация паролей
+        if (!this.validateFullNameInput()) {
+            isValid = false;
+        }
+
         if (!this.$generateCheckbox.prop('checked') && this.$changePasswordCheckbox.prop('checked')) {
             const password1 = this.$password1Input.val();
             const password2 = this.$password2Input.val();
-            if (!password1 || !password2) {
-                if (!password1) {
-                    this.$password1Input.addClass('is-invalid');
-                    $('#editPassword1Feedback').text('Введите пароль').show();
-                }
-                if (!password2) {
-                    this.$password2Input.addClass('is-invalid');
-                    $('#editPassword2Feedback').text('Введите подтверждение пароля').show();
-                }
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+            if (!password1) {
+                this.$password1Input.addClass('is-invalid');
+                $('#editPassword1Feedback').text('Введите пароль').show();
+                isValid = false;
+            } else if (password1.length < 8) {
+                this.$password1Input.addClass('is-invalid');
+                $('#editPassword1Feedback').text('Пароль должен содержать минимум 8 символов').show();
+                isValid = false;
+            } else if (!passwordRegex.test(password1)) {
+                this.$password1Input.addClass('is-invalid');
+                $('#editPassword1Feedback').text('Пароль должен содержать буквы и цифры').show();
+                isValid = false;
+            }
+
+            if (!password2) {
+                this.$password2Input.addClass('is-invalid');
+                $('#editPassword2Feedback').text('Введите подтверждение пароля').show();
                 isValid = false;
             } else if (password1 !== password2) {
                 this.$password2Input.addClass('is-invalid');
                 $('#editPassword2Feedback').text('Пароли не совпадают').show();
                 isValid = false;
-            } else {
-                this.$password1Input.removeClass('is-invalid');
-                this.$password2Input.removeClass('is-invalid');
-                $('#editPassword1Feedback').hide();
-                $('#editPassword2Feedback').hide();
             }
         }
 
@@ -402,9 +505,16 @@ const UserEditForm = {
         this.$showPassword2.prop('checked', false);
         this.$password1Input.attr('type', 'password');
         this.$password2Input.attr('type', 'password');
-        this.$passwordFields.addClass('password-fields-hidden'); // Скрываем поля пароля по умолчанию
+        this.$passwordFields.addClass('password-fields-hidden');
         this.updatePasswordFields();
         this.hideSpinner();
+
+        // Сброс счетчиков
+        $('#editUsernameCounter').text('0');
+        this.$emailCounter.text('0');
+        this.$fullNameCounter.text('0');
+        this.$password1Counter.text('0');
+        this.$password2Counter.text('0');
     },
 }
 
