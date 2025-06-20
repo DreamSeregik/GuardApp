@@ -257,8 +257,8 @@ const EmployeeForm = {
         if (!position) {
             this.showError(this.$positionInput, 'positionFeedback', 'Пожалуйста, укажите должность');
             return false;
-        } else if (position.length < 2) {
-            this.showError(this.$positionInput, 'positionFeedback', 'Должность должна содержать минимум 2 символа');
+        } else if (position.length < 3) {
+            this.showError(this.$positionInput, 'positionFeedback', 'Должность должна содержать минимум 3 символа');
             return false;
         } else {
             this.hideError(this.$positionInput, 'positionFeedback');
