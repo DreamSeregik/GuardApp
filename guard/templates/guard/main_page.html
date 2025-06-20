@@ -714,44 +714,44 @@
                         
                         <!-- Поля для предварительного/периодического осмотра -->
                         <div id="napravRegularExaminationFields" style="display: none;">
-<div class="mb-3">
-    <label class="form-label">Тип медицинского страхования*</label>
-    <div class="mb-2">
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="napravHasOMS">
-            <label class="form-check-label" for="napravHasOMS">ОМС</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="napravHasDMS">
-            <label class="form-check-label" for="napravHasDMS">ДМС</label>
-        </div>
-    </div>
-    <div class="invalid-feedback" id="napravInsuranceFeedback">
-        Укажите хотя бы один тип страхования (ОМС или ДМС)
-    </div>
-</div>
+                            <div class="mb-3">
+                                <label class="form-label">Тип медицинского страхования*</label>
+                                <div class="mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="napravHasOMS">
+                                        <label class="form-check-label" for="napravHasOMS">ОМС</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="napravHasDMS">
+                                        <label class="form-check-label" for="napravHasDMS">ДМС</label>
+                                    </div>
+                                </div>
+                                <div class="invalid-feedback" id="napravInsuranceFeedback">
+                                    Укажите хотя бы один тип страхования (ОМС или ДМС)
+                                </div>
+                            </div>
 
-<div id="napravOMSFields" style="display: none;">
-    <label for="napravOMSNumber" class="form-label">Номер полиса ОМС*</label>
-    <input type="text" class="form-control" id="napravOMSNumber" maxlength="16">
-    <div class="invalid-feedback" id="napravOMSFeedback">
-        Номер полиса ОМС должен содержать 16 цифр
-    </div>
-    <div class="length-counter">
-        <span>Кол-во символов: </span><span id="napravOMSCounter">0</span>/16
-    </div>
-</div>
+                            <div id="napravOMSFields" style="display: none;">
+                                <label for="napravOMSNumber" class="form-label">Номер полиса ОМС*</label>
+                                <input type="text" class="form-control" id="napravOMSNumber" maxlength="16">
+                                <div class="invalid-feedback" id="napravOMSFeedback">
+                                    Номер полиса ОМС должен содержать 16 цифр
+                                </div>
+                                <div class="length-counter">
+                                    <span>Кол-во символов: </span><span id="napravOMSCounter">0</span>/16
+                                </div>
+                            </div>
 
-<div class="mt-3" id="napravDMSFields" style="display: none;">
-    <label for="napravDMSNumber" class="form-label">Номер полиса ДМС*</label>
-    <input type="text" class="form-control" id="napravDMSNumber" maxlength="20">
-    <div class="invalid-feedback" id="napravDMSFeedback">
-        Номер полиса ДМС должен содержать минимум 10 символов
-    </div>
-    <div class="length-counter">
-        <span>Кол-во символов: </span><span id="napravDMSCounter">0</span>/20
-    </div>
-</div>
+                            <div class="mt-3" id="napravDMSFields" style="display: none;">
+                                <label for="napravDMSNumber" class="form-label">Номер полиса ДМС*</label>
+                                <input type="text" class="form-control" id="napravDMSNumber" maxlength="20">
+                                <div class="invalid-feedback" id="napravDMSFeedback">
+                                    Номер полиса ДМС должен содержать минимум 10 символов
+                                </div>
+                                <div class="length-counter">
+                                    <span>Кол-во символов: </span><span id="napravDMSCounter">0</span>/20
+                                </div>
+                            </div>
                             <!-- Номер и дата направления -->
                             <div class="row mb-4">
                                 <div class="col-md-6">
@@ -810,11 +810,18 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label for="napravOgrnCode" class="form-label">Код по ОГРН*</label>
-                                    <input type="text" class="form-control" id="napravOgrnCode" required>
-                                    <div class="invalid-feedback" id="napravOgrnCodeFeedback">
-                                        Пожалуйста, укажите код ОГРН
+                               <div class="col-md-6">
+                                    <label for="napravOgrnCode" class="form-label">ОГРН*</label>
+                                    <input type="text" class="form-control" id="napravOgrnCode" 
+                                        maxlength="13" pattern="\d{13}" required
+                                        placeholder="ОГРН">
+                                    <div class="d-flex justify-content-between">
+                                        <div class="invalid-feedback" id="napravOgrnCodeFeedback">
+                                            Код ОГРН должен содержать ровно 13 цифр
+                                        </div>
+                                        <div class="length-counter">
+                                            <span>Кол-во символов: </span><span id="ogrnCodeCounter">0</span>/13
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -836,13 +843,13 @@
                                 <div class="col-md-6">
                                     <label for="napravMedicalPhone" class="form-label">Контактный телефон</label>
                                     <input type="tel" class="form-control" id="napravMedicalPhone" 
-                                        placeholder="+71234567890 доб. 6666" maxlength="25">
+                                        placeholder="+71234567890 доб. 6666" maxlength="40">
                                     <div class="d-flex justify-content-between">
                                         <div class="invalid-feedback" id="napravMedicalPhoneFeedback">
                                             Введите корректный телефон (например, +71234567890 или +71234567890#123)
                                         </div>
                                         <div class="length-counter">
-                                            <span>Кол-во символов: </span><span id="medicalPhoneCounter">0</span>/25
+                                            <span>Кол-во символов: </span><span id="medicalPhoneCounter">0</span>/40
                                         </div>
                                     </div>
                                 </div>
@@ -937,7 +944,15 @@
 
                             <div class="mb-3">
                                 <label for="napravEmployerName" class="form-label">Наименование работодателя*</label>
-                                <input type="text" class="form-control" id="napravEmployerName" required>
+                                <input type="text" class="form-control" id="napravEmployerName" maxlength="255" required>
+                                <div class="d-flex justify-content-between">
+                                    <div class="invalid-feedback" id="employerNameFeedback">
+                                        Название должно содержать от 3 до 255 символов
+                                    </div>
+                                    <div class="length-counter">
+                                        <span>Кол-во символов: </span><span id="employerNameCounter">0</span>/255
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="row mb-3">
@@ -957,13 +972,13 @@
                                 <div class="col-md-6">
                                     <label for="napravMedicalPhonePsych" class="form-label">Контактный телефон</label>
                                     <input type="tel" class="form-control" id="napravMedicalPhonePsych" 
-                                        placeholder="+71234567890" maxlength="20">
+                                        placeholder="+7(123)456-78-90 доб.123" maxlength="40">
                                     <div class="d-flex justify-content-between">
                                         <div class="invalid-feedback" id="napravMedicalPhonePsychFeedback">
-                                            Введите корректный телефон (например, +71234567890)
+                                            Введите корректный телефон (например, +7(123)456-78-90 доб.123)
                                         </div>
                                         <div class="length-counter">
-                                            <span>Кол-во символов: </span><span id="medicalPhonePsychCounter">0</span>/20
+                                            <span>Кол-во символов: </span><span id="medicalPhonePsychCounter">0</span>/40
                                         </div>
                                     </div>
                                 </div>
@@ -1010,38 +1025,93 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label for="napravOgrnPsych" class="form-label">ОГРН*</label>
-                                    <input type="text" class="form-control" id="napravOgrnPsych" required>
-                                    <div class="invalid-feedback" id="napravOgrnPsychFeedback">
-                                        Пожалуйста, укажите ОГРН
+                                    <input type="text" class="form-control" id="napravOgrnPsych" 
+                                        maxlength="13" pattern="\d{13}" required
+                                        placeholder="ОГРН">
+                                    <div class="d-flex justify-content-between">
+                                        <div class="invalid-feedback" id="napravOgrnPsychFeedback">
+                                            ОГРН должен содержать ровно 13 цифр
+                                        </div>
+                                        <div class="length-counter">
+                                            <span>Кол-во символов: </span><span id="ogrnPsychCounter">0</span>/13
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label for="napravMedicalEmailPsych" class="form-label">Электронная почта</label>
-                                    <input type="email" class="form-control" id="napravMedicalEmailPsych">
+                                    <label for="napravMedOrgEmailPsych" class="form-label">Электронная почта</label>
+                                    <input type="email" class="form-control" id="napravMedOrgEmailPsych" 
+                                        placeholder="example@domain.com" maxlength="100">
+                                    <div class="d-flex justify-content-between">
+                                        <div class="invalid-feedback" id="napravMedOrgEmailPsychFeedback">
+                                            Введите корректный email (например, example@domain.com)
+                                        </div>
+                                        <div class="length-counter">
+                                            <span>Кол-во символов: </span><span id="medOrgEmailPsychCounter">0</span>/100
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="napravMedicalPhonePsych" class="form-label">Контактный телефон</label>
-                                    <input type="tel" class="form-control" id="napravMedicalPhonePsych" maxlength="12">
+                                    <label for="napravMedOrgPhonePsych" class="form-label">Контактный телефон</label>
+                                    <input type="tel" class="form-control" id="napravMedOrgPhonePsych" 
+                                        placeholder="+7(123)456-78-90 доб.123" maxlength="40">
+                                    <div class="d-flex justify-content-between">
+                                        <div class="invalid-feedback" id="napravMedOrgPhonePsychFeedback">
+                                            Введите корректный телефон (например, +7(123)456-78-90 доб.123)
+                                        </div>
+                                        <div class="length-counter">
+                                            <span>Кол-во символов: </span><span id="medOrgPhonePsychCounter">0</span>/40
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
                             <div class="mb-3">
                                 <label for="napravEmployeePositionPsych" class="form-label">Наименование должности (профессии) работника*</label>
                                 <input type="text" class="form-control" id="napravEmployeePositionPsych" required>
+                                <div class="d-flex justify-content-between">
+                                    <div class="invalid-feedback" id="napravEmployeePositionPsychFeedback">
+                                        Пожалуйста, укажите должность
+                                    </div>
+                                    <div class="length-counter">
+                                        <span>Кол-во символов: </span><span id="napravPositionPsychCounter">0</span>/100
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="mb-3">
                                 <label for="napravActivityTypes" class="form-label">Вид (виды) деятельности согласно Приказу №342н</label>
-                                <textarea class="form-control" id="napravActivityTypes" rows="3"></textarea>
+                                <textarea class="form-control" id="napravActivityTypes" 
+                                        rows="3" maxlength="1000"
+                                        placeholder="Укажите виды деятельности"></textarea>
+                                <div class="d-flex justify-content-between">
+                                    <div class="invalid-feedback" id="napravActivityTypesFeedback">
+                                        Превышена максимальная длина (1000 символов)
+                                    </div>
+                                    <div class="length-counter">
+                                        <span>Кол-во символов: </span><span id="activityTypesCounter">0</span>/1000
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Сведения о заключениях -->
                             <div class="mb-3">
-                                <label for="napravPreviousConclusions" class="form-label">Сведения о заключениях, выданных по результатам обязательных предварительных и (или) периодических медицинских осмотров работников, предусмотренных статьей 220 Трудового кодекса Российской Федерации</label>
-                                <textarea class="form-control" id="napravPreviousConclusions" rows="3"></textarea>
+                                <label for="napravPreviousConclusions" class="form-label">
+                                    Сведения о заключениях, выданных по результатам обязательных предварительных и (или) периодических медицинских осмотров работников, предусмотренных статьей 220 Трудового кодекса Российской Федерации
+                                </label>
+                                <textarea class="form-control" id="napravPreviousConclusions" 
+                                        rows="3" maxlength="2000"
+                                        placeholder="Укажите сведения о предыдущих заключениях (необязательно)"></textarea>
+                                <div class="d-flex justify-content-between">
+                                    <div class="invalid-feedback" id="napravPreviousConclusionsFeedback">
+                                        Превышена максимальная длина (2000 символов) или содержатся недопустимые символы
+                                    </div>
+                                    <div class="length-counter">
+                                        <span>Кол-во символов: </span><span id="previousConclusionsCounter">0</span>/2000
+                                    </div>
+                                </div>
                             </div>
 
                              <div class="mb-3">

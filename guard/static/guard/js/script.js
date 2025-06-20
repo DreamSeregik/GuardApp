@@ -837,8 +837,6 @@ async function getMedData(id) {
                         </a>`;
                     }).join("");
                     attachmentsHtml = `<div class="file-list">${fileLinks}</div>`;
-                } else {
-                    console.log(`Нет вложений для записи с ID ${el.id}`);
                 }
 
                 $("#info-tbl-med tbody").append(
@@ -891,8 +889,6 @@ async function getEducationData(id) {
                         </a>`;
                     }).join("");
                     attachmentsHtml = `<div class="file-list">${fileLinks}</div>`;
-                } else {
-                    console.log(`Нет вложений для записи с ID ${el.id}`);
                 }
 
                 $("#info-tbl-education tbody").append(

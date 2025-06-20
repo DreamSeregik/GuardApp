@@ -55,8 +55,6 @@ const MedicalExaminationForm = {
         this.$medicalAddressCounter = $('#medicalAddressCounter');
         this.$medicalOrgPsychCounter = $('#medicalOrgPsychCounter');
         this.$medicalAddressPsychCounter = $('#medicalAddressPsychCounter');
-        this.$ogrnCodeInput = $('#napravOgrnCode');
-        this.$ogrnPsychInput = $('#napravOgrnPsych');
         this.$medicalEmailInput = $('#napravMedicalEmail');
         this.$medicalPhoneInput = $('#napravMedicalPhone');
         this.$medicalEmailPsychInput = $('#napravMedicalEmailPsych');
@@ -65,7 +63,6 @@ const MedicalExaminationForm = {
         this.$medicalPhoneCounter = $('#medicalPhoneCounter');
         this.$medicalEmailPsychCounter = $('#medicalEmailPsychCounter');
         this.$medicalPhonePsychCounter = $('#medicalPhonePsychCounter');
-        this.$medicalEmailPsychCounter = $('#medicalEmailPsychCounter');
         this.$departmentNameInput = $('#napravDepartmentName');
         this.$departmentCounter = $('#napravDepartmentCounter');
         this.$positionInput = $('#napravEmployeePosition');
@@ -75,6 +72,22 @@ const MedicalExaminationForm = {
         this.$employerRepNameCounter = $('#employerRepNameCounter');
         this.$employerRepPositionInput = $('#napravEmployerRepresentativePosition');
         this.$employerRepPositionCounter = $('#employerRepPositionCounter');
+        this.$employerNameInput = $('#napravEmployerName');
+        this.$employerNameCounter = $('#employerNameCounter');
+        this.$employerPhoneInput = $('#napravEmployerPhone');
+        this.$employerPhoneCounter = $('#employerPhoneCounter');
+        this.$medOrgEmailPsychInput = $('#napravMedOrgEmailPsych');
+        this.$medOrgPhonePsychInput = $('#napravMedOrgPhonePsych');
+        this.$medOrgEmailCounter = $('#medOrgEmailPsychCounter');
+        this.$medOrgPhoneCounter = $('#medOrgPhonePsychCounter');
+        this.$activityTypesInput = $('#napravActivityTypes');
+        this.$activityTypesCounter = $('#activityTypesCounter');
+        this.$previousConclusionsInput = $('#napravPreviousConclusions');
+        this.$previousConclusionsCounter = $('#previousConclusionsCounter');
+        this.$ogrnPsychInput = $('#napravOgrnPsych');
+        this.$ogrnPsychCounter = $('#ogrnPsychCounter');
+        this.$ogrnCodeInput = $('#napravOgrnCode');
+        this.$ogrnCodeCounter = $('#ogrnCodeCounter');
     },
 
     /**
@@ -121,7 +134,17 @@ const MedicalExaminationForm = {
             this.validateMedicalAddressPsych();
         });
         this.$ogrnCodeInput.on('blur', () => this.validateOgrnCode());
+        this.$ogrnCodeInput.on('input', (e) => {
+            this.formatOgrnInput(e.target);
+            this.updateCounter('ogrnCode');
+            this.validateOgrnCode();
+        });
         this.$ogrnPsychInput.on('blur', () => this.validateOgrnPsych());
+        this.$ogrnPsychInput.on('input', (e) => {
+            this.formatOgrnInput(e.target);
+            this.updateCounter('ogrnPsych');
+            this.validateOgrnPsych();
+        });
         this.$medicalEmailInput.on('input', () => {
             this.updateCounter('medicalEmail');
             this.validateEmail(this.$medicalEmailInput, 'napravMedicalEmailFeedback');
@@ -135,6 +158,11 @@ const MedicalExaminationForm = {
             this.updateCounter('medicalEmailPsych');
             this.validateEmail(this.$medicalEmailPsychInput, 'napravMedicalEmailPsychFeedback');
         });
+        this.$employerPhoneInput.on('input', (e) => {
+            this.formatPhoneInput(e.target);
+            this.updateCounter('employerPhone');
+            this.validatePhone(this.$employerPhoneInput, 'napravEmployerPhoneFeedback');
+        });
         this.$medicalPhonePsychInput.on('input', (e) => {
             this.formatPhoneInput(e.target);
             this.updateCounter('medicalPhonePsych');
@@ -142,6 +170,11 @@ const MedicalExaminationForm = {
         });
         this.$departmentNameInput.on('input', () => {
             this.updateCounter('departmentName');
+        });
+
+        this.$previousConclusionsInput.on('input', () => {
+            this.updateCounter('previousConclusions');
+            this.validatePreviousConclusions();
         });
 
         this.$positionInput.on('input', () => {
@@ -171,6 +204,38 @@ const MedicalExaminationForm = {
             this.validateEmployerRepPosition();
         });
         this.$employerRepPositionInput.on('blur', this.validateEmployerRepPosition.bind(this));
+
+        this.$employerNameInput.on('input', () => {
+            this.updateCounter('employerName');
+            this.validateEmployerName();
+        });
+        this.$employerNameInput.on('blur', this.validateEmployerName.bind(this));
+
+        this.$medicalEmailPsychInput.on('input', () => {
+            this.updateCounter('medicalEmailPsych');
+            this.validateEmail(this.$medicalEmailPsychInput, 'napravMedicalEmailPsychFeedback');
+        });
+        this.$medicalPhonePsychInput.on('input', (e) => {
+            this.formatPhoneInput(e.target);
+            this.updateCounter('medicalPhonePsych');
+            this.validatePhone(this.$medicalPhonePsychInput, 'napravMedicalPhonePsychFeedback');
+        });
+
+        this.$medOrgEmailPsychInput.on('input', () => {
+            this.updateCounter('medOrgEmailPsych');
+            this.validateEmail(this.$medOrgEmailPsychInput, 'napravMedOrgEmailPsychFeedback');
+        });
+
+        this.$medOrgPhonePsychInput.on('input', (e) => {
+            this.formatPhoneInput(e.target);
+            this.updateCounter('medOrgPhonePsych');
+            this.validatePhone(this.$medOrgPhonePsychInput, 'napravMedOrgPhonePsychFeedback');
+        });
+
+        this.$activityTypesInput.on('input', () => {
+            this.updateCounter('activityTypes');
+            this.validateActivityTypes();
+        });
 
         this.$hazardFactorsInput.on('blur', this.validateHazardFactors.bind(this));
         this.$positionPsychInput.on('blur', this.validatePositionPsych.bind(this));
@@ -282,6 +347,64 @@ const MedicalExaminationForm = {
         }
     },
 
+    // Общий метод форматирования ввода ОГРН
+    formatOgrnInput: function (input) {
+        input.value = input.value.replace(/\D/g, '').slice(0, 13);
+    },
+
+    // Валидация ОГРН для психиатрического освидетельствования
+    validateOgrnPsych: function () {
+        const value = this.$ogrnPsychInput.val().trim();
+
+        if (!value) {
+            this.showError(this.$ogrnPsychInput, 'napravOgrnPsychFeedback', 'Поле обязательно для заполнения');
+            return false;
+        } else if (value.length !== 13) {
+            this.showError(this.$ogrnPsychInput, 'napravOgrnPsychFeedback', 'ОГРН должен содержать ровно 13 цифр');
+            return false;
+        } else if (!/^\d{13}$/.test(value)) {
+            this.showError(this.$ogrnPsychInput, 'napravOgrnPsychFeedback', 'ОГРН должен содержать только цифры');
+            return false;
+        }
+
+        this.hideError(this.$ogrnPsychInput, 'napravOgrnPsychFeedback');
+        return true;
+    },
+
+    // Валидация кода ОГРН для обычных осмотров
+    validateOgrnCode: function () {
+        const value = this.$ogrnCodeInput.val().trim();
+
+        if (!value) {
+            this.showError(this.$ogrnCodeInput, 'napravOgrnCodeFeedback', 'Поле обязательно для заполнения');
+            return false;
+        } else if (value.length !== 13) {
+            this.showError(this.$ogrnCodeInput, 'napravOgrnCodeFeedback', 'Код ОГРН должен содержать ровно 13 цифр');
+            return false;
+        } else if (!/^\d{13}$/.test(value)) {
+            this.showError(this.$ogrnCodeInput, 'napravOgrnCodeFeedback', 'Код ОГРН должен содержать только цифры');
+            return false;
+        }
+
+        this.hideError(this.$ogrnCodeInput, 'napravOgrnCodeFeedback');
+        return true;
+    },
+
+    validatePreviousConclusions: function () {
+        const value = this.$previousConclusionsInput.val().trim();
+        const maxLength = 2000;
+
+        // Проверка максимальной длины
+        if (value.length > maxLength) {
+            this.showError(this.$previousConclusionsInput, 'napravPreviousConclusionsFeedback',
+                `Превышена максимальная длина (${maxLength} символов)`);
+            return false;
+        }
+
+        this.hideError(this.$previousConclusionsInput, 'napravPreviousConclusionsFeedback');
+        return true;
+    },
+
     validateEmployerRepName: function () {
         const fullName = this.$employerRepNameInput.val().trim();
         const fullNameResult = this.processFullName(fullName);
@@ -377,6 +500,20 @@ const MedicalExaminationForm = {
         }
     },
 
+    validateActivityTypes: function () {
+        const value = this.$activityTypesInput.val().trim();
+        const maxLength = 1000;
+
+        if (value.length > maxLength) {
+            this.showError(this.$activityTypesInput, 'napravActivityTypesFeedback',
+                `Превышена максимальная длина (${maxLength} символов)`);
+            return false;
+        }
+
+        this.hideError(this.$activityTypesInput, 'napravActivityTypesFeedback');
+        return true;
+    },
+
     validateMedicalOrg: function () {
         const value = this.$medicalOrgInput.val().trim();
         if (!value) {
@@ -457,32 +594,39 @@ const MedicalExaminationForm = {
 
     validatePhone: function ($input, feedbackId) {
         const value = $input.val().trim();
+        const minDigits = 5; // Минимум цифр в основном номере
+        const maxExtension = 9; // Максимум цифр в добавочном
 
         if (!value) {
             this.hideError($input, feedbackId);
-            return true;
+            return true; // Поле не обязательно
         }
 
-        // Разрешаем цифры, пробелы, +, -, (, ), #, ext. для добавочных номеров
-        const phoneRegex = /^[\d\s\-\(\)\+]*(?:#[\d]+|доб\.?\s*\d+)?$/i;
-        if (!phoneRegex.test(value)) {
-            this.showError($input, feedbackId, 'Допустимые символы: цифры, пробелы, +-()#, "доб." для добавочного номера');
+        // Проверяем общий формат: +7(XXX)XXX-XX-XX доб.XXXX или аналоги
+        if (!/^[\d\s\-\(\)\+]*(?:#|доб\.?)?[\d\s]*$/i.test(value)) {
+            this.showError($input, feedbackId,
+                'Допустимы цифры, пробелы, +-() и добавочный через # или "доб."');
             return false;
         }
 
-        // Проверяем, что есть минимум 5 цифр в основном номере
-        const mainNumber = value.replace(/(#[\d]+|доб\.?\s*\d+)$/i, '').replace(/\D/g, '');
-        if (mainNumber.length < 5) {
-            this.showError($input, feedbackId, 'Минимум 5 цифр в основном номере');
+        // Извлекаем все цифры
+        const allDigits = value.replace(/\D/g, '');
+
+        // Проверяем основной номер (минимум 5 цифр)
+        const mainNumber = value.split(/#|доб\.?/i)[0].replace(/\D/g, '');
+        if (mainNumber.length < minDigits) {
+            this.showError($input, feedbackId,
+                `Основной номер должен содержать минимум ${minDigits} цифр`);
             return false;
         }
 
-        // Проверяем длину добавочного номера, если есть
-        const extensionMatch = value.match(/(#[\d]+|доб\.?\s*\d+)/i);
+        // Проверяем добавочный номер (если есть)
+        const extensionMatch = value.match(/(?:#|доб\.?)([\d\s]+)/i);
         if (extensionMatch) {
-            const extensionDigits = extensionMatch[0].replace(/\D/g, '');
-            if (extensionDigits.length > 9) {
-                this.showError($input, feedbackId, 'Добавочный номер не должен превышать 9 цифр');
+            const extensionDigits = extensionMatch[1].replace(/\D/g, '');
+            if (extensionDigits.length > maxExtension) {
+                this.showError($input, feedbackId,
+                    `Добавочный номер не должен превышать ${maxExtension} цифр`);
                 return false;
             }
         }
@@ -492,20 +636,14 @@ const MedicalExaminationForm = {
     },
 
     formatPhoneInput: function (input) {
-        // Получаем текущее значение и позицию курсора
         let value = input.value;
         const cursorPosition = input.selectionStart;
 
-        // Сохраняем только допустимые символы: цифры, пробелы, +, -, (, ), #, доб.
-        const cleanedValue = value.replace(/[^\d\s\-\(\)\+#доб\.]/gi, '')
-            // Предотвращаем множественные # или ext.
-            .replace(/(#+)/g, '#')
-            .replace(/(ext\.?\s*)+/gi, 'доб. ');
+        // Просто удаляем недопустимые символы, но не форматируем "доб."
+        const cleanedValue = value.replace(/[^\d\s\-\(\)\+#доб.]/gi, '');
 
-        // Если значение изменилось, обновляем поле ввода
         if (cleanedValue !== value) {
             input.value = cleanedValue;
-            // Корректируем позицию курсора
             const diff = value.length - cleanedValue.length;
             input.setSelectionRange(cursorPosition - diff, cursorPosition - diff);
         }
@@ -791,6 +929,10 @@ const MedicalExaminationForm = {
         this.updateCounter('hazardFactors');
         this.updateCounter('employerRepName');
         this.updateCounter('employerRepPosition');
+        this.updateCounter('employerName');
+        this.updateCounter('employerPhone');
+        this.updateCounter('napravMedOrgPhonePsych')
+        this.updateCounter('napravMedOrgEmailPsych')
         this.updateDirectionNumberCounter();
     },
 
@@ -815,7 +957,15 @@ const MedicalExaminationForm = {
             'positionPsych': ['napravEmployeePositionPsych', 'napravPositionPsychCounter'],
             'hazardFactors': ['napravHazardFactors', 'hazardFactorsCounter'],
             'employerRepName': ['napravEmployerRepresentativeName', 'employerRepNameCounter'],
-            'employerRepPosition': ['napravEmployerRepresentativePosition', 'employerRepPositionCounter']
+            'employerRepPosition': ['napravEmployerRepresentativePosition', 'employerRepPositionCounter'],
+            'employerName': ['napravEmployerName', 'employerNameCounter'],
+            'employerPhone': ['napravEmployerPhone', 'employerPhoneCounter'],
+            'medOrgEmailPsych': ['napravMedOrgEmailPsych', 'medOrgEmailPsychCounter'],
+            'medOrgPhonePsych': ['napravMedOrgPhonePsych', 'medOrgPhonePsychCounter'],
+            'activityTypes': ['napravActivityTypes', 'activityTypesCounter'],
+            'previousConclusions': ['napravPreviousConclusions', 'previousConclusionsCounter'],
+            'ogrnPsych': ['napravOgrnPsych', 'ogrnPsychCounter'],
+            'ogrnCode': ['napravOgrnCode', 'ogrnCodeCounter']
         };
 
         if (fieldMap[field]) {
@@ -925,19 +1075,19 @@ const MedicalExaminationForm = {
         const maxLength = 100;
 
         if (!position) {
-            this.showError(this.$positionPsychInput, 'napravPositionPsychFeedback', 'Поле обязательно для заполнения');
+            this.showError(this.$positionPsychInput, 'napravEmployeePositionPsychFeedback', 'Поле обязательно для заполнения');
             return false;
         } else if (position.length < minLength) {
-            this.showError(this.$positionPsychInput, 'napravPositionPsychFeedback', `Должность должна содержать минимум ${minLength} символа`);
+            this.showError(this.$positionPsychInput, 'napravEmployeePositionPsychFeedback', `Должность должна содержать минимум ${minLength} символа`);
             return false;
         } else if (position.length > maxLength) {
-            this.showError(this.$positionPsychInput, 'napravPositionPsychFeedback', `Должность не должна превышать ${maxLength} символов`);
+            this.showError(this.$positionPsychInput, 'napravEmployeePositionPsychFeedback', `Должность не должна превышать ${maxLength} символов`);
             return false;
         } else if (!/^[А-ЯЁа-яё\s\-]+$/i.test(position)) {
-            this.showError(this.$positionPsychInput, 'napravPositionPsychFeedback', 'Должность должна содержать только кириллические символы, пробелы и дефисы');
+            this.showError(this.$positionPsychInput, 'napravEmployeePositionPsychFeedback', 'Должность должна содержать только кириллические символы, пробелы и дефисы');
             return false;
         } else {
-            this.hideError(this.$positionPsychInput, 'napravPositionPsychFeedback');
+            this.hideError(this.$positionPsychInput, 'napravEmployeePositionPsychFeedback');
             return true;
         }
     },
@@ -954,6 +1104,29 @@ const MedicalExaminationForm = {
 
         this.hideError(this.$hazardFactorsInput, 'hazardFactorsFeedback');
         return true;
+    },
+
+    validateEmployerName: function () {
+        const name = this.$employerNameInput.val().trim();
+        const minLength = 3;
+        const maxLength = 255;
+
+        if (!name) {
+            this.showError(this.$employerNameInput, 'employerNameFeedback', 'Поле обязательно для заполнения');
+            return false;
+        } else if (name.length < minLength) {
+            this.showError(this.$employerNameInput, 'employerNameFeedback', `Название должно содержать минимум ${minLength} символа`);
+            return false;
+        } else if (name.length > maxLength) {
+            this.showError(this.$employerNameInput, 'employerNameFeedback', `Название не должно превышать ${maxLength} символов`);
+            return false;
+        } else if (!/^[А-ЯЁа-яё0-9\s\-"«».,()]+$/i.test(name)) {
+            this.showError(this.$employerNameInput, 'employerNameFeedback', 'Допустимы кириллица, цифры, пробелы и знаки -"«».,()');
+            return false;
+        } else {
+            this.hideError(this.$employerNameInput, 'employerNameFeedback');
+            return true;
+        }
     },
 
     /**
@@ -1069,6 +1242,10 @@ const MedicalExaminationForm = {
                 isValid = false;
             }
 
+            if (!this.validateOgrnCode()) {
+                isValid = false;
+            }
+
             const departmentName = this.$departmentNameInput.val();
             if (departmentName && departmentName.length > 1000) {
                 this.showError(this.$departmentNameInput, 'napravDepartmentFeedback', 'Наименование подразделения не должно превышать 1000 символов');
@@ -1104,8 +1281,35 @@ const MedicalExaminationForm = {
                 isValid = false;
             }
 
-            this.validateEmail(this.$medicalEmailPsychInput, 'napravMedicalEmailPsychFeedback');
-            this.validatePhone(this.$medicalPhonePsychInput, 'napravMedicalPhonePsychFeedback');
+            // Валидация email и телефона медицинской организации
+            if (!this.validateEmail(this.$medicalEmailPsychInput, 'napravMedicalEmailPsychFeedback')) {
+                isValid = false;
+            }
+
+            if (!this.validatePhone(this.$medicalPhonePsychInput, 'napravMedicalPhonePsychFeedback')) {
+                isValid = false;
+            }
+
+            if (!this.validateEmployerName()) {
+                isValid = false;
+            }
+
+            // Проверяем email и телефон медорганизации (если заполнены)
+            if (this.$medOrgEmailPsychInput.val() && !this.validateEmail(this.$medOrgEmailPsychInput, 'napravMedOrgEmailPsychFeedback')) {
+                isValid = false;
+            }
+            if (this.$medOrgPhonePsychInput.val() && !this.validatePhone(this.$medOrgPhonePsychInput, 'napravMedOrgPhonePsychFeedback')) {
+                isValid = false;
+            }
+            if (this.$activityTypesInput.val().trim()) {
+                this.validateActivityTypes();
+            }
+            if (type === 'psychiatric' && this.$previousConclusionsInput.val().trim()) {
+                this.validatePreviousConclusions();
+            }
+            if (!this.validateOgrnPsych()) {
+                isValid = false;
+            }
 
             const psychiatricRequired = [
                 '#napravEmployerName',
@@ -1280,10 +1484,33 @@ const MedicalExaminationForm = {
         this.hideError(this.$hazardFactorsInput, 'hazardFactorsFeedback');
         this.hideError(this.$employerRepNameInput, 'employerRepNameFeedback');
         this.hideError(this.$employerRepPositionInput, 'employerRepPositionFeedback');
+        this.hideError(this.$employerNameInput, 'employerNameFeedback');
+        this.$activityTypesInput.val('');
+        this.$activityTypesCounter.text('0');
+        this.hideError(this.$activityTypesInput, 'napravActivityTypesFeedback');
+        this.$medicalEmailPsychCounter.text('0');
+        this.$medicalPhonePsychCounter.text('0');
+        this.$medOrgEmailPsychInput.val('');
+        this.$medOrgPhonePsychInput.val('');
+        this.$previousConclusionsInput.val('');
+        this.$previousConclusionsCounter.text('0');
+        this.hideError(this.$previousConclusionsInput, 'napravPreviousConclusionsFeedback');
+        $('#medOrgEmailPsychCounter').text('0');
+        $('#medOrgPhonePsychCounter').text('0');
+        this.hideError(this.$medOrgEmailPsychInput, 'napravMedOrgEmailPsychFeedback');
+        this.hideError(this.$medOrgPhonePsychInput, 'napravMedOrgPhonePsychFeedback');
+        this.hideError(this.$medicalEmailPsychInput, 'napravMedicalEmailPsychFeedback');
+        this.hideError(this.$medicalPhonePsychInput, 'napravMedicalPhonePsychFeedback');
         this.$hasOMS.prop('checked', false);
         this.$hasDMS.prop('checked', false);
         this.$OMSNumber.val('');
         this.$DMSNumber.val('');
+        this.$ogrnPsychInput.val('');
+        this.$ogrnCodeInput.val('');
+        this.$ogrnPsychCounter.text('0');
+        this.$ogrnCodeCounter.text('0');
+        this.hideError(this.$ogrnPsychInput, 'napravOgrnPsychFeedback');
+        this.hideError(this.$ogrnCodeInput, 'napravOgrnCodeFeedback');
         this.hideError(this.$OMSNumber, 'napravOMSFeedback');
         this.hideError(this.$DMSNumber, 'napravDMSFeedback');
         this.$OMSCounter.text('0');
