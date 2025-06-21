@@ -850,7 +850,6 @@ async function getMedData(id) {
                 );
             });
         } else {
-            console.log('Нет данных о медосмотрах для сотрудника с ID:', id);
             $("#info-tbl-med tbody").html('<tr class="no-data"><td colspan="5" style="text-align: center">Записей нет</td></tr>');
         }
     } catch (error) {
@@ -905,7 +904,6 @@ async function getEducationData(id) {
                 );
             });
         } else {
-            console.log('Нет данных об обучении для сотрудника с ID:', id);
             $("#info-tbl-education tbody").html('<tr class="no-data"><td colspan="8" style="text-align: center">Записей нет</td></tr>');
         }
     } catch (error) {

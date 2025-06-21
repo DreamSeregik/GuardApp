@@ -141,11 +141,11 @@ const MedicalExaminationForm = {
             this.updateCounter('ogrnCode');
             this.validateOgrnCode();
         });
-        this.$ogrnPsychInput.on('blur', () => this.validateOgrnPsych());
+        this.$ogrnPsychInput.on('blur', () => this.validateOgrnCodePsych());
         this.$ogrnPsychInput.on('input', (e) => {
             this.formatOgrnInput(e.target);
             this.updateCounter('ogrnPsych');
-            this.validateOgrnPsych();
+            this.validateOgrnCodePsych();
         });
         this.$medicalEmailInput.on('input', () => {
             this.updateCounter('medicalEmail');
@@ -361,7 +361,7 @@ const MedicalExaminationForm = {
     },
 
     // Валидация ОГРН для психиатрического освидетельствования
-    validateOgrnPsych: function () {
+    validateOgrnCodePsych: function () {
         const value = this.$ogrnPsychInput.val().trim();
 
         if (!value) {
@@ -590,25 +590,7 @@ const MedicalExaminationForm = {
         return true;
     },
 
-    validateOgrnCode: function () {
-        const value = this.$ogrnCodeInput.val().trim();
-        if (!value) {
-            this.showError(this.$ogrnCodeInput, 'napravOgrnCodeFeedback', 'Поле обязательно для заполнения');
-            return false;
-        }
-        this.hideError(this.$ogrnCodeInput, 'napravOgrnCodeFeedback');
-        return true;
-    },
 
-    validateOgrnPsych: function () {
-        const value = this.$ogrnPsychInput.val().trim();
-        if (!value) {
-            this.showError(this.$ogrnPsychInput, 'napravOgrnPsychFeedback', 'Поле обязательно для заполнения');
-            return false;
-        }
-        this.hideError(this.$ogrnPsychInput, 'napravOgrnPsychFeedback');
-        return true;
-    },
 
     validateEmail: function ($input, feedbackId) {
         const value = $input.val().trim();
@@ -1383,7 +1365,7 @@ const MedicalExaminationForm = {
             if (type === 'psychiatric' && this.$previousConclusionsInput.val().trim()) {
                 this.validatePreviousConclusions();
             }
-            if (!this.validateOgrnPsych()) {
+            if (!this.validateOgrnCodePsych()) {
                 isValid = false;
             }
 

@@ -18,7 +18,7 @@ const MedDeleteModal = {
         this.$closeBtn = $('.btn-close', this.$modal);
         this.$cancelBtn = $('.btn-secondary', this.$modal);
         this.$submitBtn = $('.btn-danger', this.$form);
-        this.$spinner = $('#delSubmitSpinner');
+        this.$spinner = $('#delSubmitSpinnerMed');
     },
 
     bindEvents: function () {

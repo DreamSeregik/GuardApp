@@ -1,3 +1,4 @@
+import re
 import secrets
 import string
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -111,9 +112,57 @@ class AddUserView(LoginRequiredMixin, AdminsOnlyMixin, View):
             return JsonResponse({'error': 'Пользователь с логином "' + username + '" уже существует'}, status=400)
         
         form = self.form_class(request.POST)
+        
+        # Дополнительная валидация перед form.is_valid()
+        full_name = request.POST.get('full_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        generate_password = request.POST.get('generate_password') == 'on'
+        password1 = request.POST.get('password1', '')
+        password2 = request.POST.get('password2', '')
+        
+        errors = {}
+        
+        # Валидация ФИО
+        if full_name:
+            full_name_regex = r'^[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+(?:\s[А-ЯЁ][а-яё]+)?$'
+            if not re.match(full_name_regex, full_name):
+                errors['full_name'] = ['Введите корректное ФИО (2-3 слова, каждое с заглавной буквы)']
+        
+        # Валидация email
+        if generate_password and not email:
+            errors['email'] = ['Пожалуйста, введите email']
+        elif email:  # Если email не пустой, проверяем его формат
+            email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            if not re.match(email_regex, email):
+                errors['email'] = ['Введите корректный email (например, example@domain.com)']
+        
+        # Валидация паролей (если не генерируется автоматически)
+        if not generate_password:
+            # Разрешаем латинские буквы, цифры и специальные символы
+            password_regex = r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+\-=\[\]{};\'"\\|,.<>\/?]{8,}$'
+            
+            if not password1:
+                errors['password1'] = ['Введите пароль']
+            elif len(password1) < 8:
+                errors['password1'] = ['Пароль должен содержать минимум 8 символов']
+            elif not re.match(password_regex, password1):
+                errors['password1'] = ['Пароль должен содержать буквы и цифры']
+            
+            if not password2:
+                errors['password2'] = ['Введите подтверждение пароля']
+            elif password1 != password2:
+                errors['password2'] = ['Пароли не совпадают']
+        
+        # Если есть ошибки валидации, возвращаем их
+        if errors:
+            return JsonResponse({
+                'error': 'Ошибка валидации формы',
+                'details': errors
+            }, status=400)
+        
+        # Если все проверки пройдены, продолжаем с form.is_valid()
         if form.is_valid():
             user = form.save(commit=False)
-            full_name = form.cleaned_data['full_name'].strip()
             if full_name:
                 parts = full_name.split(maxsplit=1)
                 user.last_name = parts[0] if parts else ''
@@ -121,7 +170,9 @@ class AddUserView(LoginRequiredMixin, AdminsOnlyMixin, View):
             else:
                 user.first_name = ''
                 user.last_name = ''
+                
             if form.cleaned_data['generate_password']:
+                # Генерируем пароль с использованием специальных символов
                 password = ''.join(secrets.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(12))
                 user.set_password(password)
                 try:
@@ -146,18 +197,19 @@ class AddUserView(LoginRequiredMixin, AdminsOnlyMixin, View):
                 except Exception as e:
                     return JsonResponse({'error': f'Не удалось сохранить пользователя "{username}": {str(e)}'}, status=500)
         else:
-            # Detailed form errors
-            errors = {}
+            # Добавляем ошибки из формы к уже существующим (если есть)
+            form_errors = {}
             for field, field_errors in form.errors.items():
-                errors[field] = []
+                form_errors[field] = []
                 for error in field_errors:
                     if field == '__all__':
-                        errors['general'] = error
+                        form_errors['general'] = error
                     else:
-                        errors[field] = [error]
+                        form_errors[field] = [error]
+            
             return JsonResponse({
                 'error': 'Ошибка валидации формы',
-                'details': errors
+                'details': form_errors
             }, status=400)
 
 class EditUserView(LoginRequiredMixin, AdminsOnlyMixin, View):
@@ -179,9 +231,57 @@ class EditUserView(LoginRequiredMixin, AdminsOnlyMixin, View):
     def post(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
         form = self.form_class(request.POST, instance=user)
+        
+        # Дополнительная валидация перед form.is_valid()
+        full_name = request.POST.get('full_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        generate_password = request.POST.get('generate_password') == 'on'
+        change_password = request.POST.get('change_password') == 'on'
+        password1 = request.POST.get('password1', '')
+        password2 = request.POST.get('password2', '')
+        
+        errors = {}
+        
+        # Валидация ФИО
+        if full_name:
+            full_name_regex = r'^[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+(?:\s[А-ЯЁ][а-яё]+)?$'
+            if not re.match(full_name_regex, full_name):
+                errors['full_name'] = ['Введите корректное ФИО (2-3 слова, каждое с заглавной буквы)']
+        
+        # Валидация email
+        if generate_password and not email:
+            errors['email'] = ['Пожалуйста, введите email']
+        elif email:  # Если email не пустой, проверяем его формат
+            email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            if not re.match(email_regex, email):
+                errors['email'] = ['Введите корректный email (например, example@domain.com)']
+        
+        # Валидация паролей (если выбрано изменение пароля вручную)
+        if change_password and not generate_password:
+            # Разрешаем латинские буквы, цифры и специальные символы
+            password_regex = r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+\-=\[\]{};\'"\\|,.<>\/?]{8,}$'
+            
+            if not password1:
+                errors['password1'] = ['Введите пароль']
+            elif len(password1) < 8:
+                errors['password1'] = ['Пароль должен содержать минимум 8 символов']
+            elif not re.match(password_regex, password1):
+                errors['password1'] = ['Пароль должен содержать буквы и цифры']
+            
+            if not password2:
+                errors['password2'] = ['Введите подтверждение пароля']
+            elif password1 != password2:
+                errors['password2'] = ['Пароли не совпадают']
+        
+        # Если есть ошибки валидации, возвращаем их
+        if errors:
+            return JsonResponse({
+                'error': 'Ошибка валидации формы',
+                'details': errors
+            }, status=400)
+        
         if form.is_valid():
             user = form.save(commit=False)
-            full_name = form.cleaned_data['full_name'].strip()
             if full_name:
                 parts = full_name.split(maxsplit=1)
                 user.last_name = parts[0] if parts else ''
@@ -191,6 +291,9 @@ class EditUserView(LoginRequiredMixin, AdminsOnlyMixin, View):
                 user.last_name = ''
 
             if form.cleaned_data['generate_password']:
+                # Генерируем пароль с использованием специальных символов
+                password = ''.join(secrets.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(12))
+                user.set_password(password)
                 if not request.session.get(f'password_generated_{user_id}'):
                     user.save()
                     return JsonResponse({'success': f'Пользователь "{user.username}" успешно обновлен'})
@@ -198,13 +301,25 @@ class EditUserView(LoginRequiredMixin, AdminsOnlyMixin, View):
                     user.save()
                     request.session.pop(f'password_generated_{user_id}', None)
                     return JsonResponse({'success': f'Пользователь "{user.username}" успешно обновлен'})
-            # Если выбрано изменение пароля вручную
             elif form.cleaned_data['change_password']:
                 user.set_password(form.cleaned_data['password1'])
-            # Если ни одна из опций не выбрана, пароль не меняется
             user.save()
             return JsonResponse({'success': f'Пользователь "{user.username}" успешно обновлен'})
-        return JsonResponse({'error': form.errors.as_json()}, status=400)
+        
+        # Обработка ошибок формы
+        form_errors = {}
+        for field, field_errors in form.errors.items():
+            form_errors[field] = []
+            for error in field_errors:
+                if field == '__all__':
+                    form_errors['general'] = error
+                else:
+                    form_errors[field] = [error]
+        
+        return JsonResponse({
+            'error': 'Ошибка валидации формы',
+            'details': form_errors
+        }, status=400)
 
 class DeleteUserView(LoginRequiredMixin, AdminsOnlyMixin, View):
     template_name = 'custom_admin/admin_panel.html'

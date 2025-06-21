@@ -272,7 +272,7 @@ const UserEditForm = {
             inputElement.value = newValue;
             inputElement.setSelectionRange(cursorPos - 1, cursorPos - 1);
             inputElement.name === "password1" ? this.updatePassword1Counter() : this.updatePassword2Counter();
-            showNotification('Пароль должен содержать только латинские буквы и символы', 'warning');
+            showNotification('Пароль должен содержать только латинские буквы, цифры и специальные символы', 'warning');
         }
     },
 
@@ -347,7 +347,7 @@ const UserEditForm = {
         if (!this.$generateCheckbox.prop('checked') && this.$changePasswordCheckbox.prop('checked')) {
             const password1 = this.$password1Input.val();
             const password2 = this.$password2Input.val();
-            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{8,}$/;
 
             if (!password1) {
                 this.$password1Input.addClass('is-invalid');

@@ -1,7 +1,8 @@
 import os
 import json
+import re
 import tempfile
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from urllib.parse import quote
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -69,8 +70,6 @@ class IndexView(LoginRequiredMixin, UsersOnlyMixin, ListView):
     model = Employee
     template_name = 'guard/main_page.html'
     context_object_name = 'employees'  
-
-   
 
 class NotificationListView(LoginRequiredMixin, View):
     def get(self, request):
@@ -210,9 +209,14 @@ class EmployeeAddView(LoginRequiredMixin, UsersOnlyMixin, View):
 
             # Валидация формата данных
             try:
-                # Проверка FIO (должно быть строкой)
+                # Проверка FIO (должно быть строкой и соответствовать формату)
                 if not isinstance(data['FIO'], str) or len(data['FIO'].strip()) == 0:
                     raise ValidationError('FIO must be a non-empty string')
+                
+                # Проверка формата ФИО (2-3 слова, кириллица, каждое с заглавной буквы)
+                full_name = data['FIO'].strip()
+                if not re.fullmatch(r'^[А-ЯЁ][а-яё]+(?:\s[А-ЯЁ][а-яё]+){1,2}$', full_name):
+                    raise ValidationError('FIO must contain 2-3 words in Cyrillic, each starting with a capital letter')
 
                 # Проверка gender (допустимые значения)
                 if data['gender'] not in ['M', 'F']:
@@ -221,12 +225,22 @@ class EmployeeAddView(LoginRequiredMixin, UsersOnlyMixin, View):
                 # Проверка даты рождения
                 try:
                     birthday = datetime.strptime(data['birthday'], '%Y-%m-%d').date()
+                    today = date.today()
+                    min_age_date = date(today.year - 100, today.month, today.day)
+                    max_age_date = date(today.year - 14, today.month, today.day)
+                    
+                    if birthday > today:
+                        raise ValidationError('Birthday cannot be in the future')
+                    if birthday < min_age_date:
+                        raise ValidationError('Age cannot be more than 100 years')
+                    if birthday > max_age_date:
+                        raise ValidationError('Age must be at least 14 years')
                 except (ValueError, TypeError):
                     raise ValidationError('Birthday must be in YYYY-MM-DD format')
 
-                # Проверка position (должно быть строкой)
-                if not isinstance(data['position'], str) or len(data['position'].strip()) == 0:
-                    raise ValidationError('Position must be a non-empty string')
+                # Проверка position (должно быть строкой и не менее 3 символов)
+                if not isinstance(data['position'], str) or len(data['position'].strip()) < 3:
+                    raise ValidationError('Position must be a string with at least 3 characters')
 
                 # Проверка status (допустимые значения)
                 if data['status'] not in ['W', 'V', 'BT', 'S']:
@@ -243,13 +257,19 @@ class EmployeeAddView(LoginRequiredMixin, UsersOnlyMixin, View):
 
                 # Проверка oms_number (необязательное, должно быть строкой если есть)
                 oms_number = data.get('oms_number')
-                if oms_number and not isinstance(oms_number, str):
-                    raise ValidationError('OMS number must be a string if provided')
+                if oms_number:
+                    if not isinstance(oms_number, str):
+                        raise ValidationError('OMS number must be a string if provided')
+                    if len(oms_number) != 16 or not oms_number.isdigit():
+                        raise ValidationError('OMS number must contain exactly 16 digits')
 
                 # Проверка dms_number (необязательное, должно быть строкой если есть)
                 dms_number = data.get('dms_number')
-                if dms_number and not isinstance(dms_number, str):
-                    raise ValidationError('DMS number must be a string if provided')
+                if dms_number:
+                    if not isinstance(dms_number, str):
+                        raise ValidationError('DMS number must be a string if provided')
+                    if len(dms_number) < 10:
+                        raise ValidationError('DMS number must contain at least 10 characters')
 
             except ValidationError as e:
                 return JsonResponse({
@@ -294,81 +314,126 @@ class EmployeeAddView(LoginRequiredMixin, UsersOnlyMixin, View):
 class EmployeeUpdateView(LoginRequiredMixin, UsersOnlyMixin, View):
     def patch(self, request, worker_id):
         try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse({
-                'status': 'ERROR',
-                'description': 'Invalid JSON'
-            }, status=400)
-
-        # Получаем сотрудника или 404
-        employee = get_object_or_404(Employee, pk=worker_id)
-
-        errors = {}
-        
-        # Валидация даты
-        if 'birthday' in data:
+            # Парсинг JSON данных
             try:
-                if isinstance(data['birthday'], str):
-                    if '.' in data['birthday']:  # Формат DD.MM.YYYY
-                        day, month, year = map(int, data['birthday'].split('.'))
-                        data['birthday'] = f"{year}-{month:02d}-{day:02d}"
-                    datetime.strptime(data['birthday'], '%Y-%m-%d')
-            except (ValueError, TypeError):
-                errors['birthday'] = "Invalid date format. Use DD.MM.YYYY or YYYY-MM-DD"
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                return JsonResponse({
+                    'status': 'ERROR',
+                    'description': 'Invalid JSON'
+                }, status=400)
 
-        # Валидация пола
-        if 'gender' in data and data['gender'] not in dict(Employee.GENDER_CHOICES):
-            errors['gender'] = f"Allowed values: {list(dict(Employee.GENDER_CHOICES).keys())}"
+            # Получаем сотрудника или 404
+            employee = get_object_or_404(Employee, pk=worker_id)
 
-        # Валидация статуса
-        if 'status' in data and data['status'] not in dict(Employee.STATUS_CHOICES):
-            errors['status'] = f"Allowed values: {list(dict(Employee.STATUS_CHOICES).keys())}"
+            errors = {}
+            
+            # Валидация ФИО
+            if 'FIO' in data:
+                if not isinstance(data['FIO'], str) or len(data['FIO'].strip()) == 0:
+                    errors['FIO'] = 'FIO must be a non-empty string'
+                elif not re.fullmatch(r'^[А-ЯЁ][а-яё]+(?:\s[А-ЯЁ][а-яё]+){1,2}$', data['FIO'].strip()):
+                    errors['FIO'] = 'FIO must contain 2-3 words in Cyrillic, each starting with a capital letter'
 
-        # Валидация новых полей
-        if 'department' in data and not isinstance(data.get('department'), str):
-            errors['department'] = "Department must be a string"
+            # Валидация даты рождения
+            if 'birthday' in data:
+                try:
+                    if isinstance(data['birthday'], str):
+                        if '.' in data['birthday']:  # Формат DD.MM.YYYY
+                            day, month, year = map(int, data['birthday'].split('.'))
+                            data['birthday'] = f"{year}-{month:02d}-{day:02d}"
+                        datetime.strptime(data['birthday'], '%Y-%m-%d')
+                        
+                        # Проверка возраста (14-100 лет)
+                        input_date = datetime.strptime(data['birthday'], '%Y-%m-%d').date()
+                        today = date.today()
+                        min_age_date = date(today.year - 14, today.month, today.day)
+                        max_age_date = date(today.year - 100, today.month, today.day)
+                        
+                        if input_date > today:
+                            errors['birthday'] = 'Birthday cannot be in the future'
+                        elif input_date > min_age_date:
+                            errors['birthday'] = 'Age must be at least 14 years'
+                        elif input_date < max_age_date:
+                            errors['birthday'] = 'Age cannot be more than 100 years'
+                except (ValueError, TypeError):
+                    errors['birthday'] = "Invalid date format. Use DD.MM.YYYY or YYYY-MM-DD"
 
-        if 'oms_number' in data and not isinstance(data.get('oms_number'), str):
-            errors['oms_number'] = "OMS number must be a string"
+            # Валидация пола
+            if 'gender' in data and data['gender'] not in dict(Employee.GENDER_CHOICES):
+                errors['gender'] = f"Allowed values: {list(dict(Employee.GENDER_CHOICES).keys())}"
 
-        if 'dms_number' in data and not isinstance(data.get('dms_number'), str):
-            errors['dms_number'] = "DMS number must be a string"
+            # Валидация статуса
+            if 'status' in data and data['status'] not in dict(Employee.STATUS_CHOICES):
+                errors['status'] = f"Allowed values: {list(dict(Employee.STATUS_CHOICES).keys())}"
 
-        if errors:
-            return JsonResponse({
-                'status': 'ERROR',
-                'description': 'Validation failed',
-                'errors': errors
-            }, status=400)
+            # Валидация должности
+            if 'position' in data:
+                if not isinstance(data['position'], str) or len(data['position'].strip()) < 3:
+                    errors['position'] = 'Position must be a string with at least 3 characters'
 
-        # Обновление полей
-        update_fields = []
-        for field in ['FIO', 'gender', 'birthday', 'position', 'is_edu', 'status', 
-                     'department', 'oms_number', 'dms_number']:
-            if field in data:
-                setattr(employee, field, data[field])
-                update_fields.append(field)
+            # Валидация ОМС
+            if 'oms_number' in data and data['oms_number']:
+                if not isinstance(data['oms_number'], str):
+                    errors['oms_number'] = "OMS number must be a string"
+                elif len(data['oms_number']) != 16 or not data['oms_number'].isdigit():
+                    errors['oms_number'] = "OMS number must contain exactly 16 digits"
 
-        try:
-            employee.full_clean()
-            employee.save(update_fields=update_fields)
-            return JsonResponse({
-                'status': 'SUCCESS',
-                'message': 'Employee data updated successfully',
-                'employee_id': employee.id,
-                'updated_fields': update_fields
-            })
-        except ValidationError as e:
-            return JsonResponse({
-                'status': 'ERROR',
-                'description': 'Model validation error',
-                'errors': e.message_dict
-            }, status=400)
+            # Валидация ДМС
+            if 'dms_number' in data and data['dms_number']:
+                if not isinstance(data['dms_number'], str):
+                    errors['dms_number'] = "DMS number must be a string"
+                elif len(data['dms_number']) < 10:
+                    errors['dms_number'] = "DMS number must contain at least 10 characters"
+
+            # Валидация is_edu
+            if 'is_edu' in data and not isinstance(data['is_edu'], bool):
+                errors['is_edu'] = "is_edu must be boolean"
+
+            # Валидация department
+            if 'department' in data and data['department'] and not isinstance(data['department'], str):
+                errors['department'] = "Department must be a string"
+
+            if errors:
+                return JsonResponse({
+                    'status': 'ERROR',
+                    'description': 'Validation failed',
+                    'errors': errors
+                }, status=400)
+
+            # Обновление полей
+            update_fields = []
+            for field in ['FIO', 'gender', 'birthday', 'position', 'is_edu', 'status', 
+                         'department', 'oms_number', 'dms_number']:
+                if field in data:
+                    setattr(employee, field, data[field])
+                    update_fields.append(field)
+
+            try:
+                employee.full_clean()
+                employee.save(update_fields=update_fields)
+                return JsonResponse({
+                    'status': 'SUCCESS',
+                    'message': 'Employee data updated successfully',
+                    'employee_id': employee.id,
+                    'updated_fields': update_fields
+                })
+            except ValidationError as e:
+                return JsonResponse({
+                    'status': 'ERROR',
+                    'description': 'Model validation error',
+                    'errors': e.message_dict
+                }, status=400)
+            except Exception as e:
+                return JsonResponse({
+                    'status': 'ERROR',
+                    'description': f'Internal server error: {str(e)}'
+                }, status=500)
+
         except Exception as e:
             return JsonResponse({
                 'status': 'ERROR',
-                'description': f'Internal server error: {str(e)}'
+                'description': f'Unexpected error: {str(e)}'
             }, status=500)
 
 class GetCurentUserDetails(LoginRequiredMixin, UsersOnlyMixin, View):
@@ -504,6 +569,8 @@ class MedicalExamAddView(LoginRequiredMixin, UsersOnlyMixin, View):
                 # Проверка даты прохождения
                 try:
                     exam_date = datetime.strptime(data['exam_date'], '%Y-%m-%d').date()
+                    if exam_date > date.today():
+                        raise ValidationError('Exam date cannot be in the future')
                 except (ValueError, TypeError):
                     raise ValidationError('Exam date must be in YYYY-MM-DD format')
 
@@ -532,10 +599,9 @@ class MedicalExamAddView(LoginRequiredMixin, UsersOnlyMixin, View):
                         date_from = exam_date,
                         date_to = expiry_date
                     )
-                    medical_exam.full_clean()  # Дополнительная валидация модели
+                    medical_exam.full_clean()  
                     medical_exam.save()
                     check_expirations()
-                    
 
                 return JsonResponse({
                     'status': 'SUCCESS',
@@ -765,8 +831,8 @@ class FileListView(LoginRequiredMixin, UsersOnlyMixin, View):
             }, status=500)
 
 class MedicalExamUpdateView(LoginRequiredMixin, UsersOnlyMixin, View):
+    """Обновление данных медосмотра"""
     def patch(self, request, med_id):
-        """Обновление данных медосмотра"""
         try:
             # Парсинг JSON данных
             try:
@@ -803,6 +869,8 @@ class MedicalExamUpdateView(LoginRequiredMixin, UsersOnlyMixin, View):
                 # Проверка даты прохождения
                 try:
                     exam_date = datetime.strptime(data['exam_date'], '%Y-%m-%d').date()
+                    if exam_date > date.today():
+                        raise ValidationError('Exam date cannot be in the future')
                 except (ValueError, TypeError):
                     raise ValidationError('Exam date must be in YYYY-MM-DD format')
 
@@ -885,14 +953,14 @@ class EduAddView(LoginRequiredMixin, UsersOnlyMixin, View):
 
             # Валидация формата данных
             try:
-                # Проверка owner_id (должен быть числом)
+                # Проверка employee_id (должен быть числом)
                 try:
-                    owner_id = int(data['employee_id'])
+                    employee_id = int(data['employee_id'])
                 except (ValueError, TypeError):
                     raise ValidationError('Employee ID must be an integer')
 
                 # Проверка существования работника
-                if not Employee.objects.filter(id=owner_id).exists():
+                if not Employee.objects.filter(id=employee_id).exists():
                     raise ValidationError('Employee with this ID does not exist')
 
                 # Проверка programm (допустимые значения)
@@ -912,7 +980,7 @@ class EduAddView(LoginRequiredMixin, UsersOnlyMixin, View):
                 if not data['udostoverenie_num'].strip():
                     raise ValidationError('Certificate number cannot be empty')
 
-                # Проверка hours (должно быть положительным числом)
+                # Проверка hours (должно быть положительным числом 1-1000)
                 try:
                     hours = int(data['hours'])
                     if hours <= 0 or hours > 1000:
@@ -946,7 +1014,7 @@ class EduAddView(LoginRequiredMixin, UsersOnlyMixin, View):
             try:
                 with transaction.atomic():
                     education = Education(
-                        owner=Employee.objects.get(pk=owner_id),
+                        owner=Employee.objects.get(pk=employee_id),
                         programm=data['programm'],
                         protocol_num=data['protocol_num'],
                         udostoverenie_num=data['udostoverenie_num'],
@@ -956,8 +1024,8 @@ class EduAddView(LoginRequiredMixin, UsersOnlyMixin, View):
                     )
                     education.full_clean()  # Дополнительная валидация модели
                     education.save()
-                    
                     check_expirations()
+
                 return JsonResponse({
                     'status': 'SUCCESS',
                     'id': education.id,
@@ -1343,16 +1411,16 @@ class MedicalDirectionView(LoginRequiredMixin, UsersOnlyMixin, View):
                     status=400
                 )
 
-            # Валидация типа медосмотра
-            exam_type = data.get('examinationType')
-            if exam_type not in ['preliminary', 'periodic', 'psychiatric']:
+            # Валидация данных
+            validation_result = self.validate_data(data)
+            if not validation_result['is_valid']:
                 return JsonResponse(
-                    {'status': 'ERROR', 'message': 'Invalid examination type'},
+                    {'status': 'ERROR', 'message': validation_result['message']},
                     status=400
                 )
 
             # Определение пути к шаблону
-            template_name = self.get_template_name(exam_type)
+            template_name = self.get_template_name(data['examinationType'])
             template_path = os.path.join(self.TEMPLATES_DIR, template_name)
 
             if not os.path.exists(template_path):
@@ -1373,6 +1441,395 @@ class MedicalDirectionView(LoginRequiredMixin, UsersOnlyMixin, View):
                 status=500
             )
 
+    def validate_data(self, data):
+        """Проводит валидацию данных аналогично naprav-form.js"""
+        result = {'is_valid': True, 'message': ''}
+        
+        # Валидация типа медосмотра
+        exam_type = data.get('examinationType')
+        if exam_type not in ['preliminary', 'periodic', 'psychiatric']:
+            return {
+                'is_valid': False,
+                'message': 'Неверный тип медосмотра. Допустимые значения: preliminary, periodic, psychiatric'
+            }
+
+        # Валидация ФИО
+        full_name = data.get('FIO', '').strip()
+        if not full_name:
+            return {
+                'is_valid': False,
+                'message': 'ФИО обязательно для заполнения'
+            }
+        
+        # Проверка формата ФИО (2-3 слова, кириллица)
+        name_parts = full_name.split()
+        if len(name_parts) < 2 or len(name_parts) > 3:
+            return {
+                'is_valid': False,
+                'message': 'ФИО должно содержать 2 или 3 слова'
+            }
+        
+        if any(not re.match('^[А-ЯЁа-яё-]+$', part) for part in name_parts):
+            return {
+                'is_valid': False,
+                'message': 'ФИО должно содержать только кириллические символы и дефисы'
+            }
+
+        # Валидация даты рождения
+        birth_date = data.get('birthDate')
+        if not birth_date:
+            return {
+                'is_valid': False,
+                'message': 'Дата рождения обязательна для заполнения'
+            }
+        
+        try:
+            birth_date_obj = datetime.strptime(birth_date, '%Y-%m-%d').date()
+            today = datetime.now().date()
+            min_age_date = today - timedelta(days=365*14)  # Минимум 14 лет
+            max_age_date = today - timedelta(days=365*100) # Максимум 100 лет
+            
+            if birth_date_obj > today:
+                return {
+                    'is_valid': False,
+                    'message': 'Дата рождения не может быть в будущем'
+                }
+            if birth_date_obj > min_age_date:
+                return {
+                    'is_valid': False,
+                    'message': 'Возраст должен быть не менее 14 лет'
+                }
+            if birth_date_obj < max_age_date:
+                return {
+                    'is_valid': False,
+                    'message': 'Возраст должен быть не более 100 лет'
+                }
+        except ValueError:
+            return {
+                'is_valid': False,
+                'message': 'Неверный формат даты рождения. Используйте формат YYYY-MM-DD'
+            }
+
+        # Валидация пола
+        gender = data.get('gender')
+        if gender not in ['M', 'F']:
+            return {
+                'is_valid': False,
+                'message': 'Не указан пол сотрудника'
+            }
+
+        # Валидация в зависимости от типа осмотра
+        if exam_type in ['preliminary', 'periodic']:
+            return self.validate_regular_exam(data)
+        else:
+            return self.validate_psychiatric_exam(data)
+
+    def validate_regular_exam(self, data):
+        """Валидация для предварительных/периодических осмотров"""
+        # Валидация страховых данных
+        has_oms = data.get('hasOMS', False)
+        has_dms = data.get('hasDMS', False)
+        
+        if not has_oms and not has_dms:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать хотя бы один тип страхового полиса (ОМС или ДМС)'
+            }
+        
+        if has_oms:
+            oms_number = data.get('OMSNumber', '').strip()
+            if not oms_number:
+                return {
+                    'is_valid': False,
+                    'message': 'Необходимо указать номер полиса ОМС'
+                }
+            if len(oms_number) != 16 or not oms_number.isdigit():
+                return {
+                    'is_valid': False,
+                    'message': 'Номер полиса ОМС должен содержать 16 цифр'
+                }
+        
+        if has_dms:
+            dms_number = data.get('DMSNumber', '').strip()
+            if not dms_number:
+                return {
+                    'is_valid': False,
+                    'message': 'Необходимо указать номер полиса ДМС'
+                }
+            if len(dms_number) < 10 or len(dms_number) > 16:
+                return {
+                    'is_valid': False,
+                    'message': 'Номер полиса ДМС должен содержать от 10 до 16 символов'
+                }
+
+        # Валидация номера направления
+        direction_number = data.get('directionNumber', '').strip()
+        if not direction_number:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать номер направления'
+            }
+        if len(direction_number) > 20:
+            return {
+                'is_valid': False,
+                'message': 'Номер направления не должен превышать 20 символов'
+            }
+
+        # Валидация даты направления
+        direction_date = data.get('directionDate')
+        if not direction_date:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать дату направления'
+            }
+        
+        try:
+            direction_date_obj = datetime.strptime(direction_date, '%Y-%m-%d').date()
+            today = datetime.now().date()
+            if direction_date_obj > today:
+                return {
+                    'is_valid': False,
+                    'message': 'Дата направления не может быть в будущем'
+                }
+        except ValueError:
+            return {
+                'is_valid': False,
+                'message': 'Неверный формат даты направления. Используйте формат YYYY-MM-DD'
+            }
+
+        # Валидация медицинской организации
+        medical_org = data.get('medicalOrganization', '').strip()
+        if not medical_org:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать название медицинской организации'
+            }
+        if len(medical_org) < 3 or len(medical_org) > 500:
+            return {
+                'is_valid': False,
+                'message': 'Название медицинской организации должно быть от 3 до 500 символов'
+            }
+
+        # Валидация адреса медицинской организации
+        medical_address = data.get('medicalAddress', '').strip()
+        if not medical_address:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать адрес медицинской организации'
+            }
+
+        # Валидация ОГРН
+        ogrn_code = data.get('ogrnCode', '').strip()
+        if not ogrn_code:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать ОГРН медицинской организации'
+            }
+        if len(ogrn_code) != 13 or not ogrn_code.isdigit():
+            return {
+                'is_valid': False,
+                'message': 'ОГРН должен содержать ровно 13 цифр'
+            }
+
+        # Валидация должности
+        position = data.get('position', '').strip()
+        if not position:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать должность сотрудника'
+            }
+        if len(position) < 3 or len(position) > 100:
+            return {
+                'is_valid': False,
+                'message': 'Должность должна быть от 3 до 100 символов'
+            }
+        if not re.match('^[А-ЯЁа-яё\\s-]+$', position):
+            return {
+                'is_valid': False,
+                'message': 'Должность должна содержать только кириллические символы, пробелы и дефисы'
+            }
+
+        # Валидация представителя работодателя
+        rep_name = data.get('employerRepresentativeName', '').strip()
+        if not rep_name:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать ФИО представителя работодателя'
+            }
+
+        rep_position = data.get('employerRepresentativePosition', '').strip()
+        if not rep_position:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать должность представителя работодателя'
+            }
+        if len(rep_position) < 3 or len(rep_position) > 50:
+            return {
+                'is_valid': False,
+                'message': 'Должность представителя должна быть от 3 до 50 символов'
+            }
+
+        # Валидация вредных факторов (если есть)
+        hazard_factors = data.get('hazardFactors', '').strip()
+        if hazard_factors and len(hazard_factors) > 1000:
+            return {
+                'is_valid': False,
+                'message': 'Описание вредных факторов не должно превышать 1000 символов'
+            }
+
+        # Валидация email и телефона (если есть)
+        medical_email = data.get('medicalEmail', '').strip()
+        if medical_email and not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', medical_email):
+            return {
+                'is_valid': False,
+                'message': 'Неверный формат email медицинской организации'
+            }
+
+        medical_phone = data.get('medicalPhone', '').strip()
+        if medical_phone:
+            main_number = re.sub(r'[^0-9]', '', medical_phone.split('доб.')[0])
+            if len(main_number) < 5:
+                return {
+                    'is_valid': False,
+                    'message': 'Основной номер телефона должен содержать минимум 5 цифр'
+                }
+
+        return {'is_valid': True, 'message': ''}
+
+    def validate_psychiatric_exam(self, data):
+        """Валидация для психиатрического освидетельствования"""
+        # Валидация даты направления
+        direction_date = data.get('directionDatePsych')
+        if not direction_date:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать дату направления'
+            }
+        
+        try:
+            direction_date_obj = datetime.strptime(direction_date, '%Y-%m-%d').date()
+            today = datetime.now().date()
+            if direction_date_obj > today:
+                return {
+                    'is_valid': False,
+                    'message': 'Дата направления не может быть в будущем'
+                }
+        except ValueError:
+            return {
+                'is_valid': False,
+                'message': 'Неверный формат даты направления. Используйте формат YYYY-MM-DD'
+            }
+
+        # Валидация названия работодателя
+        employer_name = data.get('employerName', '').strip()
+        if not employer_name:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать название работодателя'
+            }
+        if len(employer_name) < 3 or len(employer_name) > 255:
+            return {
+                'is_valid': False,
+                'message': 'Название работодателя должно быть от 3 до 255 символов'
+            }
+
+        # Валидация медицинской организации
+        medical_org = data.get('medicalOrgPsych', '').strip()
+        if not medical_org:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать название медицинской организации'
+            }
+        if len(medical_org) < 3 or len(medical_org) > 500:
+            return {
+                'is_valid': False,
+                'message': 'Название медицинской организации должно быть от 3 до 500 символов'
+            }
+
+        # Валидация адреса медицинской организации
+        medical_address = data.get('medicalAddressPsych', '').strip()
+        if not medical_address:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать адрес медицинской организации'
+            }
+
+        # Валидация ОГРН
+        ogrn_psych = data.get('ogrnPsych', '').strip()
+        if not ogrn_psych:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать ОГРН медицинской организации'
+            }
+        if len(ogrn_psych) != 13 or not ogrn_psych.isdigit():
+            return {
+                'is_valid': False,
+                'message': 'ОГРН должен содержать ровно 13 цифр'
+            }
+
+        # Валидация должности
+        position = data.get('positionPsych', '').strip()
+        if not position:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать должность сотрудника'
+            }
+        if len(position) < 3 or len(position) > 100:
+            return {
+                'is_valid': False,
+                'message': 'Должность должна быть от 3 до 100 символов'
+            }
+
+        # Валидация email и телефона (если есть)
+        medical_email = data.get('medicalEmailPsych', '').strip()
+        if medical_email and not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', medical_email):
+            return {
+                'is_valid': False,
+                'message': 'Неверный формат email медицинской организации'
+            }
+
+        medical_phone = data.get('medicalPhonePsych', '').strip()
+        if medical_phone:
+            main_number = re.sub(r'[^0-9]', '', medical_phone.split('доб.')[0])
+            if len(main_number) < 5:
+                return {
+                    'is_valid': False,
+                    'message': 'Основной номер телефона должен содержать минимум 5 цифр'
+                }
+
+        # Валидация кода ОКВЭД (если есть)
+        okved_code = data.get('okvedCode', '').strip()
+        if okved_code:
+            if len(okved_code) < 2 or len(okved_code) > 10:
+                return {
+                    'is_valid': False,
+                    'message': 'Код ОКВЭД должен быть от 2 до 10 символов'
+                }
+            if not re.match(r'^[\d.]+$', okved_code):
+                return {
+                    'is_valid': False,
+                    'message': 'Код ОКВЭД должен содержать только цифры и точки'
+                }
+
+        # Валидация видов деятельности (если есть)
+        activity_types = data.get('activityTypes', '').strip()
+        if activity_types and len(activity_types) > 1000:
+            return {
+                'is_valid': False,
+                'message': 'Виды деятельности не должны превышать 1000 символов'
+            }
+
+        # Валидация предыдущих заключений (если есть)
+        previous_conclusions = data.get('previousConclusions', '').strip()
+        if previous_conclusions and len(previous_conclusions) > 2000:
+            return {
+                'is_valid': False,
+                'message': 'Предыдущие заключения не должны превышать 2000 символов'
+            }
+
+        return {'is_valid': True, 'message': ''}
+
+    # Остальные методы класса остаются без изменений
     def get_template_name(self, exam_type):
         """Возвращает имя шаблона в зависимости от типа осмотра"""
         return {

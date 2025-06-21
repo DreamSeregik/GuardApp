@@ -271,6 +271,7 @@ const UserForm = {
         }
     },
 
+
     restrictToLatin: function (inputElement) {
         const value = inputElement.value;
         const cursorPos = inputElement.selectionStart;
@@ -280,7 +281,7 @@ const UserForm = {
             inputElement.value = newValue;
             inputElement.setSelectionRange(cursorPos - 1, cursorPos - 1);
             inputElement.name === "password1" ? this.updatePassword1Counter() : this.updatePassword2Counter()
-            showNotification('Пароль должен содержать только латинские буквы и символы', 'warning');
+            showNotification('Пароль должен содержать только латинские буквы, цифры и специальные символы', 'warning');
         }
     },
 
@@ -305,7 +306,7 @@ const UserForm = {
         if (!this.$generateCheckbox.prop('checked')) {
             const password1 = this.$password1Input.val();
             const password2 = this.$password2Input.val();
-            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{8,}$/;
 
             if (!password1) {
                 this.$password1Input.addClass('is-invalid');

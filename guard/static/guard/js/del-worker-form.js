@@ -103,6 +103,9 @@ const EmployeeDeleteModal = {
                 await filterWorkers(filter_query);
                 sortWorkersByFIO(sort_type);
                 $("#info-tbl-main tbody, #info-tbl-med tbody, #info-tbl-education tbody").empty();
+                $("#info-tbl-med tbody").append('<tr class="no-data"><td colspan="6" style="text-align: center">Выберите сотрудника</td></tr>');
+                $("#info-tbl-education tbody").append('<tr class="no-data"><td colspan="9" style="text-align: center">Выберите сотрудника</td></tr>');
+                $("#info-tbl-main tbody").append('<tr class="no-data"><td colspan="9" style="text-align: center">Выберите сотрудника</td></tr>');
                 $("#worker-info-fio").html("Выберите сотрудника");
                 $(document).trigger('updateNotify');
                 this.modal.hide();
