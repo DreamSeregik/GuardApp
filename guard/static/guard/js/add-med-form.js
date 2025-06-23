@@ -1,7 +1,11 @@
 /**
- * MedicalExamForm - модуль для работы с формой добавления медосмотра
+ * Модуль MedicalExamForm для работы с формой добавления медицинского осмотра
  */
 const MedicalExamForm = {
+    // === Инициализация ===
+    /**
+     * Инициализирует модуль, кэширует элементы и привязывает события
+     */
     init: function () {
         this.cacheElements();
         this.bindEvents();
@@ -9,6 +13,10 @@ const MedicalExamForm = {
         this.files = [];
     },
 
+    // === Кэширование DOM-элементов ===
+    /**
+     * Сохраняет ссылки на DOM-элементы формы
+     */
     cacheElements: function () {
         this.$modal = $('#addMedModal');
         this.$form = $('#medicalExamAddForm');
@@ -22,6 +30,10 @@ const MedicalExamForm = {
         this.$spinner = $('#submitSpinner');
     },
 
+    // === Привязка событий ===
+    /**
+     * Привязывает обработчики событий к элементам формы
+     */
     bindEvents: function () {
         this.$submitBtn.on('click', this.submitForm.bind(this));
         this.$fileInput.on('change', this.handleFileSelect.bind(this));
@@ -32,34 +44,63 @@ const MedicalExamForm = {
         this.$modal.on('hide.bs.modal', this.handleModalHide.bind(this));
         this.$modal.on('hidden.bs.modal', this.handleModalHidden.bind(this));
         this.$closeBtn.on('click', this.handleCloseClick.bind(this));
+
+        $('#medicalExamDate').on('input change', () => {
+            this.validateExamDate();
+            this.validateExpiryDate();
+        });
+        $('#medicalExamExpiryDate').on('input change', () => {
+            this.validateExpiryDate();
+        });
+        this.$examTypeSelect.on('change', this.validateExamType.bind(this));
     },
 
+    // === Обработчики событий модального окна ===
+    /**
+     * Сбрасывает форму при показе модального окна
+     */
     handleModalShow: function () {
         this.resetForm();
     },
 
+    /**
+     * Устанавливает фокус на поле выбора типа осмотра
+     */
     handleModalShown: function () {
         this.$examTypeSelect.trigger('focus');
     },
 
+    /**
+     * Снимает фокус и скрывает спиннер при закрытии модального окна
+     */
     handleModalHide: function () {
         if (document.activeElement) {
             document.activeElement.blur();
         }
-        this.hideSpinner()
+        this.hideSpinner();
     },
 
+    /**
+     * Устанавливает атрибут aria-hidden после скрытия модального окна
+     */
     handleModalHidden: function () {
         setTimeout(() => {
             this.$modal.attr('aria-hidden', 'true');
         }, 100);
     },
 
+    /**
+     * Закрывает модальное окно при клике на кнопку закрытия
+     */
     handleCloseClick: function (e) {
         e.preventDefault();
         this.modal.hide();
     },
 
+    // === Обработка файлов ===
+    /**
+     * Обрабатывает выбор файлов пользователем
+     */
     handleFileSelect: function (e) {
         const files = e.target.files;
         for (let i = 0; i < files.length; i++) {
@@ -69,6 +110,10 @@ const MedicalExamForm = {
         this.updateFileList();
     },
 
+    /**
+     * Добавляет файл в список
+     * @param {File} file - Файл для добавления
+     */
     addFile: function (file) {
         if (file && file.name) {
             this.files.push({
@@ -80,6 +125,10 @@ const MedicalExamForm = {
         }
     },
 
+    /**
+     * Удаляет файл из списка
+     * @param {Event} e - Событие клика
+     */
     removeFile: function (e) {
         e.preventDefault();
         const fileId = $(e.currentTarget).data('id');
@@ -87,13 +136,17 @@ const MedicalExamForm = {
         this.updateFileList();
     },
 
-    // Функция для форматирования размера файла
+    /**
+     * Форматирует размер файла в удобный для чтения формат
+     * @param {number} bytes - Размер файла в байтах
+     * @returns {string} Форматированный размер
+     */
     formatFileSize: function (bytes) {
         if (isNaN(bytes) || bytes == null) {
             console.warn('Некорректный размер файла:', bytes);
             return 'Неизвестно';
         }
-        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const units = ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ'];
         let size = bytes;
         let unitIndex = 0;
         while (size >= 1024 && unitIndex < units.length - 1) {
@@ -103,42 +156,52 @@ const MedicalExamForm = {
         return `${size.toFixed(1)} ${units[unitIndex]}`;
     },
 
-    // Функция для экранирования HTML-символов
+    /**
+     * Экранирует HTML-символы в строке
+     * @param {string} str - Входная строка
+     * @returns {string} Экранированная строка
+     */
     escapeHTML: function (str) {
         if (typeof str !== 'string' || str == null) {
-            console.warn('Некорректный входной параметр в escapeHTML:', str);
+            console.warn('Некорректное значение в escapeHTML:', str);
             return str == null ? '' : str.toString();
         }
-        return str.replace(/[&<>"']/g, function (match) {
-            const escape = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;'
-            };
-            return escape[match];
-        });
+        return str.replace(/[&<>"']/g, match => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[match]));
     },
 
-    // Функция для обрезки длинных имён файлов
+    /**
+     * Обрезает длинные имена файлов
+     * @param {string} name - Имя файла
+     * @param {number} [maxLength=30] - Максимальная длина
+     * @returns {string} Обрезанное имя файла
+     */
     truncateFileName: function (name, maxLength = 30) {
         if (typeof name !== 'string' || name == null) {
-            console.warn('Некорректный входной параметр в truncateFileName:', name);
+            console.warn('Некорректное имя файла:', name);
             return name == null ? '' : name.toString();
         }
-        if (name.length <= maxLength) return name;
-        const extIndex = name.lastIndexOf('.');
-        const ext = extIndex !== -1 ? name.substring(extIndex) : '';
-        const nameWithoutExt = extIndex !== -1 ? name.substring(0, extIndex) : name;
-        const truncated = nameWithoutExt.substring(0, maxLength - ext.length - 3);
-        return `${truncated}...${ext}`;
+        if (name.length > maxLength) {
+            const extIndex = name.lastIndexOf('.');
+            const ext = extIndex !== -1 ? name.substring(extIndex) : '';
+            const nameWithoutExt = extIndex !== -1 ? name.substring(0, extIndex) : name;
+            const truncated = nameWithoutExt.substring(0, maxLength - ext.length - 3);
+            return `${truncated}...${ext}`;
+        }
+        return name;
     },
 
+    /**
+     * Обновляет отображение списка файлов
+     */
     updateFileList: function () {
         this.$fileList.empty();
-
-        if (this.files.length === 0) {
+        if (!this.files.length) {
             this.$fileList.append('<tr><td colspan="3" class="text-muted text-center">Нет прикрепленных файлов</td></tr>');
             return;
         }
@@ -153,8 +216,7 @@ const MedicalExamForm = {
                     </td>
                     <td>${fileSize}</td>
                     <td class="text-end">
-                        <button class="btn btn-sm btn-outline-danger remove-file" 
-                                data-id="${file.id}">
+                        <button class="btn btn-sm btn-outline-danger remove-file" data-id="${file.id}">
                             <i class="bi bi-trash"></i>
                         </button>
                     </td>
@@ -164,65 +226,145 @@ const MedicalExamForm = {
         });
     },
 
+    // === Валидация формы ===
+    /**
+     * Проверяет корректность заполнения формы
+     * @returns {boolean} Результат валидации
+     */
     validateForm: function () {
         let isValid = true;
 
-        if (!this.$examTypeSelect.val()) {
-            this.$examTypeSelect.addClass('is-invalid');
+        if (!this.validateExamType()) {
             isValid = false;
         }
 
-        if (!$('#medicalExamDate').val()) {
-            $('#medicalExamDate').addClass('is-invalid');
+        if (!this.validateExamDate()) {
             isValid = false;
         }
 
-        if (!$('#medicalExamExpiryDate').val()) {
-            $('#medicalExamExpiryDate').addClass('is-invalid');
-            isValid = false;
-        }
-
-        const examDate = new Date($('#medicalExamDate').val());
-        const expiryDate = new Date($('#medicalExamExpiryDate').val());
-
-        if (expiryDate < examDate) {
-            $('#medicalExamExpiryDate').addClass('is-invalid');
-            $('#medicalExamExpiryDate').next('.invalid-feedback').text('Дата окончания не может быть раньше даты прохождения');
+        if (!this.validateExpiryDate()) {
             isValid = false;
         }
 
         return isValid;
     },
 
-    getFormData: function () {
-        const examType = this.$examTypeSelect.val();
-        const examDate = $('#medicalExamDate').val();
-        const expiryDate = $('#medicalExamExpiryDate').val();
+    /**
+ * Валидация типа медосмотра
+ * @returns {boolean} Результат валидации
+ */
+    validateExamType: function () {
+        const isValid = !!this.$examTypeSelect.val();
+        this.$examTypeSelect.toggleClass('is-invalid', !isValid);
 
+        const $feedback = this.$examTypeSelect.next('.invalid-feedback');
+        if ($feedback.length) {
+            $feedback.text(isValid ? '' : 'Поле обязательно для заполнения');
+        } else if (!isValid) {
+            this.$examTypeSelect.after('<div class="invalid-feedback">Поле обязательно для заполнения</div>');
+        }
+
+        return isValid;
+    },
+
+    /**
+     * Валидация даты прохождения осмотра
+     * @returns {boolean} Результат валидации
+     */
+    validateExamDate: function () {
+        const $input = $('#medicalExamDate');
+        const value = $input.val();
+        const date = new Date(value);
+        const isValid = !!date.getTime();
+
+        $input.toggleClass('is-invalid', !isValid);
+
+        const $feedback = $input.next('.invalid-feedback');
+        if ($feedback.length) {
+            $feedback.text(isValid ? '' : 'Укажите корректную дату');
+        } else if (!isValid) {
+            $input.after('<div class="invalid-feedback">Укажите корректную дату</div>');
+        }
+
+        return isValid;
+    },
+
+    /**
+     * Валидация даты окончания действия осмотра
+     * @returns {boolean} Результат валидации
+     */
+    validateExpiryDate: function () {
+        const $input = $('#medicalExamExpiryDate');
+        const value = $input.val();
+        const expiryDate = new Date(value);
+        let isValid = !!expiryDate.getTime();
+        let feedback = '';
+
+
+
+        if (isValid) {
+            const examDate = new Date($('#medicalExamDate').val());
+            if (expiryDate < examDate) {
+                isValid = false;
+                feedback = 'Дата окончания не может быть раньше даты прохождения';
+            }
+        } else {
+            feedback = 'Укажите корректную дату';
+        }
+
+        $input.toggleClass('is-invalid', !isValid);
+
+        const $feedback = $input.next('.invalid-feedback');
+        if ($feedback.length) {
+            $feedback.text(feedback);
+        } else if (!isValid) {
+            $input.after(`<div class="invalid-feedback">${feedback}</div>`);
+        }
+
+        return isValid;
+    },
+
+
+    /**
+     * Собирает данные формы для отправки
+     * @returns {Object} Данные формы
+     */
+    getFormData: function () {
         return {
-            "employee_id": worker_id,
-            "exam_type": examType,
-            "exam_date": examDate,
-            "expiry_date": expiryDate
+            employee_id: worker_id,
+            exam_type: this.$examTypeSelect.val(),
+            exam_date: $('#medicalExamDate').val(),
+            expiry_date: $('#medicalExamExpiryDate').val()
         };
     },
 
+    // === Управление спиннером ===
+    /**
+     * Показывает спиннер загрузки
+     */
     showSpinner: function () {
         this.$submitBtn.prop('disabled', true);
         this.$spinner.removeClass('d-none');
     },
 
+    /**
+     * Скрывает спиннер загрузки
+     */
     hideSpinner: function () {
         this.$submitBtn.prop('disabled', false);
         this.$spinner.addClass('d-none');
     },
 
+    // === Отправка формы ===
+    /**
+     * Отправляет данные формы на сервер
+     */
     submitForm: async function () {
         if (!this.validateForm()) return;
         this.showSpinner();
 
         const formData = this.getFormData();
-        const url = new URL(`${SERVER}/worker/med/add`);
+        const url = new URL(API_ENDPOINTS.MED_ADD);
 
         try {
             const data = await sendPostRequest(url, formData);
@@ -234,9 +376,9 @@ const MedicalExamForm = {
                 await getMedData(worker_id);
                 $(document).trigger('updateNotify');
                 this.modal.hide();
-                showNotification('Медосмотр успешно добавлен', 'success');
+                showNotification('Медицинский осмотр успешно добавлен', 'success');
             } else {
-                showNotification(data.message || 'Ошибка при добавлении медосмотра');
+                showNotification(data.description || 'Ошибка при добавлении медицинского осмотра');
             }
         } catch (error) {
             console.error('Ошибка при отправке формы:', error);
@@ -246,6 +388,10 @@ const MedicalExamForm = {
         }
     },
 
+    /**
+     * Загружает файлы на сервер
+     * @param {number} medId - ID медицинского осмотра
+     */
     uploadFiles: async function (medId) {
         const uploadPromises = this.files.map(file => {
             const formData = new FormData();
@@ -266,11 +412,14 @@ const MedicalExamForm = {
             const results = await Promise.all(uploadPromises);
             return results;
         } catch (error) {
-            console.error('Ошибка загрузки файлов:', error);
+            console.error('Ошибка при загрузке файлов:', error);
             throw error;
         }
     },
 
+    /**
+     * Сбрасывает форму и очищает список файлов
+     */
     resetForm: function () {
         this.$form.trigger('reset');
         this.$form.find('.is-invalid').removeClass('is-invalid');
@@ -280,6 +429,7 @@ const MedicalExamForm = {
     }
 };
 
+// === Инициализация модуля ===
 $(document).ready(function () {
     if ($('#addMedModal').length) {
         MedicalExamForm.init();

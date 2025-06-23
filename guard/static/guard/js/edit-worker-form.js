@@ -1,17 +1,22 @@
 /**
- * EmployeeEditForm - модуль для работы с формой редактирования сотрудника
+ * Модуль для работы с формой редактирования данных сотрудника
  */
 const EmployeeEditForm = {
+    // === Инициализация ===
+    /**
+     * Инициализирует модуль, кэширует элементы, привязывает события и счетчики
+     */
     init: function () {
         this.cacheElements();
         this.bindEvents();
         this.initCounters();
-
-        this.modal = new bootstrap.Modal(this.$modal[0], {
-            focus: false
-        });
+        this.modal = new bootstrap.Modal(this.$modal[0], { focus: false });
     },
 
+    // === Кэширование DOM-элементов ===
+    /**
+     * Сохраняет ссылки на DOM-элементы формы
+     */
     cacheElements: function () {
         this.$modal = $('#editWorkerModal');
         this.$form = $('#employeeEditForm');
@@ -31,6 +36,10 @@ const EmployeeEditForm = {
         this.$loadingSpinner = $('#editWorkerLoadingSpinner');
     },
 
+    // === Привязка событий ===
+    /**
+     * Привязывает обработчики событий к элементам формы
+     */
     bindEvents: function () {
         // Счетчики символов
         this.$fullNameInput.on('input', this.updateCounter.bind(this, 'editFullName'));
@@ -43,22 +52,29 @@ const EmployeeEditForm = {
         this.$fullNameInput.on('input', this.validateFullName.bind(this));
         this.$positionInput.on('input', this.validatePosition.bind(this));
         this.$birthDateInput.on('change', this.validateBirthDate.bind(this));
-        this.$omsInput.on('input', this.validateOms.bind(this));
-        this.$dmsInput.on('input', this.validateDms.bind(this));
+        this.$omsInput.on('input', this.validateOMS.bind(this));
+        this.$dmsInput.on('input', this.validateDMS.bind(this));
         this.$genderInputs.on('change', this.validateGender.bind(this));
         this.$statusSelect.on('change', this.validateStatus.bind(this));
 
+        // Обработчик отправки формы
         this.$submitBtn.on('click', this.submitForm.bind(this));
 
+        // Обработчики модального окна
         this.$modal.on('show.bs.modal', this.handleModalShow.bind(this));
         this.$modal.on('shown.bs.modal', this.handleModalShown.bind(this));
         this.$modal.on('hide.bs.modal', this.handleModalHide.bind(this));
         this.$modal.on('hidden.bs.modal', this.handleModalHidden.bind(this));
 
+        // Обработчик кнопки закрытия
         this.$closeBtn.on('click', this.handleCloseClick.bind(this));
     },
 
-    // Валидация ФИО
+    // === Валидация полей ===
+    /**
+     * Валидирует поле ФИО
+     * @returns {boolean} Результат валидации
+     */
     validateFullName: function () {
         const fullName = this.$fullNameInput.val().trim();
         const fullNameResult = EmployeeForm.processFullName(fullName);
@@ -77,10 +93,12 @@ const EmployeeEditForm = {
         return fullNameResult.isValid && fullName;
     },
 
-    // Валидация должности
+    /**
+     * Валидирует поле должности
+     * @returns {boolean} Результат валидации
+     */
     validatePosition: function () {
         const position = this.$positionInput.val().trim();
-
         if (!position) {
             this.showError(this.$positionInput, 'editPositionFeedback', 'Пожалуйста, укажите должность');
             return false;
@@ -93,11 +111,13 @@ const EmployeeEditForm = {
         }
     },
 
-    // Валидация даты рождения
+    /**
+     * Валидирует поле даты рождения
+     * @returns {boolean} Результат валидации
+     */
     validateBirthDate: function () {
         const dateStr = this.$birthDateInput.val();
         const isValid = this.isValidBirthDate(dateStr);
-
         if (!dateStr) {
             this.showError(this.$birthDateInput, 'editBirthDateFeedback', 'Поле обязательно для заполнения');
         } else if (!isValid) {
@@ -108,34 +128,55 @@ const EmployeeEditForm = {
         return !!dateStr && isValid;
     },
 
-    // Валидация ОМС
-    validateOms: function () {
+    /**
+     * Валидирует поле номера полиса ОМС
+     * @returns {boolean} Результат валидации
+     */
+    validateOMS: function () {
         const oms = this.$omsInput.val().trim();
-        if (oms && oms.length !== 16) {
-            this.showError(this.$omsInput, 'editOmsFeedback', 'Номер полиса ОМС должен содержать 16 цифр');
+        const requiredLength = 16;
+        if (!oms) {
+            this.hideError(this.$omsInput, 'editOMSFeedback');
+            return true;
+        } else if (!/^\d+$/.test(oms)) {
+            this.showError(this.$omsInput, 'editOMSFeedback', 'Номер полиса ОМС должен содержать только цифры');
             return false;
-        } else if (oms && !/^\d+$/.test(oms)) {
-            this.showError(this.$omsInput, 'editOmsFeedback', 'Номер полиса ОМС должен содержать только цифры');
+        } else if (oms.length !== requiredLength) {
+            this.showError(this.$omsInput, 'editOMSFeedback', `Номер полиса ОМС должен содержать ${requiredLength} цифр`);
             return false;
         } else {
-            this.hideError(this.$omsInput, 'editOmsFeedback');
+            this.hideError(this.$omsInput, 'editOMSFeedback');
             return true;
         }
     },
 
-    // Валидация ДМС
-    validateDms: function () {
+    /**
+     * Валидирует поле номера полиса ДМС
+     * @returns {boolean} Результат валидации
+     */
+    validateDMS: function () {
         const dms = this.$dmsInput.val().trim();
-        if (dms && dms.length < 10) {
-            this.showError(this.$dmsInput, 'editDmsFeedback', 'Номер полиса ДМС должен содержать минимум 10 символов');
+        const minLength = 10;
+        const maxLength = 16;
+        if (!dms) {
+            this.hideError(this.$dmsInput, 'editDMSFeedback');
+            return true;
+        } else if (dms.length < minLength) {
+            this.showError(this.$dmsInput, 'editDMSFeedback', `Номер полиса ДМС должен содержать минимум ${minLength} символов`);
+            return false;
+        } else if (dms.length > maxLength) {
+            this.showError(this.$dmsInput, 'editDMSFeedback', `Номер полиса ДМС не должен превышать ${maxLength} символов`);
             return false;
         } else {
-            this.hideError(this.$dmsInput, 'editDmsFeedback');
+            this.hideError(this.$dmsInput, 'editDMSFeedback');
             return true;
         }
     },
 
-    // Валидация пола
+    /**
+     * Валидирует поле пола
+     * @returns {boolean} Результат валидации
+     */
     validateGender: function () {
         const genderSelected = this.$genderInputs.filter(':checked').length > 0;
         if (!genderSelected) {
@@ -147,7 +188,10 @@ const EmployeeEditForm = {
         }
     },
 
-    // Валидация статуса
+    /**
+     * Валидирует поле статуса
+     * @returns {boolean} Результат валидации
+     */
     validateStatus: function () {
         const status = this.$statusSelect.val();
         if (!status) {
@@ -159,111 +203,96 @@ const EmployeeEditForm = {
         }
     },
 
-    // Проверка валидности даты рождения
+    /**
+     * Проверяет валидность даты рождения
+     * @param {string} dateStr - Строка с датой рождения
+     * @returns {boolean} Результат валидации
+     */
     isValidBirthDate: function (dateStr) {
         if (!dateStr) return false;
-
         const inputDate = new Date(dateStr);
         if (isNaN(inputDate.getTime())) return false;
-
         const today = new Date();
         const minAgeDate = new Date(today.getFullYear() - 14, today.getMonth(), today.getDate());
         const maxAgeDate = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
-
         return inputDate <= minAgeDate && inputDate >= maxAgeDate;
     },
 
-    // Показать ошибку
+    // === Управление ошибками ===
+    /**
+     * Показывает сообщение об ошибке для поля
+     * @param {jQuery} $input - Элемент ввода
+     * @param {string} feedbackId - ID элемента обратной связи
+     * @param {string} message - Сообщение об ошибке
+     */
     showError: function ($input, feedbackId, message) {
         $input.addClass('is-invalid');
         $(`#${feedbackId}`).text(message).show();
     },
 
-    // Скрыть ошибку
+    /**
+     * Скрывает сообщение об ошибке для поля
+     * @param {jQuery} $input - Элемент ввода
+     * @param {string} feedbackId - ID элемента обратной связи
+     */
     hideError: function ($input, feedbackId) {
         $input.removeClass('is-invalid');
         $(`#${feedbackId}`).text('').hide();
     },
 
-    handleModalShow: function () {
+    // === Обработчики событий модального окна ===
+    /**
+     * Загружает данные сотрудника при открытии модального окна
+     */
+    handleModalShow: async function () {
         this.showLoadingSpinner();
         this.$submitBtn.prop('disabled', true);
         if (worker_id) {
-            this.loadEmployeeData(worker_id).finally(() => {
-                this.hideLoadingSpinner();
-            });
+            await this.loadEmployeeData(worker_id);
+            this.hideLoadingSpinner();
         }
     },
 
-    loadEmployeeData: async function (employeeId) {
-        try {
-            const url = new URL(FILTER);
-            url.searchParams.append('id', employeeId);
-            const { status, employees } = await sendGetRequest(url);
-            if (status === "SUCCESS") {
-                this.$fullNameInput.val(employees.FIO || '');
-                this.updateCounter('editFullName');
-                this.validateFullName();
-
-                $(`input[name="editEmployeeGender"][value="${employees.gender === 'Женский' ? 'F' : 'M'}"]`).prop('checked', true);
-                this.validateGender();
-
-                if (employees.birthday) {
-                    const [day, month, year] = employees.birthday.split('.');
-                    this.$birthDateInput.val(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
-                    this.validateBirthDate();
-                }
-
-                this.$positionInput.val(employees.position || '');
-                this.updateCounter('editPosition');
-                this.validatePosition();
-
-                this.$structInput.val(employees.department || '');
-                this.updateCounter('editStruct');
-
-                this.$omsInput.val(employees.oms_number || '');
-                this.updateCounter('editOms');
-                this.validateOms();
-
-                this.$dmsInput.val(employees.dms_number || '');
-                this.updateCounter('editDms');
-                this.validateDms();
-
-                this.$statusSelect.val(employees.status_code || 'W');
-                this.validateStatus();
-
-                this.$isLearningCheckbox.prop('checked', employees.is_edu || false);
-                this.$submitBtn.prop('disabled', false); // Активируем кнопку после загрузки
-            }
-        } catch (error) {
-            console.error('Ошибка при загрузке данных сотрудника:', error);
-            showNotification('Ошибка загрузки данных сотрудника');
-        }
-    },
-
+    /**
+     * Устанавливает фокус на поле ФИО после открытия модального окна
+     */
     handleModalShown: function () {
         this.$fullNameInput.trigger('focus');
     },
 
+    /**
+     * Обрабатывает закрытие модального окна
+     */
     handleModalHide: function () {
         if (document.activeElement) {
             document.activeElement.blur();
         }
         this.hideSpinner();
-        this.$submitBtn.prop('disabled', true); // Отключаем кнопку при закрытии
+        this.$submitBtn.prop('disabled', true);
     },
 
+    /**
+     * Устанавливает атрибут aria-hidden после полного закрытия модального окна
+     */
     handleModalHidden: function () {
         setTimeout(() => {
             this.$modal.attr('aria-hidden', 'true');
         }, 100);
     },
 
+    /**
+     * Закрывает модальное окно при клике на кнопку закрытия
+     * @param {Event} e - Событие клика
+     */
     handleCloseClick: function (e) {
         e.preventDefault();
         this.modal.hide();
     },
 
+    // === Управление счетчиками ===
+    /**
+     * Инициализирует счетчики символов для полей
+     */
     initCounters: function () {
         this.updateCounter('editFullName');
         this.updateCounter('editPosition');
@@ -272,9 +301,12 @@ const EmployeeEditForm = {
         this.updateCounter('editDms');
     },
 
+    /**
+     * Обновляет счетчик символов для указанного поля
+     * @param {string} field - Название поля
+     */
     updateCounter: function (field) {
         let $input, $counter;
-
         switch (field) {
             case 'editFullName':
                 $input = this.$fullNameInput;
@@ -297,27 +329,31 @@ const EmployeeEditForm = {
                 $counter = $('#editDmsCounter');
                 break;
         }
-
         $counter.text($input.val().length);
     },
 
+    // === Валидация формы ===
+    /**
+     * Проверяет валидность всех полей формы
+     * @returns {boolean} Результат валидации
+     */
     validateForm: function () {
         let isValid = true;
-
-        // Проверяем все обязательные поля
         if (!this.validateFullName()) isValid = false;
         if (!this.validatePosition()) isValid = false;
         if (!this.validateBirthDate()) isValid = false;
         if (!this.validateGender()) isValid = false;
         if (!this.validateStatus()) isValid = false;
-
-        // Необязательные поля проверяем только если они заполнены
-        if (this.$omsInput.val().trim() && !this.validateOms()) isValid = false;
-        if (this.$dmsInput.val().trim() && !this.validateDms()) isValid = false;
-
+        if (this.$omsInput.val().trim() && !this.validateOMS()) isValid = false;
+        if (this.$dmsInput.val().trim() && !this.validateDMS()) isValid = false;
         return isValid;
     },
 
+    // === Получение данных формы ===
+    /**
+     * Собирает данные из формы для отправки
+     * @returns {Object} Данные формы
+     */
     getFormData: function () {
         return {
             FIO: EmployeeForm.processFullName(this.$fullNameInput.val()).formattedName,
@@ -332,26 +368,86 @@ const EmployeeEditForm = {
         };
     },
 
+    // === Управление спиннерами ===
+    /**
+     * Показывает спиннер и отключает кнопку отправки
+     */
     showSpinner: function () {
         this.$submitBtn.prop('disabled', true);
         this.$spinner.removeClass('d-none');
     },
 
+    /**
+     * Скрывает спиннер и активирует кнопку отправки
+     */
     hideSpinner: function () {
         this.$submitBtn.prop('disabled', false);
         this.$spinner.addClass('d-none');
     },
 
+    /**
+     * Показывает спиннер загрузки и скрывает форму
+     */
     showLoadingSpinner: function () {
         this.$loadingSpinner.removeClass('d-none');
         this.$form.addClass('d-none');
     },
 
+    /**
+     * Скрывает спиннер загрузки и показывает форму
+     */
     hideLoadingSpinner: function () {
         this.$loadingSpinner.addClass('d-none');
         this.$form.removeClass('d-none');
     },
 
+    // === Загрузка данных ===
+    /**
+     * Загружает данные сотрудника по ID
+     * @param {string} employeeId - ID сотрудника
+     */
+    loadEmployeeData: async function (employeeId) {
+        try {
+            const url = new URL(API_ENDPOINTS.FILTER);
+            url.searchParams.append('id', employeeId);
+            const { status, employees } = await sendGetRequest(url);
+            if (status === 'SUCCESS') {
+                this.$fullNameInput.val(employees.FIO || '');
+                this.updateCounter('editFullName');
+                this.validateFullName();
+                $(`input[name="editEmployeeGender"][value="${employees.gender === 'Женский' ? 'F' : 'M'}"]`).prop('checked', true);
+                this.validateGender();
+                if (employees.birthday) {
+                    const [day, month, year] = employees.birthday.split('.');
+                    this.$birthDateInput.val(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+                    this.validateBirthDate();
+                }
+                this.$positionInput.val(employees.position || '');
+                this.updateCounter('editPosition');
+                this.validatePosition();
+                this.$structInput.val(employees.department || '');
+                this.updateCounter('editStruct');
+                this.$omsInput.val(employees.oms_number || '');
+                this.updateCounter('editOms');
+                this.validateOMS();
+                this.$dmsInput.val(employees.dms_number || '');
+                this.updateCounter('editDms');
+                this.validateDMS();
+                this.$statusSelect.val(employees.status_code || 'W');
+                this.validateStatus();
+                this.$isLearningCheckbox.prop('checked', employees.is_edu || false);
+                this.$submitBtn.prop('disabled', false);
+            }
+        } catch (error) {
+            console.error('Ошибка при загрузке данных сотрудника:', error);
+            showNotification('Ошибка при загрузке данных сотрудника');
+        }
+    },
+
+    // === Отправка формы ===
+    /**
+     * Отправляет данные формы на сервер
+     */
     submitForm: async function () {
         if (!this.validateForm()) {
             const $firstError = this.$form.find('.is-invalid').first();
@@ -362,16 +458,12 @@ const EmployeeEditForm = {
             }
             return;
         }
-
         this.showSpinner();
-
         const formData = this.getFormData();
-        const url = new URL(`${PERSONAL_DATA_UPDATE}${worker_id}`);
-
+        const url = new URL(`${API_ENDPOINTS.PERSONAL_DATA_UPDATE}${worker_id}`);
         try {
             const data = await sendPatchRequest(url, formData);
-
-            if (data.status === "SUCCESS") {
+            if (data.status === 'SUCCESS') {
                 await getMainData(worker_id);
                 await filterWorkers(filter_query);
                 sortWorkersByFIO(sort_type);
@@ -388,6 +480,10 @@ const EmployeeEditForm = {
         }
     },
 
+    // === Сброс формы ===
+    /**
+     * Сбрасывает форму до начального состояния
+     */
     resetForm: function () {
         this.$form.trigger('reset');
         this.$form.find('.is-invalid').removeClass('is-invalid');
@@ -397,6 +493,7 @@ const EmployeeEditForm = {
     }
 };
 
+// === Инициализация модуля ===
 $(document).ready(function () {
     if ($('#editWorkerModal').length) {
         EmployeeEditForm.init();

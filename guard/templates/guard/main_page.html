@@ -79,7 +79,7 @@
                             
                             <div class="col-md-6 mb-3">
                                 <label for="employeeBirthDate" class="form-label">Дата рождения*</label>
-                                <input type="date" class="form-control" id="employeeBirthDate" required>
+                                <input type="date" class="form-control" id="employeeBirthDate" min="1960-01-01" max="2200-12-31" required>
                                 <div class="invalid-feedback" id="birthDateFeedback">
                                     Пожалуйста, укажите корректную дату рождения
                                 </div>
@@ -120,7 +120,8 @@
                                     <label for="employeeOMS" class="form-label">ОМС</label>
                                     <input type="text" class="form-control" id="employeeOMS" 
                                         placeholder="Номер полиса ОМС"
-                                        maxlength="16">
+                                        maxlength="16"
+                                        pattern="\d{16}">
                                     <div class="invalid-feedback" id="omsFeedback"></div>
                                     <div class="length-counter">
                                         <span>Кол-во символов: </span><span id="omsCounter">0</span>/16
@@ -130,7 +131,8 @@
                                     <label for="employeeDMS" class="form-label">ДМС</label>
                                     <input type="text" class="form-control" id="employeeDMS" 
                                         placeholder="Номер полиса ДМС"
-                                        maxlength="16">
+                                        maxlength="16"
+                                        pattern="">
                                     <div class="invalid-feedback" id="dmsFeedback"></div>
                                     <div class="length-counter">
                                         <span>Кол-во символов: </span><span id="dmsCounter">0</span>/16
@@ -227,7 +229,7 @@
                             
                             <div class="col-md-6 mb-3">
                                 <label for="editEmployeeBirthDate" class="form-label">Дата рождения*</label>
-                                <input type="date" class="form-control" id="editEmployeeBirthDate" required>
+                                <input type="date" class="form-control" id="editEmployeeBirthDate" min="1960-01-01" max="2200-12-31" required>
                                 <div class="invalid-feedback" id="editBirthDateFeedback">
                                     Пожалуйста, укажите корректную дату рождения
                                 </div>
@@ -425,7 +427,7 @@
                     <div class="mb-3">
                         <label for="medicalExamType" class="form-label">Тип медосмотра*</label>
                         <select class="form-select" id="medicalExamType" required>
-                            <option value="">Выберите тип</option>
+                            <option value="" selected disabled>Выберите тип медосмотра</option>
                             <option value="periodic">Периодический</option>
                             <option value="preliminary">Предварительный</option>
                             <option value="fluorography">Флюорография</option>
@@ -437,12 +439,12 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="medicalExamDate" class="form-label">Дата прохождения*</label>
-                            <input type="date" class="form-control" id="medicalExamDate" required>
+                            <input type="date" class="form-control" id="medicalExamDate" min="1960-01-01" max="2200-12-31" required>
                             <div class="invalid-feedback">Укажите дату</div>
                         </div>
                         <div class="col-md-6">
                             <label for="medicalExamExpiryDate" class="form-label">Дата окончания*</label>
-                            <input type="date" class="form-control" id="medicalExamExpiryDate" required>
+                            <input type="date" class="form-control" id="medicalExamExpiryDate" min="1960-01-01" max="2200-12-31" required>
                             <div class="invalid-feedback">Укажите дату</div>
                         </div>
                     </div>
@@ -510,9 +512,9 @@
                         <div class="col-md-6">
                             <div class="input-group">
                                 <span class="input-group-text">с</span>
-                                <input type="date" id="medDateFrom" class="form-control" placeholder="Дата с">
+                                <input type="date" id="medDateFrom" class="form-control" min="1960-01-01" max="2200-12-31" placeholder="Дата с">
                                 <span class="input-group-text">по</span>
-                                <input type="date" id="medDateTo" class="form-control" placeholder="Дата по">
+                                <input type="date" id="medDateTo" class="form-control" min="1960-01-01" max="2200-12-31" placeholder="Дата по">
                                 <button id="resetMedDates" class="btn btn-outline-secondary" type="button">
                                     <i class="bi bi-x-circle"></i>
                                 </button>
@@ -572,7 +574,7 @@
                         <div class="mb-3">
                             <label for="editMedicalExamType" class="form-label">Тип медосмотра*</label>
                             <select class="form-select" id="editMedicalExamType" required>
-                                <option value="" disabled>Выберите тип</option>
+                                <option value="" selected disabled>Выберите тип медосмотра</option>
                                 <option value="periodic">Периодический</option>
                                 <option value="preliminary">Предварительный</option>
                                 <option value="fluorography">Флюорография</option>
@@ -584,13 +586,13 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="editMedicalExamDate" class="form-label">Дата прохождения*</label>
-                                <input type="date" class="form-control" id="editMedicalExamDate" required>
+                                <input type="date" class="form-control" id="editMedicalExamDate" min="1960-01-01" max="2200-12-31" required>
                                 <div class="invalid-feedback">Укажите дату</div>
                             </div>
                             
                             <div class="col-md-6">
                                 <label for="editMedicalExamExpiryDate" class="form-label">Дата окончания*</label>
-                                <input type="date" class="form-control" id="editMedicalExamExpiryDate" required>
+                                <input type="date" class="form-control" id="editMedicalExamExpiryDate" min="1960-01-01" max="2200-12-31" required>
                                 <div class="invalid-feedback">Укажите дату</div>
                             </div>
                         </div>
@@ -691,7 +693,7 @@
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="napravEmployeeBirthDate" class="form-label">Дата рождения*</label>
-                                    <input type="date" class="form-control" id="napravEmployeeBirthDate" required>
+                                    <input type="date" class="form-control" id="napravEmployeeBirthDate" min="1960-01-01" max="2200-12-31" required>
                                     <div class="invalid-feedback" id="napravBirthDateFeedback">
                                         Пожалуйста, укажите дату рождения работника
                                     </div>
@@ -768,7 +770,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label for="napravCreationDate" class="form-label">Дата составления направления*</label>
-                                    <input type="date" class="form-control" id="napravCreationDate" name="napravCreationDate" required>
+                                    <input type="date" class="form-control" id="napravCreationDate" min="1960-01-01" max="2200-12-31" name="napravCreationDate" required>
                                     <div class="invalid-feedback" id="napravDirectionDateFeedback">
                                         Пожалуйста, укажите корректную дату составления направления
                                     </div>
@@ -932,7 +934,7 @@
                         <div id="napravPsychiatricExaminationFields" style="display: none;">                                                        
                             <div class="mb-3">
                                 <label for="napravCreationDatePsych" class="form-label">Дата составления направления*</label>
-                                <input type="date" class="form-control" id="napravCreationDatePsych" name="napravCreationDatePsych">
+                                <input type="date" class="form-control" id="napravCreationDatePsych" min="1960-01-01" max="2200-12-31" name="napravCreationDatePsych">
                                 <div class="invalid-feedback" id="napravDirectionDatePsychFeedback">
                                     Пожалуйста, укажите корректную дату составления направления
                                 </div>
@@ -1124,7 +1126,7 @@
 
                              <div class="mb-3">
                                 <label for="napravDirectionDate" class="form-label">Дата выдачи направления работнику</label>
-                                <input type="date" class="form-control" id="napravDirectionDate">
+                                <input type="date" class="form-control" id="napravDirectionDate" min="1960-01-01" max="2200-12-31">
                             </div>
                         </div>
                     </form>
@@ -1172,7 +1174,7 @@
                                 <option value="civil_defense">Гражданская оборона и чрезвычайные ситуации</option>
                                 <option value="anti_terror">Антитеррор</option>
                             </select>
-                            <div class="invalid-feedback">Пожалуйста, выберите программу обучения</div>
+                            <div class="invalid-feedback" id="educationProgramFeedback">Пожалуйста, выберите программу обучения</div>
                         </div>
                         
                         <div class="row mb-3">
@@ -1181,7 +1183,7 @@
                                 <input type="text" class="form-control" id="educationProtocolNum" 
                                     placeholder="Введите номер протокола" 
                                     maxlength="50" required>
-                                <div class="invalid-feedback">Пожалуйста, укажите номер протокола</div>
+                                <div class="invalid-feedback" id="educationProtocolNumFeedback">Пожалуйста, укажите номер протокола</div>
                                 <div class="length-counter">
                                     <span>Кол-во символов: </span><span id="protocolNumCounter">0</span>/50
                                 </div>
@@ -1202,19 +1204,19 @@
                         <div class="mb-3">
                             <label for="educationHours" class="form-label">Кол-во часов*</label>
                             <input type="number" class="form-control" id="educationHours" placeholder="Введите количество часов" min="1" max="1000" required>
-                            <div class="invalid-feedback">Пожалуйста, укажите корректное количество часов (1-1000)</div>
+                            <div class="invalid-feedback" id="educationHourseFeedBack">Пожалуйста, укажите корректное количество часов (1-1000)</div>
                         </div>
                         
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="educationDateFrom" class="form-label">Дата начала обучения*</label>
-                                <input type="date" class="form-control" id="educationDateFrom" required>
+                                <input type="date" class="form-control" id="educationDateFrom" min="1960-01-01" max="2200-12-31" required>
                                 <div class="invalid-feedback">Пожалуйста, укажите дату начала обучения</div>
                             </div>
                             
                             <div class="col-md-6">
                                 <label for="educationDateTo" class="form-label">Дата окончания обучения*</label>
-                                <input type="date" class="form-control" id="educationDateTo" required>
+                                <input type="date" class="form-control" id="educationDateTo" min="1960-01-01" max="2200-12-31" required>
                                 <div class="invalid-feedback">Пожалуйста, укажите дату окончания обучения</div>
                             </div>
                         </div>
@@ -1330,13 +1332,13 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="editEducationDateFrom" class="form-label">Дата начала обучения*</label>
-                                <input type="date" class="form-control" id="editEducationDateFrom" required>
+                                <input type="date" class="form-control" id="editEducationDateFrom" min="1960-01-01" max="2200-12-31" required>
                                 <div class="invalid-feedback">Пожалуйста, укажите дату начала обучения</div>
                             </div>
                             
                             <div class="col-md-6">
                                 <label for="editEducationDateTo" class="form-label">Дата окончания обучения*</label>
-                                <input type="date" class="form-control" id="editEducationDateTo" required>
+                                <input type="date" class="form-control" id="editEducationDateTo" min="1960-01-01" max="2200-12-31" required>
                                 <div class="invalid-feedback">Пожалуйста, укажите дату окончания обучения</div>
                             </div>
                         </div>
@@ -1406,9 +1408,9 @@
                         <div class="col-md-6">
                             <div class="input-group">
                                 <span class="input-group-text">с</span>
-                                <input type="date" id="eduDateFrom" class="form-control" placeholder="Дата с">
+                                <input type="date" id="eduDateFrom" class="form-control" min="1960-01-01" max="2200-12-31" placeholder="Дата с">
                                 <span class="input-group-text">по</span>
-                                <input type="date" id="eduDateTo" class="form-control" placeholder="Дата по">
+                                <input type="date" id="eduDateTo" class="form-control" min="1960-01-01" max="2200-12-31" placeholder="Дата по">
                                 <button id="resetEduDates" class="btn btn-outline-secondary" type="button">
                                     <i class="bi bi-x-circle"></i>
                                 </button>

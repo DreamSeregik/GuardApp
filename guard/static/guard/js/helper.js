@@ -1,20 +1,56 @@
-const SERVER = 'https://guardapp.onrender.com'
-const PERSONAL_DATA = `${SERVER}/worker/personal/`
-const PERSONAL_DATA_UPDATE = `${SERVER}/worker/personal/update/`
-const WORKER_DELETE = `${SERVER}/worker/delete/`
-const WORKER_SEARCH = `${SERVER}/worker/search/`
-const FIO = `${SERVER}/worker/personal/FIO/`
-const FILTER = `${SERVER}/worker/filter`
-const MED_DATA = `${SERVER}/worker/med/`
-const EDUCATION_DATA = `${SERVER}/worker/education/`
-const MED = `${SERVER}/med/`
-const EDU = `${SERVER}/education/`
-const MED_UPDATE = `${SERVER}/med/update/`
-const MED_DELETE = `${SERVER}/med/delete/`
-const EDU_UPDATE = `${SERVER}/education/update/`
-const EDU_DELETE = `${SERVER}/education/delete/`
-const NAPRAV = `${SERVER}/generate-naprav/`
+/**
+ * Вспомогательные функции для взаимодействия с сервером и управления уведомлениями
+ * @file helper.js
+ */
 
+/**
+ * @section Конфигурация сервера
+ * Базовый URL сервера
+ */
+const SERVER = 'https://guardapp.onrender.com';
+
+/**
+ * @section Конечные точки API
+ * URL-адреса для различных операций с данными
+ */
+const API_ENDPOINTS = {
+  // Работа с данными сотрудников
+  PERSONAL_DATA: `${SERVER}/worker/personal/`,
+  PERSONAL_DATA_UPDATE: `${SERVER}/worker/personal/update/`,
+  WORKER_ADD: `${SERVER}/worker/add/`,
+  WORKER_DELETE: `${SERVER}/worker/delete/`,
+  WORKER_SEARCH: `${SERVER}/worker/search/`,
+  FIO: `${SERVER}/worker/personal/FIO/`,
+  FILTER: `${SERVER}/worker/filter`,
+
+  // Работа с медицинскими осмотрами
+  MED_DATA: `${SERVER}/worker/med/`,
+  MED_ADD: `${SERVER}/worker/med/add/`,
+  MED: `${SERVER}/med/`,
+  MED_UPDATE: `${SERVER}/med/update/`,
+  MED_DELETE: `${SERVER}/med/delete/`,
+
+  // Работа с обучением
+  EDUCATION_DATA: `${SERVER}/worker/education/`,
+  EDU: `${SERVER}/education/`,
+  EDU_ADD: `${SERVER}/worker/education/add`,
+  EDU_UPDATE: `${SERVER}/education/update/`,
+  EDU_DELETE: `${SERVER}/education/delete/`,
+
+  // Генерация направления
+  NAPRAV: `${SERVER}/generate-naprav/`,
+};
+
+/**
+ * @section Уведомления
+ * Функции для отображения и получения уведомлений
+ */
+
+/**
+ * Отображает уведомление с помощью SweetAlert2
+ * @param {string} message - Сообщение для отображения
+ * @param {'success' | 'error'} [type='error'] - Тип уведомления
+ */
 function showNotification(message, type = 'error') {
   Swal.fire({
     text: message,
@@ -30,16 +66,20 @@ function showNotification(message, type = 'error') {
     customClass: {
       popup: 'swal2-toast',
       title: 'swal2-title',
-      content: 'swal2-content'
-    }
+      content: 'swal2-content',
+    },
   });
 }
 
+/**
+ * Загружает уведомления с сервера и обновляет меню уведомлений
+ * @returns {Promise<void>}
+ */
 async function fetchNotifications() {
   const $notificationMenu = $('#notificationMenu');
   const $notificationCount = $('#notificationCount');
 
-  // Добавляем индикатор загрузки
+  // Показываем индикатор загрузки
   $notificationMenu.html(`
     <li class="dropdown-item text-center">
       <div class="d-flex justify-content-center align-items-center">
@@ -56,7 +96,7 @@ async function fetchNotifications() {
     if (status === 'SUCCESS') {
       $notificationMenu.empty();
       if (count > 0) {
-        notifications.forEach(function (notification) {
+        notifications.forEach((notification) => {
           $notificationMenu.append(
             `<a class="dropdown-item" href="#">${notification.message}</a>`
           );
@@ -78,9 +118,20 @@ async function fetchNotifications() {
   }
 }
 
+/**
+ * @section HTTP-запросы
+ * Функции для отправки запросов к серверу
+ */
+
+/**
+ * Отправляет GET-запрос к серверу
+ * @param {string} url - URL для запроса
+ * @returns {Promise<object>} Данные ответа
+ * @throws {Error} Если запрос не удался
+ */
 async function sendGetRequest(url) {
   if (!url) {
-    return Promise.reject(new Error('URL не должен быть пустым'));
+    throw new Error('URL не должен быть пустым');
   }
 
   try {
@@ -99,34 +150,39 @@ async function sendGetRequest(url) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      return Promise.reject(showNotification(`HTTP ошибка! Статус: ${response.status}`, { cause: errorData }));
+      throw new Error(`HTTP ошибка! Статус: ${response.status}`, { cause: errorData });
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     if (error.name === 'AbortError') {
-      return Promise.reject(showNotification('Превышено время ожидания запроса'));
+      showNotification('Превышено время ожидания запроса');
+      throw error;
     }
-    return Promise.reject(error);
+    throw error;
   }
 }
 
-
+/**
+ * Отправляет POST-запрос к серверу
+ * @param {string} url - URL для запроса
+ * @param {object} formData - Данные для отправки
+ * @returns {Promise<object|null>} Данные ответа или null при ошибке
+ */
 async function sendPostRequest(url, formData) {
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRFToken': Cookies.get('csrftoken')
+        'X-CSRFToken': Cookies.get('csrftoken'),
       },
       body: JSON.stringify(formData),
     });
 
     const contentType = response.headers.get('Content-Type') || '';
 
-    // Если это файл, скачиваем его
+    // Обработка файла
     if (contentType.includes('application/vnd.openxmlformats-officedocument')) {
       const contentDisposition = response.headers.get('Content-Disposition');
       const filename = contentDisposition
@@ -145,17 +201,15 @@ async function sendPostRequest(url, formData) {
 
       window.URL.revokeObjectURL(url);
 
-      return { 'status': "SUCCESS" }
+      return { status: 'SUCCESS' };
     }
-    // Если это JSON, обрабатываем как обычно
+    // Обработка JSON
     else if (contentType.includes('application/json')) {
       const data = await response.json();
-
       if (response.ok) {
         return data;
-      } else {
-        throw new Error(data.message || 'Ошибка при выполнении запроса');
       }
+      throw new Error(data.message || 'Ошибка при выполнении запроса');
     }
     // Неизвестный тип ответа
     else {
@@ -169,19 +223,23 @@ async function sendPostRequest(url, formData) {
   }
 }
 
-
+/**
+ * Отправляет PATCH-запрос к серверу
+ * @param {string} url - URL для запроса
+ * @param {object} data - Данные для отправки
+ * @returns {Promise<object>} Данные ответа
+ * @throws {Error} Если запрос не удался
+ */
 async function sendPatchRequest(url, data) {
+  if (!url) {
+    throw new Error('Неверный URL: должен быть непустой строкой');
+  }
+
+  if (!data || typeof data !== 'object') {
+    throw new Error('Данные должны быть непустым объектом');
+  }
+
   try {
-    // Проверка URL (теперь с выбросом ошибки)
-    if (!url) {
-      throw new Error('Неверный URL: должен быть непустой строкой');
-    }
-
-    // Проверка данных (теперь с выбросом ошибки)
-    if (!data || typeof data !== 'object') {
-      throw new Error('Данные должны быть непустым объектом');
-    }
-
     const response = await fetch(url, {
       method: 'PATCH',
       headers: {
@@ -192,21 +250,16 @@ async function sendPatchRequest(url, data) {
       credentials: 'include',
     });
 
-    // Клонируем ответ перед чтением
-    const responseClone = response.clone();
-
     if (!response.ok) {
-      const errorData = await responseClone.json().catch(() => ({}));
+      const errorData = await response.json().catch(() => ({}));
       throw new Error(
         `Ошибка сервера: ${response.status} ${response.statusText}. ${JSON.stringify(errorData)}`
       );
     }
 
-    const responseData = await responseClone.json();
-    return responseData;
+    return await response.json();
   } catch (error) {
-    console.error('Ошибка при отправке POST-запроса:', error);
-    throw error; // Пробрасываем ошибку для обработки вызывающим кодом
+    console.error('Ошибка при отправке PATCH-запроса:', error);
+    throw error;
   }
 }
-

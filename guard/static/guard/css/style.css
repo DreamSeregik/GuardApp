@@ -1,21 +1,24 @@
-body
-{
+/* ==================== */
+/* Базовые стили */
+/* ==================== */
+body {
     margin: 0;
     padding: 0;
     font-weight: normal;
 }
 
-.err-container
-{
-    position: absolute;
-    left: 0;
-    top: 0;
-    background: rgba(255, 0, 0, 0.8);
-    color: white;
-    text-align: center;
-    font-size: 18pt;
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100vw;
+    overflow: auto;
 }
 
+/* ==================== */
+/* Стили ссылок и файлов */
+/* ==================== */
 .file-link {
     display: inline-flex;
     align-items: center;
@@ -25,47 +28,31 @@ body
     margin-right: 10px;
 }
 
-/* Стили для таблицы файлов */
-#editMedicalFileList {
-    table-layout: fixed; /* Фиксированная ширина столбцов */
-    width: 100%;
-    border-collapse: collapse; /* Убираем лишние отступы между ячейками */
+.file-link:hover {
+    text-decoration: underline;
 }
 
-/* Столбец с именем файла */
-#editMedicalFileList .file-name-cell {
-    max-width: 200px; /* Ограничиваем ширину столбца */
-    overflow: hidden; /* Скрываем переполнение */
-    text-overflow: ellipsis; /* Добавляем многоточие для длинного текста */
-    white-space: nowrap; /* Запрещаем перенос текста */
-    padding: 8px; /* Отступы для читаемости */
+.file-link i {
+    font-size: 1.2em;
 }
 
-/* Столбец с размером файла */
-#editMedicalFileList td:nth-child(2) {
-    width: 100px; /* Фиксированная ширина для размера */
-    padding: 8px;
+.file-list {
+    height: 150px;
+    width: 250px;
+    overflow-y: auto;
 }
 
-/* Столбец с кнопкой удаления */
-#editMedicalFileList td.text-end {
-    width: 80px; /* Фиксированная ширина для кнопки */
-    padding: 8px;
-    text-align: right;
-}
-
-/* Выравнивание содержимого по вертикали */
-#editMedicalFileList td {
-    vertical-align: middle;
-}
-
-
-
+/* ==================== */
+/* Стили таблиц (общие) */
+/* ==================== */
+#editMedicalFileList,
 #medicalFileList {
     table-layout: fixed;
     width: 100%;
     border-collapse: collapse;
 }
+
+#editMedicalFileList .file-name-cell,
 #medicalFileList .file-name-cell {
     max-width: 200px;
     overflow: hidden;
@@ -73,34 +60,43 @@ body
     white-space: nowrap;
     padding: 8px;
 }
+
+#editMedicalFileList td:nth-child(2),
 #medicalFileList td:nth-child(2) {
     width: 100px;
     padding: 8px;
 }
+
+#editMedicalFileList td.text-end,
 #medicalFileList td.text-end {
     width: 80px;
     padding: 8px;
     text-align: right;
 }
 
-/* Стили для столбцов файлов в таблицах allMedicalExamsTable и allEducationsTable */
-#allMedicalExamsTable td:last-child,
-#allEducationsTable td:last-child {
-    max-width: 250px; /* Ограничиваем ширину столбца */
-    padding: 8px; /* Отступы для читаемости */
-    vertical-align: middle; /* Выравнивание по вертикали */
-    word-wrap: break-word; /* Разрешаем перенос слов */
+#editMedicalFileList td,
+#medicalFileList td {
+    vertical-align: middle;
 }
 
-/* Контейнер для списка файлов */
+/* ==================== */
+/* Стили таблиц медосмотров и обучений */
+/* ==================== */
+#allMedicalExamsTable td:last-child,
+#allEducationsTable td:last-child {
+    max-width: 250px;
+    padding: 8px;
+    vertical-align: middle;
+    word-wrap: break-word;
+}
+
 #allMedicalExamsTable .file-list,
 #allEducationsTable .file-list {
     display: flex;
-    flex-direction: column; /* Вертикальное расположение файлов */
-    gap: 5px; /* Отступ между ссылками */
+    flex-direction: column;
+    gap: 5px;
 }
 
-/* Стили для ссылок на файлы */
 #allMedicalExamsTable .file-link,
 #allEducationsTable .file-link {
     display: inline-flex;
@@ -108,7 +104,7 @@ body
     gap: 5px;
     color: #007bff;
     text-decoration: none;
-    margin: 0; /* Убираем margin-right, так как файлы в столбце */
+    margin: 0;
 }
 
 #allMedicalExamsTable .file-link:hover,
@@ -123,76 +119,33 @@ body
 
 #allMedicalExamsTable td:last-child .file-list,
 #allEducationsTable td:last-child .file-list {
-    max-height: 100px; /* Ограничение высоты */
-    overflow-y: auto; /* Прокрутка при переполнении */
+    max-height: 100px;
+    overflow-y: auto;
 }
 
-
-#medicalFileList td {
-    vertical-align: middle;
-}
-#medicalFileList thead th {
-    padding: 8px;
-    font-weight: 500;
-}
-
-.file-link:hover {
-    text-decoration: underline;
-}
-.file-link i {
-    font-size: 1.2em;
-}
-
-.right-menue
-{
-    vertical-align: top;
-    background: rgb(238,238,238);
-    max-height: 100vh;
-    min-height: 100vh;
-}
-
-.control
-{
-  text-align: left;
-}
-
-/* Стили для сортируемых заголовков */
+/* ==================== */
+/* Стили сортировки */
+/* ==================== */
 .sortable {
     cursor: pointer;
     position: relative;
     user-select: none;
 }
 
-#info-tbl-education td:nth-child(3), /* № протокола */
-#info-tbl-education td:nth-child(4) { /* № удостоверения */
-    word-wrap: break-word;
-    white-space: normal;
-    max-width: 150px; /* или другое подходящее значение */
-    overflow-wrap: break-word;
-}
-
-.file-list{
-    height: 150px;
-    width: 250px;
-    overflow-y: auto;
-}
-
-/* Стили для сортируемых заголовков в таблицах медосмотров и обучений */
-#info-tbl-med th.sortable-med, 
+#info-tbl-med th.sortable-med,
 #info-tbl-education th.sortable-edu {
     cursor: pointer;
     position: relative;
     user-select: none;
-    padding-right: 20px; /* Место для стрелки */
+    padding-right: 20px;
 }
 
-#info-tbl-med th.sortable-med:hover, 
+#info-tbl-med th.sortable-med:hover,
 #info-tbl-education th.sortable-edu:hover {
     background-color: #e9ecef;
 }
 
-/* Стрелки для индикации сортировки */
-#info-tbl-med th.sorted-asc::after, 
+#info-tbl-med th.sorted-asc::after,
 #info-tbl-education th.sorted-asc::after {
     content: '↑';
     position: absolute;
@@ -201,7 +154,7 @@ body
     font-weight: bold;
 }
 
-#info-tbl-med th.sorted-desc::after, 
+#info-tbl-med th.sorted-desc::after,
 #info-tbl-education th.sorted-desc::after {
     content: '↓';
     position: absolute;
@@ -210,8 +163,11 @@ body
     font-weight: bold;
 }
 
-
-#allMedSearch, #allEduSearch {
+/* ==================== */
+/* Стили поиска */
+/* ==================== */
+#allMedSearch,
+#allEduSearch {
     font-size: 16pt;
     padding: 8px;
     width: 100%;
@@ -221,132 +177,91 @@ body
     outline: none;
 }
 
-#allMedSearch:focus, #allEduSearch:focus {
+#allMedSearch:focus,
+#allEduSearch:focus {
     border-color: #007bff;
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
-#allMedSearch::placeholder, #allEduSearch::placeholder {
+#allMedSearch::placeholder,
+#allEduSearch::placeholder {
     color: #6c757d;
     font-size: 14pt;
 }
 
-
-/* Responsive adjustments */
-@media (max-width: 767px) {
-    #allMedSearch, #allEduSearch {
-        font-size: 1.3rem;
-        max-width: 100%;
-    }
+/* ==================== */
+/* Стили интерфейса */
+/* ==================== */
+.right-menue {
+    vertical-align: top;
+    background: rgb(238,238,238);
+    max-height: 100vh;
+    min-height: 100vh;
 }
 
-/* Классы для числовых и датовых колонок */
-.numeric, .date {
-    text-align: center;
+.control {
+    text-align: left;
 }
 
-.sortable:hover {
-    background-color: #e9ecef;
-}
-
-.toggle-filters:hover{
-    cursor: pointer;
-}
-
-/* Стрелки для индикации сортировки */
-.sortable.asc::after {
-    content: '↑';
-    position: absolute;
-    right: 8px;
-    color: #007bff;
-    font-weight: bold;
-}
-
-.sortable.desc::after {
-    content: '↓';
-    position: absolute;
-    right: 8px;
-    color: #007bff;
-    font-weight: bold;
-}
-
-.sortable.none::after {
-    content: '↕'; /* Двойная стрелка для начального состояния */
-    position: absolute;
-    right: 8px;
-    color: #6c757d; /* Серый цвет для нейтрального состояния */
-    font-weight: normal;
-}
-
-.control img
-{
+.control img {
     position: relative;
     left: 5px;
 }
 
-.control span
-{
+.control span {
     margin: 2px;
 }
 
-.worker
-{
+.worker {
     display: flex;
     align-items: center;
-    width: 100%;  
+    width: 100%;
     color: #000;
-    border: none; 
+    border: none;
     padding-left: 10px;
     font-size: 16pt;
-    border-bottom: 1px solid black; 
-    height: 45px; 
+    border-bottom: 1px solid black;
+    height: 45px;
     cursor: pointer;
 }
 
-.selected-item
-{
+.selected-item {
     background: #f00;
-    color: #fff;    
+    color: #fff;
 }
 
 tr.selected-row td {
     background-color: #f00;
-    color: #fff; /* Если нужно изменить цвет текста */
+    color: #fff;
 }
 
-.worker-wrapper
-{
+.worker-wrapper {
     border-top: 1px solid #666;
     overflow-y: auto;
     height: 100%;
     max-height: 100%;
 }
 
-.info
-{
+.info {
     position: relative;
     text-align: right;
     border-bottom: 1px solid black;
     background: white;
 }
 
-.info span
-{
-   margin-right: 10px;
+.info span {
+    margin-right: 10px;
 }
 
-.info img
-{
+.info img {
     margin: 1px;
 }
 
-.settings
-{
+.settings {
     cursor: pointer;
 }
 
-.user-name
-{
+.user-name {
     font-size: 15pt;
 }
 
@@ -354,24 +269,21 @@ tr.selected-row td {
     color:#000 !important;
 }
 
-.worker-info
-{
+.worker-info {
     border-bottom: 1px solid black;
     height: 67px;
     min-height: 67px;
     padding: 15px 0 0 15px;
     font-size: 20pt;
-    background: white;        
+    background: white;
     overflow-y: auto;
 }
 
-.worker-info span img
-{
+.worker-info span img {
     vertical-align: middle;
 }
 
-.tabs
-{
+.tabs {
     height: 50px;
     border-bottom: 1px solid black;
     padding-left: 13px;
@@ -379,39 +291,37 @@ tr.selected-row td {
     background: white;
 }
 
-.tabs button
-{
+.tabs button {
     color: rgb(97,97,97);
 }
 
-.nav-btns:hover
-{
-    color: red   
-}
-.nav-btns[aria-selected="true"] 
-{
-    color: red
+.nav-btns:hover {
+    color: red;
 }
 
-.left-menue-div
-{
+.nav-btns[aria-selected="true"] {
+    color: red;
+}
+
+.left-menue-div {
     font-size: 15pt;
 }
 
-.tabs span:hover, .left-menue-div:hover
-{
+.tabs span:hover,
+.left-menue-div:hover {
     cursor: pointer;
     color: red;
 }
 
-.sotrud:hover
-{
+.sotrud:hover {
     cursor: auto;
     color: #000;
 }
 
-.info-tbl
-{
+/* ==================== */
+/* Стили таблиц информации */
+/* ==================== */
+.info-tbl {
     background: white;
     width: 40vw;
     min-width: 40vw;
@@ -452,7 +362,14 @@ tr.selected-row td {
     margin: 0 3px 0 0;
 }
 
-/* Стили для модального окна всех обучений */
+.info-tbl th
+{
+    text-align: left;   
+}
+
+/* ==================== */
+/* Стили модальных окон */
+/* ==================== */
 #allEduModal .modal-dialog {
     max-width: 95vw;
     width: auto;
@@ -478,28 +395,15 @@ tr.selected-row td {
     right: 5px;
 }
 
-/* Стили для столбцов № протокола и № удостоверения */
-#allEducationsTable td:nth-child(4), 
-#allEducationsTable td:nth-child(5) { 
-    max-width: 150px; 
-    overflow-x: auto; 
-    white-space: normal; 
-    word-wrap: break-word; 
-    padding: 8px; 
+#allEducationsTable td:nth-child(4),
+#allEducationsTable td:nth-child(5) {
+    max-width: 150px;
+    overflow-x: auto;
+    white-space: normal;
+    word-wrap: break-word;
+    padding: 8px;
 }
 
-/* Улучшение отображения на мобильных устройствах */
-@media (max-width: 992px) {
-    #allEduModal .modal-dialog {
-        margin: 0.5rem auto;
-    }
-    
-    #allEducationsTable {
-        font-size: 0.9rem;
-    }
-}
-
-/* Стили для таблицы медосмотров */
 #allMedicalExamsTable {
     width: 100%;
     table-layout: auto;
@@ -519,42 +423,11 @@ tr.selected-row td {
     word-break: break-word;
 }
 
-/* Адаптивные стили для мобильных устройств */
-@media (max-width: 768px) {
-    #allMedModal .modal-dialog {
-        margin: 0.5rem auto;
-        max-width: 98vw;
-    }
-    
-    #allMedicalExamsTable {
-        font-size: 0.85rem;
-    }
-    
-    #allMedicalExamsTable th, 
-    #allMedicalExamsTable td {
-        padding: 6px 8px;
-    }
-    
-    #allMedicalExamsTable .sortable::after {
-        right: 3px;
-        font-size: 0.8em;
-    }
-    
-    #allMedicalExamsTable .file-link {
-        display: block;
-        margin-bottom: 4px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 150px;
-    }
-}
-
-
-
-/* Обновленные стили для dropdown уведомлений */
+/* ==================== */
+/* Стили уведомлений */
+/* ==================== */
 #notificationDropdown + .dropdown-menu {
-    z-index: 1051; /* Больше чем z-index модальных окон Bootstrap (1050) */
+    z-index: 1051;
     max-height: 70vh;
     overflow-y: auto;
     width: 350px;
@@ -569,7 +442,6 @@ tr.selected-row td {
     border-bottom: 1px solid #dee2e6;
 }
 
-/* Стили для скроллбара */
 #notificationMenu::-webkit-scrollbar {
     width: 8px;
 }
@@ -587,69 +459,33 @@ tr.selected-row td {
     background: #555;
 }
 
-/* Адаптивные стили */
-@media (max-width: 768px) {
-    #notificationDropdown + .dropdown-menu {
-        width: 280px;
-        max-height: 50vh;
-    }
-}
-
-/* Для очень маленьких экранов */
-@media (max-width: 576px) {
-    #allMedicalExamsTable {
-        font-size: 0.8rem;
-    }
-    
-    #allMedicalExamsTable th, 
-    #allMedicalExamsTable td {
-        padding: 4px 6px;
-    }
-    
-    #allMedSearch {
-        font-size: 0.9rem;
-        padding: 6px;
-    }
-}
-
-.info-tbl th
-{
-    text-align: left;   
-}
-
-.search>input
-{
+/* ==================== */
+/* Стили поиска и фильтров */
+/* ==================== */
+.search>input {
     font-size: 16pt;
     outline: none;
 }
 
-.age-inp
-{
+.age-inp {
     width: 50px;
 }
 
-.filters
-{
+.filters {
     font-size: 16pt;
 }
-fieldset>input[type="radio"]
-{
+
+fieldset>input[type="radio"] {
     transform: scale(1.5);
 }
 
-.form-check>img:hover
-{
+.form-check>img:hover {
     cursor: pointer;
 }
 
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh; 
-    width: 100vw; 
-    overflow:auto
-}
+/* ==================== */
+/* Стили формы входа */
+/* ==================== */
 .login-container {
     max-width: 350px;
     min-width: 280px;
@@ -660,6 +496,7 @@ fieldset>input[type="radio"]
     border-radius: 5px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
+
 .login-header {
     font-size: 1.2rem;
     font-weight: bold;
@@ -671,137 +508,66 @@ fieldset>input[type="radio"]
     border-radius: 5px 5px 0 0;
     width: 100%;
 }
+
 .form-content {
-    padding: 20px; 
+    padding: 20px;
 }
 
-.left-menue-div, .left-menue-control-div
-{
+.left-menue-div,
+.left-menue-control-div {
     padding-left: 10px;
 }
-.left-menue-control-div span, .info-tbl th>span
-{
+
+.left-menue-control-div span,
+.info-tbl th>span {
     cursor: pointer;
 }
+
 fieldset {
-    margin-bottom: 1px !important;   
-    padding:1px !important;
+    margin-bottom: 1px !important;
+    padding: 1px !important;
 }
 
 legend {
     padding: 1px 10px !important;
-    float:none;
-    width:auto;
+    float: none;
+    width: auto;
 }
 
-/* Стили для индикатора загрузки уведомлений */
+/* ==================== */
+/* Стили индикаторов загрузки */
+/* ==================== */
 #notificationMenu .dropdown-item .spinner-border {
-  width: 1rem;
-  height: 1rem;
-  border-width: 0.15em;
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.15em;
 }
 
 #notificationMenu .dropdown-item {
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #notificationMenu .spinner-border {
-  animation: spin 0.75s linear infinite;
+    animation: spin 0.75s linear infinite;
 }
 
-/* Стили для спиннера в форме добавления медосмотра */
-#submitSpinner, #editSubmitSpinner, #delSubmitSpinner, #submitMedicalSpinner, #submitPasswordSpinner{
+#submitSpinner,
+#editSubmitSpinner,
+#delSubmitSpinner,
+#submitMedicalSpinner,
+#submitPasswordSpinner {
     margin-left: 10px;
 }
 
-/* Стили для индикатора загрузки в форме редактирования сотрудника */
-#editWorkerLoadingSpinner {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-
-#editWorkerLoadingSpinner .spinner-border {
-    width: 3rem;
-    height: 3rem;
-}
-
-/* Стили для индикатора загрузки в форме редактирования медосмотра */
-#editMedLoadingSpinner {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-
-#editMedLoadingSpinner .spinner-border {
-    width: 3rem;
-    height: 3rem;
-}
-
-/* Стили для индикатора загрузки в форме редактирования обучения */
-#editEducationLoadingSpinner {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-
-#editEducationLoadingSpinner .spinner-border {
-    width: 3rem;
-    height: 3rem;
-}
-
-/* Стили для индикатора загрузки в форме направления на медосмотр */
-#napravLoadingSpinner {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-
-#napravLoadingSpinner .spinner-border {
-    width: 3rem;
-    height: 3rem;
-}
-
-/* Стили для индикатора загрузки в форме всех медосмотров */
-#allMedLoadingSpinner {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-
-#allMedLoadingSpinner .spinner-border {
-    width: 3rem;
-    height: 3rem;
-}
-
-/* Стили для индикатора загрузки в форме всех обучений */
-#allEduLoadingSpinner {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-
-#allEduLoadingSpinner .spinner-border {
-    width: 3rem;
-    height: 3rem;
-}
-
-/* Стили для индикатора загрузки в форме удаления сотрудника */
+#editWorkerLoadingSpinner,
+#editMedLoadingSpinner,
+#editEducationLoadingSpinner,
+#napravLoadingSpinner,
+#allMedLoadingSpinner,
+#allEduLoadingSpinner,
 #delWorkerLoadingSpinner {
     padding: 20px;
     display: flex;
@@ -810,90 +576,175 @@ legend {
     gap: 10px;
 }
 
+#editWorkerLoadingSpinner .spinner-border,
+#editMedLoadingSpinner .spinner-border,
+#editEducationLoadingSpinner .spinner-border,
+#napravLoadingSpinner .spinner-border,
+#allMedLoadingSpinner .spinner-border,
+#allEduLoadingSpinner .spinner-border,
 #delWorkerLoadingSpinner .spinner-border {
     width: 3rem;
     height: 3rem;
 }
 
-/* Анимация для спиннера */
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
-
+/* ==================== */
+/* Адаптивные стили */
+/* ==================== */
 @media (max-width: 767px) {
     fieldset {
-        max-height: 200px; 
-        overflow-y: auto; 
+        max-height: 200px;
+        overflow-y: auto;
         padding: 10px !important;
     }
 
     .toggle-filters {
-        font-size: 1.2rem; 
+        font-size: 1.2rem;
     }
 
     .filters {
-        font-size: 1.1rem; 
+        font-size: 1.1rem;
     }
 
-
     .tabs {
-        flex-wrap: nowrap; 
-        overflow-x: auto; 
+        flex-wrap: nowrap;
+        overflow-x: auto;
         white-space: nowrap;
-        -webkit-overflow-scrolling: touch; 
-        display: flex; 
-        align-items: center; 
+        -webkit-overflow-scrolling: touch;
+        display: flex;
+        align-items: center;
     }
 
     .nav-btns {
-        display: inline-block; 
-        margin-right: 10px; 
-        white-space: nowrap; 
-        font-size: 1.2rem; 
+        display: inline-block;
+        margin-right: 10px;
+        white-space: nowrap;
+        font-size: 1.2rem;
         padding: 8px 12px;
-        height: 40px; 
-        line-height: 40px; 
-        vertical-align: middle; 
+        height: 40px;
+        line-height: 40px;
+        vertical-align: middle;
     }
 
     .nav-btns:last-child {
-        margin-right: 0; 
+        margin-right: 0;
     }
 
     .tab-content {
         flex-grow: 1;
-        overflow-y: auto; 
-        max-height: calc(100vh - 200px); 
+        overflow-y: auto;
+        max-height: calc(100vh - 200px);
     }
 
     .info-tbl {
-        min-width: 100%; 
+        min-width: 100%;
         max-width: 100%;
-        margin: 10px 0; 
+        margin: 10px 0;
     }
 
-    .info-tbl th, .info-tbl td {
-        font-size: 1.1rem; 
-        padding: 4px 6px; 
+    .info-tbl th,
+    .info-tbl td {
+        font-size: 1.1rem;
+        padding: 4px 6px;
     }
 
     .worker {
-        font-size: 1.3rem; 
+        font-size: 1.3rem;
         padding-left: 8px;
     }
 
     .worker-info {
-        font-size: 1.4rem; 
-        padding: 8px 0 0 8px; 
+        font-size: 1.4rem;
+        padding: 8px 0 0 8px;
     }
 
     .left-menue-div {
-        font-size: 1.3rem; 
+        font-size: 1.3rem;
     }
 
     .search>input {
-        font-size: 1.3rem; 
+        font-size: 1.3rem;
     }
+}
+
+@media (max-width: 768px) {
+    #allMedModal .modal-dialog {
+        margin: 0.5rem auto;
+        max-width: 98vw;
+    }
+
+    #allMedicalExamsTable {
+        font-size: 0.85rem;
+    }
+
+    #allMedicalExamsTable th,
+    #allMedicalExamsTable td {
+        padding: 6px 8px;
+    }
+
+    #allMedicalExamsTable .sortable::after {
+        right: 3px;
+        font-size: 0.8em;
+    }
+
+    #allMedicalExamsTable .file-link {
+        display: block;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
+
+    #notificationDropdown + .dropdown-menu {
+        width: 280px;
+        max-height: 50vh;
+    }
+}
+
+@media (max-width: 992px) {
+    #allEduModal .modal-dialog {
+        margin: 0.5rem auto;
+    }
+
+    #allEducationsTable {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    #allMedicalExamsTable {
+        font-size: 0.8rem;
+    }
+
+    #allMedicalExamsTable th,
+    #allMedicalExamsTable td {
+        padding: 4px 6px;
+    }
+
+    #allMedSearch {
+        font-size: 0.9rem;
+        padding: 6px;
+    }
+}
+
+@media (max-width: 767px) {
+    .info-tbl {
+        -webkit-overflow-scrolling: touch; 
+        overflow-x: auto;
+        display: block;
+        width: 100%;
+    }
+}
+
+/* ==================== */
+/* Числовые и датовые колонки */
+/* ==================== */
+.numeric,
+.date {
+    text-align: center;
 }

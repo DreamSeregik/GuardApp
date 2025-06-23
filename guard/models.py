@@ -69,14 +69,14 @@ class Education(models.Model):
                               on_delete=models.CASCADE, 
                               related_name='educations', 
                               verbose_name="Сотрудник")
-    programm = models.CharField(
+    program = models.CharField(
         max_length=50,
         choices=PROGRAM_CHOICES,
         verbose_name="Программа обучения"
     )
     protocol_num = models.CharField(max_length=255, verbose_name="Номер протокола")
     udostoverenie_num = models.CharField(max_length=255, verbose_name="Номер удостоверения")
-    hours = models.IntegerField(verbose_name="Количество часов")
+    hours = models.FloatField(verbose_name="Количество часов")
     date_from = models.DateField(verbose_name="Дата начала")
     date_to = models.DateField(verbose_name="Дата окончания")
 
@@ -88,7 +88,7 @@ class Education(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.get_programm_display()} ({self.owner.FIO})"
+        return f"{self.get_program_display()} ({self.owner.FIO})"
 
 class Med(models.Model):
     TYPE_CHOICHES = [

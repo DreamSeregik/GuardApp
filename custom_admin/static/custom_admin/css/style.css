@@ -1,9 +1,52 @@
+/* ==================== */
+/* Базовые стили */
+/* ==================== */
 body {
     margin: 0;
     padding: 0;
     font-weight: normal;
 }
 
+/* ==================== */
+/* Контейнеры и макеты */
+/* ==================== */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100vw;
+    overflow: auto;
+}
+
+.right-menue {
+    vertical-align: top;
+    background: rgb(238,238,238);
+    max-height: 100vh;
+    min-height: 100vh;
+}
+
+.worker-wrapper {
+    border-top: 1px solid #666;
+    overflow-y: auto;
+    height: 100%;
+    max-height: 100%;
+}
+
+.login-container {
+    max-width: 350px;
+    min-width: 280px;
+    width: 350px;
+    padding: 0px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ==================== */
+/* Элементы интерфейса */
+/* ==================== */
 .toggle-filters:hover {
     cursor: pointer;
 }
@@ -14,6 +57,155 @@ body {
 
 .required-field::after {
     content: " *";
+}
+
+.dropdown-toggle::after {
+    color: #000 !important;
+}
+
+.settings {
+    cursor: pointer;
+}
+
+/* ==================== */
+/* Формы и поля ввода */
+/* ==================== */
+.form-check-inline {
+    margin-right: 1rem;
+}
+
+.search > input {
+    font-size: 16pt;
+    outline: none;
+}
+
+.age-inp {
+    width: 50px;
+}
+
+fieldset > input[type="radio"] {
+    transform: scale(1.5);
+}
+
+.form-check > img:hover {
+    cursor: pointer;
+}
+
+.form-content {
+    padding: 20px;
+}
+
+.password-fields-hidden {
+    display: none !important;
+}
+
+/* ==================== */
+/* Таблицы */
+/* ==================== */
+#info-tbl-users th {
+    width: 150px;
+    vertical-align: middle;
+}
+
+#info-tbl-users td {
+    vertical-align: middle;
+}
+
+#info-tbl-users td:nth-child(1), /* ФИО */
+#info-tbl-users td:nth-child(2), /* E-mail */
+#info-tbl-users td:nth-child(3)  /* Логин */ {
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 150px;
+}
+
+.info-tbl {
+    background: white;
+    width: 40vw;
+    min-width: 40vw;
+    max-width: 40vw;
+    margin: 30px auto 0 auto;
+    border-collapse: collapse;
+}
+
+.info-tbl th, .all-data-tbl th {
+    background: rgb(224, 221, 221);
+}
+
+.info-tbl tbody {
+    background: rgb(255,255,255);
+}
+
+.info-tbl td, th {
+    padding: 0 5px 0 5px;
+}
+
+.info-tbl th {
+    top: 5px;
+    text-align: left;
+}
+
+.info-tbl span {
+    margin: 0 3px 0 0;
+}
+
+.info-body table {
+    border-collapse: collapse;
+}
+
+.info-body table td {
+    border-top: none;
+    padding: 0 5px 0 5px;
+    background: white;
+}
+
+/* ==================== */
+/* Элементы навигации и меню */
+/* ==================== */
+.left-menue-div, .left-menue-control-div {
+    padding-left: 10px;
+}
+
+.left-menue-div {
+    font-size: 15pt;
+}
+
+.left-menue-control-div span, .info-tbl th > span {
+    cursor: pointer;
+}
+
+.tabs span:hover, .left-menue-div:hover {
+    cursor: pointer;
+    color: red;
+}
+
+.sotrud:hover {
+    cursor: auto;
+    color: #000;
+}
+
+/* ==================== */
+/* Стили для текста и заголовков */
+/* ==================== */
+.filters {
+    font-size: 16pt;
+}
+
+.user-name {
+    font-size: 15pt;
+}
+
+.login-header {
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0px;
+    color: #fff;
+    background-color: #004998;
+    padding: 10px;
+    border-radius: 5px 5px 0 0;
+    width: 100%;
 }
 
 fieldset legend {
@@ -27,45 +219,52 @@ fieldset legend {
     width: auto;
 }
 
-.filters {
-    font-size: 18pt;
-    color: #333;
+/* ==================== */
+/* Элементы списка работников */
+/* ==================== */
+.worker {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    color: #000;
+    border: none;
+    padding-left: 10px;
+    font-size: 16pt;
+    border-bottom: 1px solid black;
+    height: 45px;
+    cursor: pointer;
 }
 
-.form-check-inline {
-    margin-right: 1rem;
+.worker-info {
+    border-bottom: 1px solid black;
+    height: 67px;
+    min-height: 67px;
+    padding: 15px 0 0 15px;
+    font-size: 20pt;
+    background: white;
+    overflow-y: auto;
 }
 
-#info-tbl-users th {
-    width: 150px;
+.worker-info span img {
     vertical-align: middle;
 }
 
-#info-tbl-users td {
-    vertical-align: middle;
+/* ==================== */
+/* Выделенные элементы */
+/* ==================== */
+.selected-item {
+    background: #f00;
+    color: #fff;
 }
 
-.password-fields-hidden {
-    display: none !important;
+tr.selected-row td {
+    background-color: #f00;
+    color: #fff;
 }
 
-.err-container {
-    position: absolute;
-    left: 0;
-    top: 0;
-    background: rgba(255, 0, 0, 0.8);
-    color: white;
-    text-align: center;
-    font-size: 18pt;
-}
-
-.right-menue {
-    vertical-align: top;
-    background: rgb(238,238,238);
-    max-height: 100vh;
-    min-height: 100vh;
-}
-
+/* ==================== */
+/* Контролы и иконки */
+/* ==================== */
 .control {
     text-align: left;
 }
@@ -77,36 +276,6 @@ fieldset legend {
 
 .control span {
     margin: 2px;
-}
-
-.worker {
-    display: flex;
-    align-items: center;
-    width: 100%;  
-    color: #000;
-    border: none; 
-    padding-left: 10px;
-    font-size: 16pt;
-    border-bottom: 1px solid black; 
-    height: 45px; 
-    cursor: pointer;
-}
-
-.selected-item {
-    background: #f00;
-    color: #fff;    
-}
-
-tr.selected-row td {
-    background-color: #f00;
-    color: #fff;
-}
-
-.worker-wrapper {
-    border-top: 1px solid #666;
-    overflow-y: auto;
-    height: 100%;
-    max-height: 100%;
 }
 
 .info {
@@ -124,163 +293,10 @@ tr.selected-row td {
     margin: 1px;
 }
 
-.settings {
-    cursor: pointer;
-}
-
-.user-name {
-    font-size: 15pt;
-}
-
-.dropdown-toggle::after {
-    color: #000 !important;
-}
-
-.worker-info {
-    border-bottom: 1px solid black;
-    height: 67px;
-    min-height: 67px;
-    padding: 15px 0 0 15px;
-    font-size: 20pt;
-    background: white;        
-    overflow-y: auto;
-}
-
-.worker-info span img {
-    vertical-align: middle;
-}
-
-.left-menue-div {
-    font-size: 15pt;
-}
-
-.tabs span:hover, .left-menue-div:hover {
-    cursor: pointer;
-    color: red;
-}
-
-.sotrud:hover {
-    cursor: auto;
-    color: #000;
-}
-
-.info-tbl {
-    background: white;
-    width: 40vw;
-    min-width: 40vw;
-    max-width: 40vw;
-    margin: 30px auto 0 auto; 
-    border-collapse: collapse;
-}
-
-.info-tbl th, .all-data-tbl th {
-    background: rgb(224, 221, 221);
-}
-
-.info-tbl tbody {
-    background: rgb(255,255,255);
-}
-
-.info-body table {
-    border-collapse: collapse;
-}
-
-.info-body table td {
-    border-top: none;
-    padding: 0 5px 0 5px;
-    background: white;
-}
-
-.info-tbl td, th {
-    padding: 0 5px 0 5px;
-}
-
-.info-tbl span {
-    margin: 0 3px 0 0;
-}
-
-.info-tbl th {
-    top: 5px;
-    text-align: left;   
-}
-
-.search>input {
-    font-size: 16pt;
-    outline: none;
-}
-
-.age-inp {
-    width: 50px;
-}
-
-.filters {
-    font-size: 16pt;
-}
-
-fieldset>input[type="radio"] {
-    transform: scale(1.5);
-}
-
-.form-check>img:hover {
-    cursor: pointer;
-}
-
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh; 
-    width: 100vw; 
-    overflow: auto
-}
-
-.login-container {
-    max-width: 350px;
-    min-width: 280px;
-    width: 350px;
-    padding: 0px;
-    overflow: hidden;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-}
-
-.login-header {
-    font-size: 1.2rem;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 0px;
-    color: #fff;
-    background-color: #004998;
-    padding: 10px;
-    border-radius: 5px 5px 0 0;
-    width: 100%;
-}
-
-.form-content {
-    padding: 20px;
-}
-
-.left-menue-div, .left-menue-control-div {
-    padding-left: 10px;
-}
-
-.left-menue-control-div span, .info-tbl th>span {
-    cursor: pointer;
-}
-
-fieldset {
-    margin-bottom: 1px !important;   
-    padding: 1px !important;
-}
-
-legend {
-    padding: 1px 10px !important;
-    float: none;
-    width: auto;
-}
-
-#addUserSpinner{
+/* ==================== */
+/* Спиннеры и анимации */
+/* ==================== */
+#addUserSpinner {
     margin-left: 10px;
 }
 
@@ -302,6 +318,9 @@ legend {
     100% { transform: rotate(360deg); }
 }
 
+/* ==================== */
+/* Медиа-запросы для адаптивности */
+/* ==================== */
 @media (max-width: 767px) {
     fieldset {
         max-height: 200px;

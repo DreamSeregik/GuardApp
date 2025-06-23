@@ -1,17 +1,53 @@
-$(document).ready(function () {
-    // Показываем общие ошибки через уведомления
-    const $nonFieldErrors = $('#nonFieldErrors');
-    if ($nonFieldErrors.length && $nonFieldErrors.text().trim()) {
-        showNotification($nonFieldErrors.text().trim(), 'error');
-    }
+/**
+ * Модуль для обработки формы авторизации
+ */
+const AuthForm = {
+    // === Инициализация ===
+    /**
+     * Инициализирует обработчики событий для формы авторизации
+     */
+    init: function () {
+        this.bindEvents();
+        this.showNonFieldErrors();
+    },
 
-    // Обработчик для чекбокса "Показать пароль"
-    $('#showPassword').change(function () {
-        $('#id_password').attr('type', this.checked ? 'text' : 'password');
-    });
+    // === Показ общих ошибок ===
+    /**
+     * Отображает общие ошибки формы через уведомления
+     */
+    showNonFieldErrors: function () {
+        const $nonFieldErrors = $('#nonFieldErrors');
+        if ($nonFieldErrors.length && $nonFieldErrors.text().trim()) {
+            showNotification($nonFieldErrors.text().trim(), 'error');
+        }
+    },
 
-    // Валидация формы перед отправкой
-    $('#loginForm').on('submit', function (e) {
+    // === Привязка событий ===
+    /**
+     * Привязывает обработчики событий к элементам формы
+     */
+    bindEvents: function () {
+        // Обработчик для чекбокса "Показать пароль"
+        $('#showPassword').on('change', this.togglePasswordVisibility.bind(this));
+
+        // Валидация формы перед отправкой
+        $('#loginForm').on('submit', this.validateForm.bind(this));
+    },
+
+    // === Обработчики событий ===
+    /**
+     * Переключает видимость пароля
+     * @param {Event} e - Событие изменения чекбокса
+     */
+    togglePasswordVisibility: function (e) {
+        $('#id_password').attr('type', e.target.checked ? 'text' : 'password');
+    },
+
+    /**
+     * Валидирует форму перед отправкой
+     * @param {Event} e - Событие отправки формы
+     */
+    validateForm: function (e) {
         let isValid = true;
         const $username = $('#id_username');
         const $password = $('#id_password');
@@ -42,6 +78,7 @@ $(document).ready(function () {
             isValid = false;
         }
 
+        // Если форма не валидна, предотвращаем отправку
         if (!isValid) {
             e.preventDefault();
             // Прокручиваем к первой ошибке
@@ -52,5 +89,10 @@ $(document).ready(function () {
                 }, 500);
             }
         }
-    });
+    }
+};
+
+// === Инициализация модуля ===
+$(document).ready(function () {
+    AuthForm.init();
 });

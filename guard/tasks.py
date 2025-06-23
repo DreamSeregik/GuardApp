@@ -49,7 +49,7 @@ def check_expirations():
         for med in upcoming_meds
     ]
     edu_messages = [
-        f"Обучение {education.get_programm_display()} для {education.owner.FIO} истекает {education.date_to.strftime('%d.%m.%Y')}."
+        f"Обучение {education.get_program_display()} для {education.owner.FIO} истекает {education.date_to.strftime('%d.%m.%Y')}."
         for education in upcoming_educations
     ]
 
@@ -73,7 +73,7 @@ def check_expirations():
         logger.debug(f"Created notification for med ID {med.id}")
 
     for education in upcoming_educations:
-        message = f"Обучение {education.get_programm_display()} для {education.owner.FIO} истекает {education.date_to.strftime('%d.%m.%Y')}."
+        message = f"Обучение {education.get_program_display()} для {education.owner.FIO} истекает {education.date_to.strftime('%d.%m.%Y')}."
         Notification.objects.create(
             user=system_user,
             message=message,

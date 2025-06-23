@@ -1,15 +1,23 @@
 /**
- * MedicalExamEditForm - модуль для работы с формой редактирования медосмотра
+ * Модуль для работы с формой редактирования данных медосмотра
  */
 const MedicalExamEditForm = {
+    // === Инициализация ===
+    /**
+     * Инициализирует модуль, кэширует элементы и привязывает события
+     */
     init: function () {
         this.cacheElements();
         this.bindEvents();
         this.modal = new bootstrap.Modal(this.$modal[0], { focus: false });
         this.files = [];
-        this.existingFiles = []; // Храним существующие файлы
+        this.existingFiles = [];
     },
 
+    // === Кэширование DOM-элементов ===
+    /**
+     * Сохраняет ссылки на DOM-элементы формы
+     */
     cacheElements: function () {
         this.$modal = $('#editMedModal');
         this.$form = $('#medicalExamEditForm');
@@ -21,6 +29,10 @@ const MedicalExamEditForm = {
         this.$loadingSpinner = $('#editMedLoadingSpinner');
     },
 
+    // === Привязка событий ===
+    /**
+     * Привязывает обработчики событий к элементам формы
+     */
     bindEvents: function () {
         this.$modal.off('show.bs.modal').on('show.bs.modal', this.handleModalShow.bind(this));
         this.$submitBtn.off('click').on('click', this.submitForm.bind(this));
@@ -28,11 +40,26 @@ const MedicalExamEditForm = {
         this.$fileInput.off('change').on('change', this.handleFileSelect.bind(this));
         this.$fileUploadBtn.off('click').on('click', () => this.$fileInput.trigger('click'));
         this.$fileList.off('click', '.remove-file').on('click', '.remove-file', this.removeFile.bind(this));
+
+        // Добавляем обработчики для валидации в реальном времени
+        $('#editMedicalExamDate').off('input change').on('input change', () => {
+            this.validateExamDate();
+            this.validateExpiryDate();
+        });
+        $('#editMedicalExamExpiryDate').off('input change').on('input change', () => {
+            this.validateExpiryDate();
+            this.validateExamDate();
+        });
     },
 
+    // === Обработчики событий ===
+    /**
+     * Загружает данные медосмотра при открытии модального окна
+     * @param {Event} event - Событие открытия модального окна
+     */
     handleModalShow: function (event) {
         this.showLoadingSpinner();
-        this.$submitBtn.prop('disabled', true); // Отключаем кнопку при открытии
+        this.$submitBtn.prop('disabled', true);
         if (selectedMedID) {
             this.loadExamData(selectedMedID).finally(() => {
                 this.hideLoadingSpinner();
@@ -40,15 +67,38 @@ const MedicalExamEditForm = {
         }
     },
 
+    /**
+     * Обрабатывает выбор файлов
+     * @param {Event} e - Событие выбора файла
+     */
     handleFileSelect: function (e) {
         const files = e.target.files;
         for (let i = 0; i < files.length; i++) {
             this.addFile(files[i]);
         }
         this.$fileInput.val('');
-        this.updateFileList(this.existingFiles); // Передаём существующие файлы
+        this.updateFileList(this.existingFiles);
     },
 
+    /**
+     * Обрабатывает закрытие модального окна
+     */
+    handleModalHide: function () {
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
+        this.files = [];
+        this.existingFiles = [];
+        this.updateFileList();
+        this.hideSpinner();
+        this.$submitBtn.prop('disabled', true);
+    },
+
+    // === Управление файлами ===
+    /**
+     * Добавляет файл в список для загрузки
+     * @param {File} file - Файл для добавления
+     */
     addFile: function (file) {
         if (file && file.name) {
             this.files.push({
@@ -61,12 +111,15 @@ const MedicalExamEditForm = {
         }
     },
 
+    /**
+     * Удаляет файл из списка или сервера
+     * @param {Event} e - Событие клика
+     */
     removeFile: async function (e) {
         e.preventDefault();
         e.stopPropagation();
         const fileId = $(e.currentTarget).data('id');
         const isExistingFile = $(e.currentTarget).data('existing') === true;
-
         if (isExistingFile) {
             try {
                 const response = await fetch(`/files/delete/`, {
@@ -78,15 +131,14 @@ const MedicalExamEditForm = {
                     }
                 });
                 const data = await response.json();
-
                 if (data.status !== 'SUCCESS') {
                     throw new Error(data.description || 'Ошибка удаления файла');
                 }
-                await this.loadExamData(selectedMedID); // Перезагружаем данные, включая existingFiles
+                await this.loadExamData(selectedMedID);
                 showNotification('Файл успешно удалён', 'success');
             } catch (error) {
                 console.error('Ошибка при удалении файла:', error);
-                showNotification('Ошибка при удалении файла: ' + error.message);
+                showNotification(`Ошибка при удалении файла: ${error.message}`);
             }
         } else {
             this.files = this.files.filter(f => f.id !== fileId);
@@ -94,6 +146,11 @@ const MedicalExamEditForm = {
         }
     },
 
+    /**
+     * Экранирует HTML-символы
+     * @param {string} str - Входная строка
+     * @returns {string} Экранированная строка
+     */
     escapeHTML: function (str) {
         if (typeof str !== 'string' || str == null) {
             console.warn('Некорректный входной параметр в escapeHTML:', str);
@@ -111,6 +168,12 @@ const MedicalExamEditForm = {
         });
     },
 
+    /**
+     * Обрезает длинные имена файлов
+     * @param {string} name - Имя файла
+     * @param {number} maxLength - Максимальная длина имени
+     * @returns {string} Обрезанное имя файла
+     */
     truncateFileName: function (name, maxLength = 30) {
         if (typeof name !== 'string' || name == null) {
             console.warn('Некорректный входной параметр в truncateFileName:', name);
@@ -124,6 +187,11 @@ const MedicalExamEditForm = {
         return `${truncated}...${ext}`;
     },
 
+    /**
+     * Форматирует размер файла
+     * @param {number} bytes - Размер файла в байтах
+     * @returns {string} Форматированный размер
+     */
     formatFileSize: function (bytes) {
         if (isNaN(bytes) || bytes == null) {
             console.warn('Некорректный размер файла:', bytes);
@@ -139,20 +207,23 @@ const MedicalExamEditForm = {
         return `${size.toFixed(1)} ${units[unitIndex]}`;
     },
 
+    /**
+     * Обновляет список файлов
+     * @param {Array} existingFiles - Список существующих файлов
+     */
     updateFileList: function (existingFiles = []) {
         this.$fileList.empty();
-
         if (existingFiles.length === 0 && this.files.length === 0) {
             this.$fileList.append('<tr><td colspan="3" class="text-muted text-center">Нет прикрепленных файлов</td></tr>');
             return;
         }
-
-        // Существующие файлы
         existingFiles.forEach(file => {
             if (!file || !file.name || !file.url || !file.id) {
                 console.warn('Некорректные данные файла:', file);
                 return;
             }
+            console.log(file);
+
             const fileName = this.escapeHTML(this.truncateFileName(file.name));
             const fileSize = this.escapeHTML(file.size);
             const fileItem = $(`
@@ -171,8 +242,6 @@ const MedicalExamEditForm = {
             `);
             this.$fileList.append(fileItem);
         });
-
-        // Новые файлы
         this.files.forEach(file => {
             if (!file || !file.file || !file.file.name) {
                 console.warn('Некорректные данные нового файла:', file);
@@ -198,23 +267,21 @@ const MedicalExamEditForm = {
         });
     },
 
+    // === Загрузка данных ===
+    /**
+     * Загружает данные медосмотра по ID
+     * @param {string} examId - ID медосмотра
+     */
     loadExamData: async function (examId) {
         try {
-            const data = await sendGetRequest(MED + examId);
-
+            const data = await sendGetRequest(API_ENDPOINTS.MED + examId);
             if (data.status === 'SUCCESS') {
                 $('#editMedicalExamType').val(data.data[0].type_code);
                 $('#editMedicalExamDate').val(data.data[0].date_from);
                 $('#editMedicalExamExpiryDate').val(data.data[0].date_to);
-
-                if (data.data[0].attachments) {
-                    this.existingFiles = data.data[0].attachments; // Сохраняем существующие файлы
-                    this.updateFileList(this.existingFiles);
-                } else {
-                    this.existingFiles = [];
-                    this.updateFileList();
-                }
-                this.$submitBtn.prop('disabled', false); // Активируем кнопку после загрузки
+                this.existingFiles = data.data[0].attachments || [];
+                this.updateFileList(this.existingFiles);
+                this.$submitBtn.prop('disabled', false);
             } else {
                 console.error('Ошибка загрузки данных:', data.description);
                 showNotification(data.description || 'Ошибка загрузки данных');
@@ -225,47 +292,98 @@ const MedicalExamEditForm = {
         }
     },
 
-    handleModalHide: function () {
-        if (document.activeElement) {
-            document.activeElement.blur();
-        }
-        this.files = [];
-        this.existingFiles = []; // Очищаем при закрытии
-        this.updateFileList();
-        this.hideSpinner();
-        this.$submitBtn.prop('disabled', true); // Отключаем кнопку при закрытии
-    },
-
+    // === Валидация формы ===
+    /**
+     * Проверяет валидность всех полей формы
+     * @returns {boolean} Результат валидации
+     */
     validateForm: function () {
         let isValid = true;
 
+        // Validate exam type
         if (!$('#editMedicalExamType').val()) {
             $('#editMedicalExamType').addClass('is-invalid');
             isValid = false;
         }
 
-        const dateFrom = new Date($('#editMedicalExamDate').val());
-        const dateTo = new Date($('#editMedicalExamExpiryDate').val());
-
-        if (!dateFrom.getTime()) {
-            $('#editMedicalExamDate').addClass('is-invalid');
+        // Validate dates
+        if (!this.validateExamDate()) {
             isValid = false;
         }
-
-        if (!dateTo.getTime()) {
-            $('#editMedicalExamExpiryDate').addClass('is-invalid');
-            isValid = false;
-        }
-
-        if (dateTo < dateFrom) {
-            $('#editMedicalExamExpiryDate').addClass('is-invalid');
-            $('#editMedicalExamExpiryDate').next('.invalid-feedback').text('Дата окончания не может быть раньше даты прохождения');
+        if (!this.validateExpiryDate()) {
             isValid = false;
         }
 
         return isValid;
     },
 
+    /**
+ * Валидация даты прохождения осмотра
+ * @returns {boolean} Результат валидации
+ */
+    validateExamDate: function () {
+        const $input = $('#editMedicalExamDate');
+        if (!$input || !$input.length) {
+            console.warn('Поле даты осмотра не найдено');
+            return false;
+        }
+
+        const value = $input.val();
+        const date = new Date(value);
+        const isValid = !!date.getTime();
+        let feedback = isValid ? '' : 'Укажите корректную дату';
+
+        $input.toggleClass('is-invalid', !isValid);
+        const $feedback = $input.next('.invalid-feedback');
+        if ($feedback.length) {
+            $feedback.text(feedback);
+        } else if (feedback) {
+            $input.after(`<div class="invalid-feedback">${feedback}</div>`);
+        }
+
+        return isValid;
+    },
+
+    /**
+     * Валидация даты окончания действия осмотра
+     * @returns {boolean} Результат валидации
+     */
+    validateExpiryDate: function () {
+        const $input = $('#editMedicalExamExpiryDate');
+        if (!$input || !$input.length) {
+            console.warn('Поле даты окончания не найдено');
+            return false;
+        }
+
+        const value = $input.val();
+        const expiryDate = new Date(value);
+        let isValid = !!expiryDate.getTime();
+        let feedback = isValid ? '' : 'Укажите корректную дату';
+
+        if (isValid) {
+            const examDate = new Date($('#editMedicalExamDate').val());
+            if (expiryDate < examDate) {
+                isValid = false;
+                feedback = 'Дата окончания не может быть раньше даты прохождения';
+            }
+        }
+
+        $input.toggleClass('is-invalid', !isValid);
+        const $feedback = $input.next('.invalid-feedback');
+        if ($feedback.length) {
+            $feedback.text(feedback);
+        } else if (feedback) {
+            $input.after(`<div class="invalid-feedback">${feedback}</div>`);
+        }
+
+        return isValid;
+    },
+
+    // === Получение данных формы ===
+    /**
+     * Собирает данные из формы для отправки
+     * @returns {Object} Данные формы
+     */
     getFormData: function () {
         return {
             exam_type: $('#editMedicalExamType').val(),
@@ -274,36 +392,50 @@ const MedicalExamEditForm = {
         };
     },
 
+    // === Управление спиннерами ===
+    /**
+     * Показывает спиннер и отключает кнопку отправки
+     */
     showSpinner: function () {
         this.$submitBtn.prop('disabled', true);
         this.$spinner.removeClass('d-none');
     },
 
+    /**
+     * Скрывает спиннер и активирует кнопку отправки
+     */
     hideSpinner: function () {
         this.$submitBtn.prop('disabled', false);
         this.$spinner.addClass('d-none');
     },
 
+    /**
+     * Показывает спиннер загрузки и скрывает форму
+     */
     showLoadingSpinner: function () {
         this.$loadingSpinner.removeClass('d-none');
         this.$form.addClass('d-none');
     },
 
+    /**
+     * Скрывает спиннер загрузки и показывает форму
+     */
     hideLoadingSpinner: function () {
         this.$loadingSpinner.addClass('d-none');
         this.$form.removeClass('d-none');
     },
 
+    // === Отправка формы ===
+    /**
+     * Отправляет данные формы на сервер
+     */
     submitForm: async function () {
         if (!this.validateForm()) return;
-
         this.showSpinner();
         const formData = this.getFormData();
-        const url = new URL(MED_UPDATE + selectedMedID);
-
+        const url = new URL(API_ENDPOINTS.MED_UPDATE + selectedMedID);
         try {
             const data = await sendPatchRequest(url, formData);
-
             if (data.status === 'SUCCESS') {
                 if (this.files.length > 0) {
                     await this.uploadFiles(selectedMedID);
@@ -314,23 +446,27 @@ const MedicalExamEditForm = {
                 this.modal.hide();
                 showNotification('Медосмотр успешно обновлён', 'success');
             } else {
-                showNotification(data.description || 'Ошибка обновления');
+                showNotification(data.description || 'Ошибка при обновлении данных');
             }
         } catch (error) {
-            console.error('Ошибка:', error);
-            showNotification('Ошибка при отправке данных');
+            console.error('Ошибка при отправке формы:', error);
+            showNotification('Произошла ошибка при отправке формы');
         } finally {
             this.hideSpinner();
         }
     },
 
+    /**
+     * Загружает файлы на сервер
+     * @param {string} medId - ID медосмотра
+     * @returns {Promise} Результат загрузки
+     */
     uploadFiles: async function (medId) {
         const uploadPromises = this.files.map(file => {
             const formData = new FormData();
             formData.append('file', file.file);
             formData.append('file_type', 'med');
             formData.append('object_id', medId);
-
             return fetch(`/files/upload/`, {
                 method: 'POST',
                 body: formData,
@@ -339,19 +475,26 @@ const MedicalExamEditForm = {
                 }
             }).then(response => response.json());
         });
-
         try {
             const results = await Promise.all(uploadPromises);
+            results.forEach(result => {
+                if (result.status !== 'SUCCESS') {
+                    console.warn('Ошибка загрузки файла:', result);
+                    showNotification(`Ошибка загрузки файла: ${result.description || 'Неизвестная ошибка'}`);
+                }
+            });
             this.files = [];
             await this.loadExamData(selectedMedID);
             return results;
         } catch (error) {
             console.error('Ошибка загрузки файлов:', error);
+            showNotification('Произошла ошибка при загрузке файлов');
             throw error;
         }
     }
 };
 
+// === Инициализация модуля ===
 $(document).ready(function () {
     if ($('#editMedModal').length) {
         MedicalExamEditForm.init();
