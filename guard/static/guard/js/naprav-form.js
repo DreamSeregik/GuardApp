@@ -795,7 +795,7 @@ const MedicalExaminationForm = {
     validateEmployerName: function () {
         const name = this.$employerNameInput.val().trim();
         const minLength = 3;
-        const maxLength = 255;
+        const maxLength = 500;
         if (!name) {
             this.showError(this.$employerNameInput, 'employerNameFeedback', 'Поле обязательно для заполнения');
             return false;
