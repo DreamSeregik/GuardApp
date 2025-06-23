@@ -697,8 +697,8 @@ const MedicalExaminationForm = {
         const maxLength = 10;
         const minLength = 2;
         if (!value) {
-            this.hideError(this.$okvedCodeInput, 'napravOkvedCodeFeedback');
-            return true;
+            this.showError(this.$okvedCodeInput, 'napravOkvedCodeFeedback', 'Поле обязательно для заполнения')
+            return false;
         }
         if (!/^[\d.]+$/.test(value)) {
             this.showError(this.$okvedCodeInput, 'napravOkvedCodeFeedback', 'Код ОКВЭД должен содержать только цифры и точки');
