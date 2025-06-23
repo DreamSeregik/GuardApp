@@ -315,7 +315,7 @@ const MedicalExaminationForm = {
      */
     loadEmployeeData: async function (employeeId) {
         try {
-            const url = new URL(FILTER);
+            const url = new URL(API_ENDPOINTS.FILTER);
             url.searchParams.append('id', employeeId);
             const { status, employees } = await sendGetRequest(url);
             if (status === 'SUCCESS') {
@@ -1033,7 +1033,7 @@ const MedicalExaminationForm = {
         const defaults = {
             requireMiddleName: false,
             minLength: 2,
-            maxLength: 30,
+            maxLength: 100,
             allowHyphen: true,
             allowApostrophe: true,
             allowSinglePart: false,

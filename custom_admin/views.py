@@ -419,14 +419,17 @@ class DeleteUserView(LoginRequiredMixin, AdminsOnlyMixin, View):
             user = get_object_or_404(User, id=user_id)
             return render(request, self.template_name, {'delete_user': user})
         except Exception as e:
+            print(f"Error loading user data: {e}")
             return JsonResponse({'error': 'Ошибка при загрузке данных пользователя', 'details': {'exception': str(e)}}, status=500)
 
     def post(self, request, user_id):
         try:
             user = get_object_or_404(User, id=user_id)
             if user.id == request.user.id:
+                print(f"Attempt to delete current user: {user.username}")
                 return JsonResponse({'error': 'Нельзя удалить пользователя, под которым выполнен вход'}, status=400)
             if user.is_staff and User.objects.filter(is_staff=True).exclude(username='system_notification').count() == 1:
+                print(f"Attempt to delete last admin: {user.username}")
                 return JsonResponse({
                     'error': 'Нельзя удалить единственного администратора',
                     'details': {
@@ -438,27 +441,32 @@ class DeleteUserView(LoginRequiredMixin, AdminsOnlyMixin, View):
 
             username = user.username
             user.delete()
+            print(f"User deleted: {username} (ID: {user_id})")
             return JsonResponse({
                 'success': f'Пользователь "{username}" успешно удален',
                 'details': {'user_id': user_id, 'username': username}
             })
 
         except User.DoesNotExist:
+            print(f"User not found: ID {user_id}")
             return JsonResponse({
                 'error': 'Пользователь не найден',
                 'details': {'reason': 'Пользователь с указанным ID не существует', 'user_id': user_id}
             }, status=404)
         except IntegrityError as e:
+            print(f"IntegrityError deleting user {user_id}: {e}")
             return JsonResponse({
                 'error': 'Ошибка целостности базы данных',
                 'details': {'reason': 'Удаление пользователя запрещено из-за связей в базе данных', 'exception': str(e), 'user_id': user_id}
             }, status=500)
         except DatabaseError as e:
+            print(f"DatabaseError deleting user {user_id}: {e}")
             return JsonResponse({
                 'error': 'Ошибка базы данных',
                 'details': {'reason': 'Ошибка при взаимодействии с базой данных', 'exception': str(e), 'user_id': user_id}
             }, status=500)
         except Exception as e:
+            print(f"Unexpected error deleting user {user_id}: {e}")
             return JsonResponse({
                 'error': 'Неизвестная ошибка при удалении пользователя',
                 'details': {'reason': 'Произошла непредвиденная ошибка', 'exception': str(e), 'user_id': user_id}

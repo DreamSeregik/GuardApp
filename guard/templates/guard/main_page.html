@@ -105,10 +105,10 @@
                             <label for="employeeStruct" class="form-label">Структурное подразделение</label>
                             <textarea class="form-control" id="employeeStruct" 
                                    placeholder="Введите структурное подразделение"
-                                   rows="2" maxlength="1000"></textarea>
+                                   rows="2" maxlength="100"></textarea>
                             <div class="d-flex justify-content-between">                                
                                 <div class="length-counter">
-                                    <span>Кол-во символов: </span><span id="structCounter">0</span>/1000
+                                    <span>Кол-во символов: </span><span id="structCounter">0</span>/100
                                 </div>
                             </div>
                         </div>
@@ -861,10 +861,10 @@
                                 <label for="napravDepartmentName" class="form-label">Наименование структурного подразделения</label>
                                 <textarea class="form-control" id="napravDepartmentName" 
                                         placeholder="Введите наименование структурного подразделения"
-                                        rows="2" maxlength="1000"></textarea>
+                                        rows="2" maxlength="100"></textarea>
                                 <div class="d-flex justify-content-between">                                
                                     <div class="length-counter">
-                                        <span>Кол-во символов: </span><span id="napravDepartmentCounter">0</span>/1000
+                                        <span>Кол-во символов: </span><span id="napravDepartmentCounter">0</span>/100
                                     </div>
                                 </div>
                             </div>
@@ -917,7 +917,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label for="napravEmployerRepresentativePosition" class="form-label">Должность*</label>
-                                    <input type="text" class="form-control" id="napravEmployerRepresentativePosition" placeholder="Введите должность" required>
+                                    <input type="text" class="form-control" id="napravEmployerRepresentativePosition" placeholder="Введите должность" maxlength="50" required>
                                     <div class="d-flex justify-content-between">
                                         <div class="invalid-feedback" id="employerRepPositionFeedback">
                                             Должность должна содержать от 3 до 50 символов (только кириллица)

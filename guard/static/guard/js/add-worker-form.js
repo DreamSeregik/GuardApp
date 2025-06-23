@@ -161,7 +161,7 @@ const EmployeeForm = {
         const defaults = {
             requireMiddleName: false,
             minLength: 2,
-            maxLength: 30,
+            maxLength: 100,
             allowHyphen: true,
             allowApostrophe: true,
             allowSinglePart: false,

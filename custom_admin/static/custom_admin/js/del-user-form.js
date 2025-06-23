@@ -4,11 +4,6 @@
  */
 const UserDeleteForm = {
     /**
-     * @section Инициализация
-     * Инициализация формы и модального окна
-     */
-
-    /**
      * Инициализирует форму удаления пользователя
      * @returns {void}
      */
@@ -17,11 +12,6 @@ const UserDeleteForm = {
         this.bindEvents();
         this.modal = new bootstrap.Modal(this.$modal[0], { focus: false });
     },
-
-    /**
-     * @section Кэширование элементов
-     * Сохранение ссылок на DOM-элементы формы
-     */
 
     /**
      * Кэширует DOM-элементы формы
@@ -36,11 +26,6 @@ const UserDeleteForm = {
         this.$submitBtn = $('button[type="submit"]', this.$form);
         this.$spinner = $('#deleteUserSpinner');
     },
-
-    /**
-     * @section Обработка событий
-     * Привязка обработчиков событий к элементам формы
-     */
 
     /**
      * Привязывает обработчики событий к элементам формы
@@ -115,11 +100,6 @@ const UserDeleteForm = {
     },
 
     /**
-     * @section Валидация
-     * Методы для проверки корректности данных
-     */
-
-    /**
      * Проверяет форму перед отправкой
      * @returns {boolean} Результат валидации
      */
@@ -130,11 +110,6 @@ const UserDeleteForm = {
         }
         return true;
     },
-
-    /**
-     * @section Вспомогательные методы
-     * Методы для управления состоянием формы
-     */
 
     /**
      * Показывает индикатор загрузки
@@ -167,13 +142,10 @@ const UserDeleteForm = {
      * @returns {FormData} Данные формы
      */
     getFormData() {
-        return new FormData(this.$form[0]);
+        const formData = new FormData(this.$form[0]);
+        formData.append('user_id', selectedUserId); // Добавляем ID пользователя
+        return formData;
     },
-
-    /**
-     * @section Отправка формы
-     * Методы для обработки и отправки данных формы
-     */
 
     /**
      * Отправляет форму на сервер
@@ -188,45 +160,59 @@ const UserDeleteForm = {
 
         this.showSpinner();
         const formData = this.getFormData();
-        const actionUrl = this.$form.attr('action');
+        const actionUrl = this.$form.attr('action') || '/delete-user/' + selectedUserId + '/';
 
-        const response = await sendPostRequest(actionUrl, formData);
-
-        if (response && response.success) {
-            showNotification(response.success, 'success');
-            this.modal.hide();
-            selectedUserId = null;
-            selectedUserData = null;
-            $('#worker-info-fio').text('Выберите пользователя');
-            $('#user-fio').text('Не выбрано');
-            $('#user-email').text('Не выбрано');
-            $('#user-login').text('Не выбрано');
-            $('#user-status').text('Не выбрано');
-            await UserManager.fetchUsers({
-                search: $('#search-input').val(),
-                role: $('input[name="roleCheck"]:checked').val(),
-                status: $('input[name="statusCheck"]:checked').val(),
-                sort: $('.form-check-inline img.active').attr('id') === 'asc-sort' ? 'asc' : 'desc',
-            });
-        } else {
-            let errorMessage = response?.error || 'Ошибка удаления пользователя';
-            if (response?.details) {
-                const detailedErrors = [];
-                if (response.details.general) {
-                    detailedErrors.push(...(Array.isArray(response.details.general) ? response.details.general : [response.details.general]));
+        try {
+            const response = await fetch(actionUrl, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 }
-                for (const [field, errors] of Object.entries(response.details)) {
-                    if (field !== 'general') {
-                        detailedErrors.push(...(Array.isArray(errors) ? errors : [errors]));
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                showNotification(data.success, 'success');
+                this.modal.hide();
+                selectedUserId = null;
+                selectedUserData = null;
+                $('#worker-info-fio').text('Выберите пользователя');
+                $('#user-fio').text('Выберите пользователя');
+                $('#user-email').text('Выберите пользователя');
+                $('#user-login').text('Выберите пользователя');
+                $('#user-status').text('Выберите пользователя');
+                await UserManager.fetchUsers({
+                    search: $('#search-input').val(),
+                    role: $('input[name="roleCheck"]:checked').val(),
+                    status: $('input[name="statusCheck"]:checked').val(),
+                    sort: $('.form-check-inline img.active').attr('id') === 'asc-sort' ? 'asc' : 'desc',
+                });
+            } else {
+                let errorMessage = data?.error || 'Ошибка удаления пользователя';
+                if (data?.details) {
+                    const detailedErrors = [];
+                    if (data.details.general) {
+                        detailedErrors.push(...(Array.isArray(data.details.general) ? data.details.general : [data.details.general]));
+                    }
+                    for (const [field, errors] of Object.entries(data.details)) {
+                        if (field !== 'general') {
+                            detailedErrors.push(...(Array.isArray(errors) ? errors : [errors]));
+                        }
+                    }
+                    if (detailedErrors.length > 0) {
+                        errorMessage += ': ' + detailedErrors.join('; ');
                     }
                 }
-                if (detailedErrors.length > 0) {
-                    errorMessage += ': ' + detailedErrors.join('; ');
-                }
+                showNotification(errorMessage, 'error');
             }
-            showNotification(errorMessage, 'error');
+        } catch (error) {
+            console.error('Error sending delete request:', error);
+            showNotification('Ошибка при удалении пользователя: ' + error.message, 'error');
+        } finally {
+            this.hideSpinner();
         }
-        this.hideSpinner();
     },
 };
 
