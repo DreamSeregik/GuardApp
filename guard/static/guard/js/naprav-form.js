@@ -432,7 +432,8 @@ const MedicalExaminationForm = {
                 '#napravMedicalAddressPsych',
                 '#napravOgrnPsych',
                 '#napravEmployeePositionPsych',
-                '#napravCreationDatePsych'
+                '#napravCreationDatePsych',
+                '#napravOkvedCode'
             ];
             psychiatricRequired.forEach(field => {
                 if (!$(field).val()) {

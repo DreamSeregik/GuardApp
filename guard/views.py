@@ -1193,17 +1193,21 @@ class MedicalDirectionView(LoginRequiredMixin, UsersOnlyMixin, View):
                 }
 
         okved_code = data.get('okvedCode', '').strip()
-        if okved_code:
-            if len(okved_code) < 2 or len(okved_code) > 10:
-                return {
+        if not okved_code:
+            return {
+                'is_valid': False,
+                'message': 'Необходимо указать должность сотрудника'
+            }
+        if len(okved_code) < 2 or len(okved_code) > 10:
+            return {
                     'is_valid': False,
                     'message': 'Код ОКВЭД должен быть от 2 до 10 символов'
-                }
-            if not re.match(r'^[\d.]+$', okved_code):
-                return {
+            }
+        if not re.match(r'^[\d.]+$', okved_code):
+            return {
                     'is_valid': False,
                     'message': 'Код ОКВЭД должен содержать только цифры и точки'
-                }
+            }
 
         activity_types = data.get('activityTypes', '').strip()
         if activity_types and len(activity_types) > 1000:
