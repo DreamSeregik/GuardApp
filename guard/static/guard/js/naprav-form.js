@@ -199,8 +199,9 @@ const MedicalExaminationForm = {
             this.updateCounter('previousConclusions');
             this.validatePreviousConclusions();
         });
-        this.$okvedCodeInput.on('input', () => {
+        this.$okvedCodeInput.on('input', (e) => {
             this.updateCounter('okvedCode');
+            this.formatOkvedInput(e.target)
             this.validateOkvedCode();
         }).on('blur', this.validateOkvedCode.bind(this));
         this.$OMSNumber.on('input', (e) => {
@@ -991,6 +992,14 @@ const MedicalExaminationForm = {
     },
 
     // === Форматирование ввода ===
+    /**
+     * Форматирует ввод кода ОКВЭД
+     * @param {HTMLInputElement} input - Поле ввода
+     */
+    formatOkvedInput: function (input) {
+        input.value = input.value.replace(/[^\d.]/g, '').slice(0, 10);
+    },
+
     /**
      * Форматирует ввод ОГРН
      * @param {HTMLInputElement} input - Поле ввода

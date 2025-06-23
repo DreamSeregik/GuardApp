@@ -1127,7 +1127,7 @@ class MedicalDirectionView(LoginRequiredMixin, UsersOnlyMixin, View):
                 'is_valid': False,
                 'message': 'Необходимо указать название работодателя'
             }
-        if len(employer_name) < 3 or len(employer_name) > 255:
+        if len(employer_name) < 3 or len(employer_name) > 500:
             return {
                 'is_valid': False,
                 'message': 'Название работодателя должно быть от 3 до 255 символов'
