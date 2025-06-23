@@ -200,8 +200,8 @@ const MedicalExaminationForm = {
             this.validatePreviousConclusions();
         });
         this.$okvedCodeInput.on('input', (e) => {
-            this.updateCounter('okvedCode');
             this.formatOkvedInput(e.target)
+            this.updateCounter('okvedCode');
             this.validateOkvedCode();
         }).on('blur', this.validateOkvedCode.bind(this));
         this.$OMSNumber.on('input', (e) => {
