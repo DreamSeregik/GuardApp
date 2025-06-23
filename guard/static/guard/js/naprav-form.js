@@ -422,10 +422,11 @@ const MedicalExaminationForm = {
             if (this.$activityTypesInput.val().trim() && !this.validateActivityTypes()) isValid = false;
             if (this.$previousConclusionsInput.val().trim() && !this.validatePreviousConclusions()) isValid = false;
             if (!this.validateOgrnCodePsych()) isValid = false;
-            if (this.$okvedCodeInput.val().trim() && !this.validateOkvedCode()) isValid = false;
+            if (!this.validateOkvedCode()) isValid = false;
             if (!this.validatePositionPsych()) isValid = false;
             if (!this.validateMedicalOrgPsych()) isValid = false;
             if (!this.validateMedicalAddressPsych()) isValid = false;
+
             const psychiatricRequired = [
                 '#napravEmployerName',
                 '#napravMedicalOrgPsych',
@@ -699,16 +700,13 @@ const MedicalExaminationForm = {
         if (!value) {
             this.showError(this.$okvedCodeInput, 'napravOkvedCodeFeedback', 'Поле обязательно для заполнения')
             return false;
-        }
-        if (!/^[\d.]+$/.test(value)) {
+        } else if (!/^[\d.]+$/.test(value)) {
             this.showError(this.$okvedCodeInput, 'napravOkvedCodeFeedback', 'Код ОКВЭД должен содержать только цифры и точки');
             return false;
-        }
-        if (value.length > maxLength) {
+        } else if (value.length > maxLength) {
             this.showError(this.$okvedCodeInput, 'napravOkvedCodeFeedback', `Код ОКВЭД не должен превышать ${maxLength} символов`);
             return false;
-        }
-        if (value.length < minLength) {
+        } else if (value.length < minLength) {
             this.showError(this.$okvedCodeInput, 'napravOkvedCodeFeedback', `Код ОКВЭД должен содержать минимум ${minLength} символа`);
             return false;
         }
@@ -1359,6 +1357,7 @@ const MedicalExaminationForm = {
         this.hideError(this.$departmentNameInput, 'napravDepartmentFeedback');
         this.hideError(this.$positionInput, 'napravPositionFeedback');
         this.hideError(this.$positionPsychInput, 'napravEmployeePositionPsychFeedback');
+        this.hideError(this.$okvedCodeInput, 'napravOkvedCodeFeedback');
         this.hideError(this.$hazardFactorsInput, 'hazardFactorsFeedback');
         this.hideError(this.$employerRepName, 'employerRepNameFeedback');
         this.hideError(this.$employerRepPosition, 'employerRepPositionFeedback');
