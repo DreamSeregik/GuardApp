@@ -810,7 +810,7 @@ async function getMainData(id) {
             $('#worker-info-fio').html(employees.FIO || '-');
             $tbody.html(`
                 <tr data-id="${employees.id}">
-                    <td>${$tbody.find('tr').length + 1}</td>
+                    <td>${$tbody.find('tr').length}</td>
                     <td>${employees.birthday || '-'}</td>
                     <td>${employees.gender || '-'}</td>
                     <td>${employees.oms_number || '-'}</td>
