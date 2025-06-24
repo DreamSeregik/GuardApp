@@ -92,7 +92,9 @@ function initEventHandlers() {
     $('#female').click(() => filterWorkers({ gender: 'F' }));
     $('#age_from').change(() => filterWorkers({ min_age: $('#age_from').val() }));
     $('#age_to').change(() => filterWorkers({ max_age: $('#age_to').val() }));
-    $('#allEdu, #ed, #ned').click(() => filterWorkers({ is_edu: $(this).val() }));
+    $('#allEdu, #ed, #ned').click(() => filterWorkers({ is_edu: 'a' }));
+    $('#ed').click(() => filterWorkers({ is_edu: 'e' }));
+    $('#ned').click(() => filterWorkers({ is_edu: 'ne' }));
 
     // Выбор строк в таблицах
     $('#nav-med').on('click', '#info-tbl-med tbody tr', handleMedRowClick);
