@@ -227,7 +227,7 @@ async function handleAllMedClick() {
     $('#allMedModal').modal('show');
 
     try {
-        const url = new URL(MED);
+        const url = new URL(API_ENDPOINTS.MED);
         const { data, status } = await sendGetRequest(url);
 
         if (status === 'SUCCESS') {
@@ -256,7 +256,7 @@ async function handleAllEduClick() {
     $('#allEduModal').modal('show');
 
     try {
-        const url = new URL(EDU);
+        const url = new URL(API_ENDPOINTS.EDU);
         const { data, status } = await sendGetRequest(url);
 
         if (status === 'SUCCESS') {

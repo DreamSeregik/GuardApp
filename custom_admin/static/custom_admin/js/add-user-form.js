@@ -197,20 +197,133 @@ const UserForm = {
      * Методы для валидации полей формы
      */
 
+
+    // === Валидация ФИО ===
+    /**
+     * Обрабатывает и проверяет ФИО
+     * @param {string} name - Введенное ФИО
+     * @param {Object} options - Настройки валидации
+     * @returns {Object} Результат валидации
+     */
+    processFullName: function (name, options = {}) {
+        const defaults = {
+            requireMiddleName: false,
+            minLength: 2,
+            maxLength: 100,
+            allowHyphen: true,
+            allowApostrophe: true,
+            allowSinglePart: false,
+            autoFixCase: true
+        };
+
+        const settings = { ...defaults, ...options };
+
+        if (!name || typeof name !== 'string') {
+            return { isValid: false, formattedName: '', error: 'Пустое поле' };
+        }
+
+        const cleanedName = name.trim().replace(/\s+/g, ' ');
+        if (cleanedName === '') {
+            return { isValid: false, formattedName: '', error: 'Пустое поле' };
+        }
+
+        if (/[a-zA-Z]/.test(cleanedName)) {
+            return { isValid: false, formattedName: cleanedName, error: 'Латинские символы недопустимы' };
+        }
+
+        let parts = cleanedName.split(' ');
+        if (settings.requireMiddleName && parts.length !== 3) {
+            return { isValid: false, formattedName: cleanedName, error: 'Требуется три слова' };
+        }
+
+        if (!settings.allowSinglePart && parts.length < 2) {
+            return { isValid: false, formattedName: cleanedName, error: 'Требуется минимум два слова' };
+        }
+
+        if (parts.length > 3) {
+            return { isValid: false, formattedName: cleanedName, error: 'Максимум три слова' };
+        }
+
+        const formatPart = part => {
+            if (!settings.autoFixCase || !part) return part;
+
+            if (settings.allowHyphen && part.includes('-')) {
+                return part.split('-').map(subPart => {
+                    return subPart.charAt(0).toUpperCase() + subPart.slice(1).toLowerCase();
+                }).join('-');
+            }
+
+            if (settings.allowApostrophe && part.includes("'")) {
+                return part.split("'").map((subPart, i) => {
+                    if (i === 0) {
+                        return subPart.charAt(0).toUpperCase() + subPart.slice(1).toLowerCase();
+                    }
+                    return "'" + subPart.charAt(0).toUpperCase() + subPart.slice(1).toLowerCase();
+                }).join('').replace(/''/g, "'");
+            }
+
+            return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+        };
+
+        const formattedParts = parts.filter(part => part).map(formatPart);
+        const formattedName = formattedParts.join(' ');
+
+        const regexParts = ['^[А-ЯЁ]'];
+        let mainPart = '[а-яё]+';
+        if (settings.allowHyphen) {
+            mainPart = '(?:[а-яё]+(?:-[А-ЯЁ][а-яё]+)*)';
+        }
+        if (settings.allowApostrophe) {
+            mainPart = '(?:[а-яё]*(?:\'[А-ЯЁ][а-яё]+)*)';
+        }
+        regexParts.push(mainPart, '$');
+        const regex = new RegExp(regexParts.join(''), 'i');
+
+        for (const part of formattedParts) {
+            if (!regex.test(part)) {
+                return { isValid: false, formattedName, error: 'Некорректные символы' };
+            }
+
+            if (part.length < settings.minLength || part.length > settings.maxLength) {
+                return { isValid: false, formattedName, error: 'Недопустимая длина слова' };
+            }
+
+            if (settings.allowApostrophe && part.includes("'")) {
+                const subParts = part.split("'");
+                for (let i = 1; i < subParts.length; i++) {
+                    if (!subParts[i] || !/^[А-ЯЁ]/.test(subParts[i])) {
+                        return { isValid: false, formattedName, error: 'Некорректный апостроф' };
+                    }
+                }
+            }
+
+            if (settings.allowHyphen && part.includes("-")) {
+                const subParts = part.split("-");
+                for (let i = 1; i < subParts.length; i++) {
+                    if (!subParts[i] || !/^[А-ЯЁ]/.test(subParts[i])) {
+                        return { isValid: false, formattedName, error: 'Некорректный дефис' };
+                    }
+                }
+            }
+        }
+
+        return { isValid: true, formattedName };
+    },
+
     /**
      * Валидирует поле ФИО
      * @returns {boolean} Результат валидации
      */
     validateFullNameInput() {
         const fullName = this.$fullNameInput.val().trim();
-        const fullNameRegex = /^[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+(?:\s[А-ЯЁ][а-яё]+)?$/;
+        const fullNameResult = this.processFullName(fullName);
 
         if (!fullName) {
             this.$fullNameInput.removeClass('is-invalid');
             $('#fullNameFeedback').hide();
             return true;
         }
-        if (!fullNameRegex.test(fullName)) {
+        if (!fullNameResult.isValid) {
             this.$fullNameInput.addClass('is-invalid');
             $('#fullNameFeedback').text('Введите корректное ФИО (2-3 слова, каждое с заглавной буквы)').show();
             return false;

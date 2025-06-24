@@ -65,6 +65,23 @@ const EducationForm = {
 
         this.$programSelect.on('input change', this.validateProgram.bind(this));
         this.$hours.on('input', this.validateHours.bind(this));
+
+        this.$hours.on('keydown.validateHours').on('keydown.validateHours', function (e) {
+            if (e.key === '-' || e.key === 'Subtract' || e.key === '+' || e.key === 'Add') {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        this.$hours.on('paste.validateHours').on('paste.validateHours', function (e) {
+            const clipboardData = e.originalEvent.clipboardData || window.Clipboard;
+            const pastedText = clipboardData.getData('text');
+            if (pastedText.includes('-') || pastedText.includes('+')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
         this.$dateFrom.on('input change', () => {
             this.validateDateFrom();
             this.validateDateTo();
@@ -353,11 +370,10 @@ const EducationForm = {
         }
         return isValid;
     },
-
     /**
-   * Валидация часов обучения 
-   * @returns {boolean} Результат валидации
-   */
+    * Валидация часов обучения 
+    * @returns {boolean} Результат валидации
+    */
     validateHours: function () {
         const $input = this.$hours;
         if (!$input || !$input.length) {
@@ -373,7 +389,7 @@ const EducationForm = {
             feedback = 'Поле обязательно для заполнения';
         } else {
             // Проверяем формат: целое число или с одной цифрой после запятой
-            if (!/^\d+(\.\d{0,1})?$/.test(value)) {
+            if (!/^(?!-)\d+(\.\d{0,1})?$/.test(value)) {
                 isValid = false;
                 feedback = 'Допускается целое число или с одной цифрой после точки';
             } else {

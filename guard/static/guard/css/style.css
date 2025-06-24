@@ -423,6 +423,15 @@ tr.selected-row td {
     word-break: break-word;
 }
 
+
+#info-tbl-main td:nth-child(6) {
+    max-width: 150px;
+    overflow-x: auto;
+    white-space: normal;
+    word-wrap: break-word;
+    padding: 8px;
+}
+
 /* ==================== */
 /* Стили уведомлений */
 /* ==================== */
@@ -437,6 +446,8 @@ tr.selected-row td {
     white-space: normal;
     padding: 0.5rem 1rem;
 }
+
+/* TO DO: FIX LONG NOTIFY TEXT */
 
 #notificationMenu .dropdown-item:not(:last-child) {
     border-bottom: 1px solid #dee2e6;

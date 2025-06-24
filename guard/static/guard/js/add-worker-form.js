@@ -266,22 +266,23 @@ const EmployeeForm = {
      * Проверяет поле ввода ФИО
      * @returns {boolean} Результат валидации
      */
-    validateFullNameInput: function () {
+    validateFullNameInput() {
         const fullName = this.$fullNameInput.val().trim();
         const fullNameResult = this.processFullName(fullName);
 
         if (!fullName) {
-            this.showError(this.$fullNameInput, 'fullNameFeedback', 'Поле ФИО обязательно для заполнения');
-        } else if (!fullNameResult.isValid) {
-            if (fullNameResult.error === 'Латинские символы недопустимы') {
-                this.showError(this.$fullNameInput, 'fullNameFeedback', 'ФИО должно содержать только кириллицу');
-            } else {
-                this.showError(this.$fullNameInput, 'fullNameFeedback', 'Введите корректное ФИО (2-3 слова, каждое с заглавной буквы, только кириллица)');
-            }
-        } else {
-            this.hideError(this.$fullNameInput, 'fullNameFeedback');
+            this.$fullNameInput.removeClass('is-invalid');
+            $('#fullNameFeedback').hide();
+            return true;
         }
-        return fullNameResult.isValid && fullName;
+        if (!fullNameResult.isValid) {
+            this.$fullNameInput.addClass('is-invalid');
+            $('#fullNameFeedback').text('Введите корректное ФИО (2-3 слова, каждое с заглавной буквы)').show();
+            return false;
+        }
+        this.$fullNameInput.removeClass('is-invalid');
+        $('#fullNameFeedback').hide();
+        return true;
     },
 
     /**
