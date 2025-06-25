@@ -123,17 +123,22 @@ body {
     overflow-y: auto;
 }
 
+
+#info-tbl-education td:nth-child(3), 
+#info-tbl-education td:nth-child(4) {
+    max-width: 200px;
+    overflow-x: auto;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
 /* ==================== */
 /* Стили сортировки */
 /* ==================== */
-.sortable {
-    cursor: pointer;
-    position: relative;
-    user-select: none;
-}
-
 #info-tbl-med th.sortable-med,
-#info-tbl-education th.sortable-edu {
+#info-tbl-education th.sortable-edu,
+#allMedicalExamsTable th.sortable,
+#allEducationsTable th.sortable {
     cursor: pointer;
     position: relative;
     user-select: none;
@@ -141,12 +146,16 @@ body {
 }
 
 #info-tbl-med th.sortable-med:hover,
-#info-tbl-education th.sortable-edu:hover {
+#info-tbl-education th.sortable-edu:hover,
+#allMedicalExamsTable th.sortable:hover,
+#allEducationsTable th.sortable:hover {
     background-color: #e9ecef;
 }
 
 #info-tbl-med th.sorted-asc::after,
-#info-tbl-education th.sorted-asc::after {
+#info-tbl-education th.sorted-asc::after,
+#allMedicalExamsTable th.asc::after,
+#allEducationsTable th.asc::after {
     content: '↑';
     position: absolute;
     right: 8px;
@@ -155,7 +164,9 @@ body {
 }
 
 #info-tbl-med th.sorted-desc::after,
-#info-tbl-education th.sorted-desc::after {
+#info-tbl-education th.sorted-desc::after,
+#allMedicalExamsTable th.desc::after,
+#allEducationsTable th.desc::after {
     content: '↓';
     position: absolute;
     right: 8px;
@@ -429,7 +440,6 @@ tr.selected-row td {
     overflow-x: auto;
     white-space: normal;
     word-wrap: break-word;
-    padding: 8px;
 }
 
 /* ==================== */

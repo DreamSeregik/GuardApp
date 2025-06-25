@@ -103,6 +103,10 @@ function initEventHandlers() {
     // Поиск сотрудников
     $('#search-input').keyup(handleSearchInput);
 
+    // Поиск в таблицах медосмотров и обучений
+    $('#allMedSearch').keyup(filterMedTable);
+    $('#allEduSearch').keyup(filterEduTable);
+
     // Сброс фильтров дат
     $('#resetMedDates').click(() => {
         $('#medDateFrom, #medDateTo').val('');
@@ -234,7 +238,7 @@ async function handleAllMedClick() {
 
         if (status === 'SUCCESS') {
             renderMedTable(data);
-            $('#allMedicalExamsTable .sortable').addClass('none');
+            $('#allMedicalExamsTable .sortable').removeClass('asc desc').addClass('none');
             $('#allMedSearch').val('');
             filterMedTable();
         } else {
@@ -263,7 +267,7 @@ async function handleAllEduClick() {
 
         if (status === 'SUCCESS') {
             renderEduTable(data);
-            $('#allEducationsTable .sortable').addClass('none');
+            $('#allEducationsTable .sortable').removeClass('asc desc').addClass('none');
             $('#allEduSearch').val('');
             filterEduTable();
         } else {
@@ -473,7 +477,7 @@ function getAttachmentsHtml(attachments, id) {
  * Фильтрует таблицу медосмотров по поиску и датам
  */
 function filterMedTable() {
-    const searchText = $('#allMedSearch').val().toLowerCase();
+    const searchText = $('#allMedSearch').val().toLowerCase().trim();
     const dateFrom = $('#medDateFrom').val();
     const dateTo = $('#medDateTo').val();
     const $tbody = $('#allMedicalExamsTableBody');
@@ -493,12 +497,8 @@ function filterMedTable() {
             const examDateFrom = parseDate(rowDateFrom);
             const examDateTo = parseDate(rowDateTo);
 
-            if (fromDate && (!examDateFrom || examDateFrom < fromDate)) {
-                dateMatch = false;
-            }
-            if (toDate && (!examDateTo || examDateTo > toDate)) {
-                dateMatch = false;
-            }
+            if (fromDate && (!examDateFrom || examDateFrom < fromDate)) dateMatch = false;
+            if (toDate && (!examDateTo || examDateTo > toDate)) dateMatch = false;
         }
 
         return textMatch && dateMatch;
@@ -511,7 +511,7 @@ function filterMedTable() {
  * Фильтрует таблицу обучений по поиску и датам
  */
 function filterEduTable() {
-    const searchText = $('#allEduSearch').val().toLowerCase();
+    const searchText = $('#allEduSearch').val().toLowerCase().trim();
     const dateFrom = $('#eduDateFrom').val();
     const dateTo = $('#eduDateTo').val();
     const $tbody = $('#allEducationsTableBody');
@@ -531,12 +531,8 @@ function filterEduTable() {
             const eduDateFrom = parseDate(rowDateFrom);
             const eduDateTo = parseDate(rowDateTo);
 
-            if (fromDate && (!eduDateTo || eduDateTo < fromDate)) {
-                dateMatch = false;
-            }
-            if (toDate && (!eduDateFrom || eduDateFrom > toDate)) {
-                dateMatch = false;
-            }
+            if (fromDate && (!eduDateTo || eduDateTo < fromDate)) dateMatch = false;
+            if (toDate && (!eduDateFrom || eduDateFrom > toDate)) dateMatch = false;
         }
 
         return textMatch && dateMatch;
@@ -673,7 +669,16 @@ function setupSortableColumns() {
  * @param {boolean} isDate - Является ли столбец датой
  */
 function sortTableRows($table, column, sortOrder, isNumeric, isDate) {
-    const rows = $table.find('tbody tr').get();
+    // Проверяем наличие строк с классом no-data
+    if ($table.find('tbody tr.no-data').length > 0) {
+        return;
+    }
+
+    const rows = $table.find('tbody tr:not(.no-data)').get();
+
+    if (rows.length === 0) {
+        return;
+    }
 
     rows.sort((a, b) => {
         let aValue = $(a).find('td').eq(column).text().trim();
