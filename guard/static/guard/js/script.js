@@ -712,15 +712,15 @@ function sortTableRows($table, column, sortOrder, isNumeric, isDate) {
  * @returns {number} Результат сравнения
  */
 function compareValues(aValue, bValue, sortOrder, column) {
-    if (column === 'date_from' || column === 'date_to') {
+    if (column === 'attachments_count') {
+        const aCount = parseInt($(aValue).closest('tr').attr('data-attachments-count')) || 0;
+        const bCount = parseInt($(bValue).closest('tr').attr('data-attachments-count')) || 0;
+        return sortOrder === 'asc' ? aCount - bCount : bCount - aCount;
+    } else if (column === 'date_from' || column === 'date_to') {
         const aDate = parseDate(aValue);
         const bDate = parseDate(bValue);
         return sortOrder === 'asc' ? aDate - bDate : bDate - aDate;
     } else if (column === 'hours') {
-        const aNum = parseInt(aValue) || 0;
-        const bNum = parseInt(bValue) || 0;
-        return sortOrder === 'asc' ? aNum - bNum : bNum - aNum;
-    } else if (column === 'attachments_count') {
         const aNum = parseInt(aValue) || 0;
         const bNum = parseInt(bValue) || 0;
         return sortOrder === 'asc' ? aNum - bNum : bNum - aNum;
